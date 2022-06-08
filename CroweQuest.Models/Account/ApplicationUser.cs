@@ -7,6 +7,7 @@
  *  Building a Blog with ASP.NET and Angular
  *  Data isn't loaded from this model directly
  *  Token is generated.
+ *  THIS IS NEEDED FOR ORM DAPPER
  * *******************************/
 
 using System;
@@ -21,6 +22,9 @@ namespace CroweQuest.Models.Account
         public string Username { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
+        public string LineOfDescent { get; set; }
         public string Token { get; set; }
     }
+ 
+
 }
