@@ -1,4 +1,13 @@
-﻿using CroweQuest.Models.Account;
+﻿/****************************
+ * CROWEQUEST REPOSITORY IACCOUNTREPOSITORY
+ * INTERFACE FOR ACCOUNT REPOSITORY
+ * 
+ * This was taken from a Udemy Course
+ *  Building a Blog with ASP.NET and Angular
+ * ********************/
+
+
+using CroweQuest.Models.Account;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Threading;
