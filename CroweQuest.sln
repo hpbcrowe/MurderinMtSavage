@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CroweQuest.Web", "CroweQues
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CroweQuest.Models", "CroweQuest.Models\CroweQuest.Models.csproj", "{888E0502-541A-4B59-B9E3-A31D01AFB76B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CroweQuest.Repository", "CroweQuest.Repository\CroweQuest.Repository.csproj", "{5D97CA9D-734F-4AB4-A5FE-EC45DA9B3A63}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CroweQuest.Repository", "CroweQuest.Repository\CroweQuest.Repository.csproj", "{5D97CA9D-734F-4AB4-A5FE-EC45DA9B3A63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CroweQuest.Identity", "CroweQuest.Identity\CroweQuest.Identity.csproj", "{594328A9-4D9D-4362-9539-89CF65F07B6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{5D97CA9D-734F-4AB4-A5FE-EC45DA9B3A63}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5D97CA9D-734F-4AB4-A5FE-EC45DA9B3A63}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5D97CA9D-734F-4AB4-A5FE-EC45DA9B3A63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{594328A9-4D9D-4362-9539-89CF65F07B6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{594328A9-4D9D-4362-9539-89CF65F07B6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{594328A9-4D9D-4362-9539-89CF65F07B6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{594328A9-4D9D-4362-9539-89CF65F07B6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
