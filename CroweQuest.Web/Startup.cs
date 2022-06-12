@@ -1,3 +1,4 @@
+using CroweQuest.Models.Settings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -12,17 +13,20 @@ namespace CroweQuest.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public IConfiguration Configuration { get;}
+        public Startup(IConfiguration config)
         {
-            Configuration = configuration;
+             Configuration = config;
         }
 
-        public IConfiguration Configuration { get; }
+
+       
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRazorPages();
+            services.Configure<CloudinaryOptions>(Configuration.GetSection("CloudinaryOptions"));
+            //services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

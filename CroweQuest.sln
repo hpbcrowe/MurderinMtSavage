@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CroweQuest.Repository", "Cr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CroweQuest.Identity", "CroweQuest.Identity\CroweQuest.Identity.csproj", "{594328A9-4D9D-4362-9539-89CF65F07B6E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlogLab.Services", "BlogLab.Services\BlogLab.Services.csproj", "{86670A6D-56C2-4BD9-8BF3-77A076E1C687}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{594328A9-4D9D-4362-9539-89CF65F07B6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{594328A9-4D9D-4362-9539-89CF65F07B6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{594328A9-4D9D-4362-9539-89CF65F07B6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86670A6D-56C2-4BD9-8BF3-77A076E1C687}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86670A6D-56C2-4BD9-8BF3-77A076E1C687}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86670A6D-56C2-4BD9-8BF3-77A076E1C687}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86670A6D-56C2-4BD9-8BF3-77A076E1C687}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
