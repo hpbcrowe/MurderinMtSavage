@@ -29,8 +29,9 @@ namespace CroweQuest.Web.Controllers
             _signInManager = signInManager;    
 
         }
-
-        //5000/api/Account/register [Post]
+        /****************************
+       * 5000/api/Account/register [Post]
+       * ********************************/
         [HttpPost("register")]
         public async Task<ActionResult<ApplicationUser>> Register(ApplicationUserCreate applicationUserCreate)
         {
@@ -46,7 +47,7 @@ namespace CroweQuest.Web.Controllers
 
             if (result.Succeeded)
             {
-                ApplicationUser user = new ApplicationUser()
+                ApplicationUser applicationUser = new ApplicationUser()
                 {
                     ApplicationUserId = applicationUserIdentity.ApplicationUserId,
                     Username = applicationUserIdentity.Username,
@@ -55,11 +56,42 @@ namespace CroweQuest.Web.Controllers
                     LineOfDescent = applicationUserIdentity.LineOfDescent,
                     Token = _tokenService.CreateToken(applicationUserIdentity)
                 };
-                return user;
+                return Ok(applicationUser);
+
             }
 
             return BadRequest(result.Errors);
         }
 
+        /*********************
+         * HTTP POST /login
+         * *********************/
+        [HttpPost("login")]
+        public async Task<ActionResult<ApplicationUser>> Login(ApplicationUserLogin applicationUserLogin)
+        {
+            var applicationUserIdentity = await _userManager.FindByNameAsync(applicationUserLogin.Username);
+
+            if(applicationUserIdentity != null)
+            {
+                var result = await _signInManager.CheckPasswordSignInAsync(
+                    applicationUserIdentity,
+                    applicationUserLogin.Password, false);
+                if (result.Succeeded)
+                {
+                    ApplicationUser applicationUser = new ApplicationUser
+                    {
+                        ApplicationUserId = applicationUserIdentity.ApplicationUserId,
+                        Username = applicationUserIdentity.Username,
+                        Email = applicationUserIdentity.Email,
+                        FullName = applicationUserIdentity.Fullname,
+                        LineOfDescent = applicationUserIdentity.LineOfDescent,
+                        Token = _tokenService.CreateToken(applicationUserIdentity)
+                    };
+                    return Ok(applicationUser);
+                }
+            }
+            // if user not found or didn't get back a result
+            return BadRequest("Invalid Login Attempt.");
+        }
     }
 }
