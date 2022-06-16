@@ -43,7 +43,71 @@ namespace CroweQuest.Web.Controllers
             return Ok(blog);
         }
 
+        /**********************************
+         *  Get All Blogs w/ pagination
+         * 
+         * *******************************/
+        //http://localhost:5000/api/Blog/?pageSize=10&
+        [HttpGet]
+        public async Task<ActionResult<PagedResults<Blog>>> GetAll([FromQuery] BlogPaging blogPaging)
+        {
+            var blogs = await _blogRepository.GetAllAsync(blogPaging);
 
+            return Ok(blogs);
+        }
 
+        /******************************
+         * Get Blot by id
+         * Returns only one blog with
+         * the blog id
+         * 
+         * **************************/
+        [HttpGet("{blogId}")]
+        public async Task<ActionResult<Blog>> Get(int blogId)
+        {
+            var blog = await _blogRepository.GetAsync(blogId);
+
+            return Ok(blog);
+        }
+
+        [HttpGet("user/{applicationUserId}")]
+        public async Task<ActionResult<List<Blog>>> GetByApplicationUserId(int applicationUserId)
+        {
+            var blogs = await _blogRepository.GetAllByUserIdAsync(applicationUserId);
+
+            return Ok(blogs);
+        }
+
+        [HttpGet("famous")]
+        public async Task<ActionResult<List<Blog>>> GetAllFamous()
+        {
+            var blogs = await _blogRepository.GetAllFamousAsync();
+
+            return Ok(blogs);
+        }
+
+        [Authorize]
+        [HttpDelete("{blogId}")]
+        public async Task<ActionResult<int>> Delete(int blogId)
+        {
+            // Get user id from the claim in the token
+            int applicationUserId = int.Parse(User.Claims.First(i => i.Type == JwtRegisteredClaimNames.NameId).Value);
+            
+            var foundBlog = await _blogRepository.GetAsync(blogId);
+
+            if (foundBlog == null) return BadRequest("Blog does not exist.");
+
+            if (foundBlog.ApplicationUserId == applicationUserId)
+            {
+                var affectedRows = await _blogRepository.DeleteAsync(blogId);
+                return Ok(affectedRows);
+
+            }
+            else
+            {
+                return BadRequest("You did not create this blog.");
+            }
+            
+        }
     }
 }
