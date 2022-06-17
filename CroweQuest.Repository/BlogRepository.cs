@@ -54,7 +54,7 @@ namespace CroweQuest.Repository
             {
                 //If something goes wrong with .net core Identity cancel
                 await connection.OpenAsync();
-                using (var multi = await connection.QueryMultipleAsync("Blog_All",
+                using (var multi = await connection.QueryMultipleAsync("Blog_GetAll",
                     new { 
                         //calculate the offset
                     Offset = (blogPaging.Page - 1) * blogPaging.PageSize,
@@ -86,7 +86,7 @@ namespace CroweQuest.Repository
                 await connection.OpenAsync();
                 blogs = await connection.QueryAsync<Blog>(
                     "Blog_GetByUserId",
-                    new { applicationUserId = applicationUserId },
+                    new { ApplicationUserId = applicationUserId },
                     commandType: CommandType.StoredProcedure);
 
             }

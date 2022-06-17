@@ -100,7 +100,9 @@ namespace CroweQuest.Repository
                 await connection.OpenAsync();
                 newPhotoId = await connection.ExecuteScalarAsync<int>(
                     "Photo_Insert",
-                    new { Photo = dataTable.AsTableValuedParameter("dbo.PhotoType") },
+                    new { Photo = dataTable.AsTableValuedParameter("dbo.PhotoType"),
+                    applicationUserId = applicationUserId
+                    },
                     commandType: CommandType.StoredProcedure);
 
             }

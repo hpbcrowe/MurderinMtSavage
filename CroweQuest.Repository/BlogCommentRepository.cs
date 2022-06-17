@@ -92,6 +92,7 @@ namespace CroweQuest.Repository
             dataTable.Columns.Add("ParentBlogCommentId", typeof(int));
             dataTable.Columns.Add("BlogId", typeof(int));
             dataTable.Columns.Add("Content", typeof(string));
+
             //Insert the fields passed into the method into the BlogComment Data Table
             dataTable.Rows.Add(
                 blogCommentCreate.BlogCommentId,
@@ -106,11 +107,16 @@ namespace CroweQuest.Repository
             {
                 //If something goes wrong with .net core Identity cancel
                 await connection.OpenAsync();
+
                 newBlogCommentId = await connection.ExecuteScalarAsync<int>(
                     //Call the BlogComment Upsert Stored Procedure to upsert
                     "BlogComment_Upsert",
                     //Use the BlogComment type in the database to insert into the table
-                    new { BlogComment = dataTable.AsTableValuedParameter("dbo.BlogCommentType") },
+                    new { 
+                        BlogComment = dataTable.AsTableValuedParameter("dbo.BlogCommentType"),
+                        ApplicationUserId = applicationUserId
+
+                    },
                     commandType: CommandType.StoredProcedure);
 
             }
