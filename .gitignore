@@ -5,6 +5,7 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+/appsettings.json
 ###  Angular files
 /.angular/cache
 
@@ -409,6 +410,8 @@ Terms
 ####  -------Visual Studio Code Git Ignore
 
 # See http://help.github.com/ignore-files/ for more about ignoring files.
+
+appsettings.json
 
 # Compiled output
 /dist
