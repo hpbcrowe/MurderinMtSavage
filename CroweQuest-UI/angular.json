@@ -16,6 +16,7 @@
           "skipTests": true
         },
         "@schematics/angular:guard": {
+          
           "skipTests": true
         },
         "@schematics/angular:interceptor": {
