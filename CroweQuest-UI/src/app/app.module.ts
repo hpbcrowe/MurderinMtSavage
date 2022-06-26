@@ -10,6 +10,8 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { CollapseModule } from 'ngx-bootstrap/collapse';
 
 
 import { ToastrModule } from 'ngx-toastr';
@@ -63,7 +65,9 @@ import { ErrorInterceptor } from './interceptors/error.interceptor';
     HttpClientModule,
     ToastrModule.forRoot({
       positionClass: 'toast-bottom-right'
-    })
+    }),
+    BsDropdownModule.forRoot(),
+    CollapseModule.forRoot(),
   ],
   providers: [
     HttpClient,

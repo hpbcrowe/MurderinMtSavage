@@ -62,6 +62,13 @@ export class AccountService {
     return this.currentUserSubject$.value;
    }
   
+   public isLoggedIn() {
+    const currentUser = this.currentUserValue;
+      //Taken from JWT Interceptor 
+      //If there is a user and they are logged in
+      const isLoggedIn = currentUser && currentUser.token;
+      return isLoggedIn;
+   }
 
 
    logout() {

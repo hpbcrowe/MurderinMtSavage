@@ -9,6 +9,8 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
+//I don't know what the following is
+//import { runInThisContext } from 'vm';
 import { AccountService } from '../services/account.service';
 
 @Injectable({
@@ -25,12 +27,9 @@ export class AuthGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot):  boolean  {
    
-      const currentUser = this.accountService.currentUserValue;
-      //Taken from JWT Interceptor 
-      //If there is a user and they are logged in
-      const isLoggedIn = currentUser && currentUser.token;
+      
 
-      if(isLoggedIn){
+      if(this.accountService.isLoggedIn()){
         return true;
       }
       //(Per Angular Docs)
