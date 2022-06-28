@@ -66,7 +66,7 @@ export class AccountService {
     const currentUser = this.currentUserValue;
       //Taken from JWT Interceptor 
       //If there is a user and they are logged in
-      const isLoggedIn = currentUser && currentUser.token;
+      const isLoggedIn = !!currentUser && !!currentUser.token;
       return isLoggedIn;
    }
 

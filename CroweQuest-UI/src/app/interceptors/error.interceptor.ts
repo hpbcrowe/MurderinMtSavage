@@ -86,7 +86,7 @@ export class ErrorInterceptor implements HttpInterceptor {
   }
 
   handle500Error(error: any) {
-    this.toastr.error('Please contact the administrator. An error happened in the server.');
+    this.toastr.error('Please contact the administrator. An error occurred in the server.');
     console.log(error);
   }
 
