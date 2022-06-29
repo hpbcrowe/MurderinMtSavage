@@ -1,11 +1,12 @@
 <div class="container">
     <div class="row">
         <div class="col-md-6 offset-md-3 mt-5">
-            <h3 class="text-dark">Login</h3>
-            <p class="text-dark">Sign In To Your Dashboard and Start Posting Your Research or Your Questions </p>
 
-            <form [formGroup]="loginForm" ngSubmit="onSubmit()">   
-                
+            <h3 class="text-dark">Login</h3>
+            <p class="text-dark">Get to your dashboard and start blogging</p>
+
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
                 <div class="form-group">
                     <input
                         type="text"
@@ -13,15 +14,16 @@
                                     'is-valid' : !hasErrors('username') && isTouched('username')}"
                         class="form-control form-control-lg"
                         formControlName="username"
-                        placeholder="Username"> 
+                        placeholder="Username">
+
                     <div *ngIf="hasError('username', 'required')" class="invalid-feedback">
-                        Username Is Required
-                    </div>   
-                    
+                        Username is required
+                    </div>
+
                     <div *ngIf="hasError('username', 'minlength') || hasError('username', 'maxlength')" 
-                    class="invalid-feedback">
-                        Must Be Between 5-20 Characters
-                    </div> 
+                        class="invalid-feedback">
+                        Must be between 5-20 characters
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -31,23 +33,23 @@
                                     'is-valid' : !hasErrors('password') && isTouched('password')}"
                         class="form-control form-control-lg"
                         formControlName="password"
-                        placeholder="Password"> 
+                        placeholder="Password">
+
                     <div *ngIf="hasError('password', 'required')" class="invalid-feedback">
-                        Password Is Required
-                    </div>   
-                    
-                    <div *ngIf="hasError('password', 'minlength') || hasError('password', 'maxlength')" 
-                    class="invalid-feedback">
-                        Must Be Between 10-50 Characters
-                    </div> 
-                </div>
-                    <div class="text-center">   
-                         <button class="btn btn-block mb-3 bg-primary text-light mg-4 btn-lg "
-                             [disabled]="!loginForm.valid">Login</button>
+                        Password is required
                     </div>
+
+                    <div *ngIf="hasError('password', 'minlength') || hasError('password', 'maxlength')" 
+                        class="invalid-feedback">
+                        Must be between 10-50 characters
+                    </div>
+                </div>
+
+                <button class="btn btn-block mb-3 bg-primary text-light"
+                [disabled]="!loginForm.valid">Login</button>
+
             </form>
 
         </div>
     </div>
-
 </div>

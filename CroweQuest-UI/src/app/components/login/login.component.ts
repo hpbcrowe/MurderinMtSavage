@@ -11,16 +11,15 @@ import { AccountService } from 'src/app/services/account.service';
 })
 export class LoginComponent implements OnInit {
 
-
-//Had to add undefined wouldn't accept uninitialized member.
- loginForm!: FormGroup;
+  loginForm!: FormGroup;
 
   constructor(
     private accountService: AccountService,
     private router: Router,
     private formBuilder: FormBuilder
   ) { 
-    if(this.accountService.isLoggedIn()){
+
+    if (this.accountService.isLoggedIn()) {
       this.router.navigate(['/dashboard']);
     }
   }
@@ -41,26 +40,25 @@ export class LoginComponent implements OnInit {
   }
 
   isTouched(field: string){
-    return this.loginForm?.get(field)?.touched;
+    return this.loginForm.get(field)?.touched;
   }
 
-  hasErrors(field: string){
+  hasErrors(field: string) {
     return this.loginForm.get(field)?.errors;
   }
 
-  hasError(field: string, error: string){
-    return !!this.loginForm?.get(field)?.hasError(error);
+  hasError(field: string, error: string) {
+    return !!this.loginForm.get(field)?.hasError(error);
   }
 
   onSubmit() {
     let applicationUserLogin: ApplicationUserLogin = new ApplicationUserLogin(
-      this.loginForm?.get("username")?.value,
-      this.loginForm?.get("password")?.value
+      this.loginForm.get("username")?.value,
+      this.loginForm.get("password")?.value
     );
 
     this.accountService.login(applicationUserLogin).subscribe(() => {
       this.router.navigate(['/dashboard']);
     });
-    }
-
+  }
 }
