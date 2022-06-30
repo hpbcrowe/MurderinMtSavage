@@ -73,8 +73,9 @@ export class AccountService {
 
    logout() {
     localStorage.removeItem('croweQuest-currentUser');
-    //using localStorage.clear instead of 
-    //this.currentUserSubject$.next(null);
+    //using localStorage.clear instead of this.currentUserSubject$.next(null!);
+    //Got this to work adding the ! operator answer from Stack Overflow
+    this.currentUserSubject$.next(null!);
     localStorage.clear;
    }
 }
