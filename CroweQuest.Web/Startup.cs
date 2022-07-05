@@ -108,9 +108,19 @@ namespace CroweQuest.Web
 
             app.UseRouting();
 
-            app.UseAuthorization();
+             
+            //app.UseAuthorization();
 
-            //Security feature, malicious website can't run script on this website
+          
+            
+          
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+            
+              //Security feature, malicious website can't run script on this website
+             //moved this to before UseAuthoriztion() instead of after it. This if else
+             //was after UseAuthorization()
             if (env.IsDevelopment())
             {
                 app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
@@ -119,9 +129,7 @@ namespace CroweQuest.Web
             {
                 app.UseCors();
             }
-
-            app.UseAuthentication();
-            app.UseAuthorization();
+            
 
             app.UseEndpoints(endpoints =>
             {

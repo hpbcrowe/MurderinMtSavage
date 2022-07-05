@@ -8,15 +8,17 @@ namespace CroweQuest.Repository
 {
     public interface IBlogRepository
     {
-
         public Task<Blog> UpsertAsync(BlogCreate blogCreate, int applicationUserId);
+
         public Task<PagedResults<Blog>> GetAllAsync(BlogPaging blogPaging);
-        public Task<Blog> GetAsync(int BlogId);
+
+        public Task<Blog> GetAsync(int blogId);
+
         public Task<List<Blog>> GetAllByUserIdAsync(int applicationUserId);
+
         public Task<List<Blog>> GetAllFamousAsync();
+
         public Task<int> DeleteAsync(int blogId);
-
-
-
     }
 }
+

@@ -12,7 +12,9 @@ namespace BlogLab.Services
     public class TokenService : ITokenService
     {
         private readonly SymmetricSecurityKey _key;
-        private readonly string _issuer;
+        private readonly string  _issuer;
+
+
         public TokenService(IConfiguration config)
         {
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
@@ -36,7 +38,8 @@ namespace BlogLab.Services
                 _issuer,
                 _issuer,
                 claims,
-                expires: DateTime.Now.AddMinutes(30),
+                //The user is signed on for 60 minutes
+                expires: DateTime.Now.AddMinutes(60),
                 signingCredentials: creds
                 );
             return new JwtSecurityTokenHandler().WriteToken(token);
