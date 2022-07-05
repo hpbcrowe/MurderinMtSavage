@@ -1,4 +1,4 @@
-export class Blog{
+export class Blog {
 
     constructor(
         public blogId: number,
@@ -10,6 +10,6 @@ export class Blog{
         public updateDate: Date,
         public deleteConfirm: boolean = false,
         public photoId?: number
-             
     ) {}
+
 }
