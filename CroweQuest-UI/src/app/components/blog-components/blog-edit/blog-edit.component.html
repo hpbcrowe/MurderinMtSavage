@@ -1,14 +1,11 @@
 <div class="container">
+ 
 
     <div class="d-flex justify-content-center">
         <h1 class="display-4 mt-5">{{ isNew() ? 'Create' : 'Edit' }} Blog</h1>
     </div>
 
-    <a *ngIf="!isNew()" routerLink="/blogs/{{ blogForm.get('blogId')?.value}}"
-        class="badge badge-primary mb-2 p-2">
-        Preview Blog / Publication
-
-    </a>
+    <a *ngIf="!isNew()" class="btn btn-primary mb-2 p-1" routerLink="/blogs/{{blogForm.get('blogId')?.value}}">Preview Blog / Journal Entry</a>
 
     <form [formGroup]="blogForm" (ngSubmit)="onSubmit()">
 

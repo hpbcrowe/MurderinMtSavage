@@ -85,9 +85,10 @@ export class BlogEditComponent implements OnInit {
     return !!this.blogForm.get(field)?.hasError(error);
   }
 
-  isNew() {
-    return parseInt(this.blogForm.get('blogId')?.value) === -1;
-  }
+  isNew() {    
+      return parseInt(this.blogForm.get('blogId')?.value) === -1;
+    }
+  
 
   detachPhoto(){
     this.blogForm.patchValue({
