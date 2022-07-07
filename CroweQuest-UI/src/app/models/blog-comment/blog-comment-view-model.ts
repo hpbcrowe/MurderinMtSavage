@@ -11,13 +11,13 @@
 export class BlogCommentViewModel{
 
     constructor(
-        public parentBlogCommentId: number, 
+        public parentBlogCommentId: number | null | undefined, 
+        public blogCommentId: number,
         public blogId: number,
         public content: string,
         public username: string,
-        public applicationUserId: number,
-        public publishDate: Date,
-        public updateDate: Date,
+        public publishDate: Date | null | undefined,
+        public updateDate: Date | null | undefined,
         public isEditable: boolean,
         public deleteConfirm: boolean,
         public isReplying: boolean,
