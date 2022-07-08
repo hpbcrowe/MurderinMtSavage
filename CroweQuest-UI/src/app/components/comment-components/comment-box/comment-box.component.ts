@@ -33,6 +33,10 @@ export class CommentBoxComponent implements OnInit {
     this.commentForm.reset();
   }
 
+  /**
+   * onSubmit
+   * This matches the source code.
+   */
   onSubmit() {
     let blogCommentCreate: BlogCommentCreate = {
       blogCommentId: this.comment.blogCommentId,
@@ -40,12 +44,12 @@ export class CommentBoxComponent implements OnInit {
       blogId: this.comment.blogId,
       content: this.comment.content
     };
+
     this.blogCommentService.create(blogCommentCreate).subscribe(blogComment => {
-      
-      this.commentSaved.emit(blogComment);
+      this.toastr.info("Comment Saved.");
       this.resetComment();
-      this.toastr.info('Comment Saved.')
-    });
+      this.commentSaved.emit(blogComment);
+    })
   }
 
 }

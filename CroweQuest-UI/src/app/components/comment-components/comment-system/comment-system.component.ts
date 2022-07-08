@@ -59,6 +59,12 @@ export class CommentSystemComponent implements OnInit {
     };
   }
 
+  /**Find comment replies
+   * 
+   * @param blogCommentViewModels 
+   * @param index 
+   * This matches the source code
+   */
   findCommentReplies(blogCommentViewModels: BlogCommentViewModel[], index: number) {
 
     let firstElement = this.blogComments[index];
@@ -87,7 +93,13 @@ export class CommentSystemComponent implements OnInit {
     }
   }
 
+  /**
+   * On Comment Saved
+   * @param blogComment
+   * Matches source code 
+   */
   onCommentSaved(blogComment: BlogComment) {
+    //Save as a view model
     let commentViewModel: BlogCommentViewModel = {
       parentBlogCommentId: blogComment.parentBlogCommentId,
       content: blogComment.content,
@@ -102,6 +114,7 @@ export class CommentSystemComponent implements OnInit {
       comments: []
     }
 
+    //Add to view model
     this.blogCommentViewModels.unshift(commentViewModel);
   }
 

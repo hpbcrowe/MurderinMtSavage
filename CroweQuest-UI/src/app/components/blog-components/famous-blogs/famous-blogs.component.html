@@ -5,7 +5,7 @@
 </div>
 
 <ng-template [ngIf]="famousBlogs?.length! > 0" [ngIfElse]="noBlogs">
-    <div class="container card-columns mt-5">
+    <div class="container card-columns mt-5 card-group justify-content-center">
         <app-blog-card *ngFor="let famousBlog of famousBlogs"
             [blog]="famousBlog"></app-blog-card>
 
