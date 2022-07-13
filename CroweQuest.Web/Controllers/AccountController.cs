@@ -134,7 +134,8 @@ namespace CroweQuest.Web.Controllers
             {
                 Username = applicationUserCreate.Username,
                 Email = applicationUserCreate.Email,
-                Fullname = applicationUserCreate.Fullname
+                Fullname = applicationUserCreate.Fullname,
+                LineOfDescent = applicationUserCreate.LineOfDescent
             };
 
             var result = await _userManager.CreateAsync(applicationUserIdentity, applicationUserCreate.Password);
@@ -149,6 +150,7 @@ namespace CroweQuest.Web.Controllers
                     Username = applicationUserIdentity.Username,
                     Email = applicationUserIdentity.Email,
                     Fullname = applicationUserIdentity.Fullname,
+                    LineOfDescent = applicationUserIdentity.LineOfDescent,
                     Token = _tokenService.CreateToken(applicationUserIdentity)
                 };
 
@@ -177,6 +179,7 @@ namespace CroweQuest.Web.Controllers
                         Username = applicationUserIdentity.Username,
                         Email = applicationUserIdentity.Email,
                         Fullname = applicationUserIdentity.Fullname,
+                        LineOfDescent = applicationUserIdentity.LineOfDescent,
                         Token = _tokenService.CreateToken(applicationUserIdentity)
                     };
 

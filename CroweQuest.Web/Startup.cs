@@ -127,7 +127,7 @@ namespace CroweQuest.Web
             }
             else
             {
-                app.UseCors();
+                app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
             }
             
 
