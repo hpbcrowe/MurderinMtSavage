@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  webApi: "http://localhost:5000/api"
+ // webApi: "http://localhost:5000/api"
+    webApi: "https://crowequestweb20220711194507.azurewebsites.net/api"
 };
 
 /*
