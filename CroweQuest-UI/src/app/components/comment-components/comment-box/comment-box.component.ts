@@ -5,6 +5,7 @@ import { BlogComment } from 'src/app/models/blog-comment/blog-comment';
 import { BlogCommentCreate } from 'src/app/models/blog-comment/blog-comment-create.model';
 import { BlogCommentViewModel } from 'src/app/models/blog-comment/blog-comment-view-model';
 import { BlogCommentService } from 'src/app/services/blog-comment.service';
+import { Meta, Title } from '@angular/platform-browser';
 
 
 @Component({
@@ -22,9 +23,19 @@ export class CommentBoxComponent implements OnInit {
 
   constructor(
     private blogCommentService: BlogCommentService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private meta: Meta, 
+    private title: Title
 
-  ) { }
+  ) { 
+    this.meta.addTags([
+      {name: 'description', content: 'User Commenting area'},
+      {name: 'author', content: 'Ben Crowe / open-source code'},
+      {name: 'keywords', content: 'Genealogy, William, Crowe, Crow, Research, Family History'}
+
+    ]);
+    this.setTitle('Comment Box');
+  }
 
   ngOnInit(): void {
   }
@@ -32,6 +43,10 @@ export class CommentBoxComponent implements OnInit {
   resetComment(){
     this.commentForm.reset();
   }
+
+  public setTitle(newTitle: string){
+    this.title.setTitle( newTitle);
+   }
 
   /**
    * onSubmit

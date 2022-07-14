@@ -4,6 +4,7 @@ import { BlogPaging } from 'src/app/models/blog/blog-paging.model';
 import { Blog } from 'src/app/models/blog/blog.model';
 import { PagedResult } from 'src/app/models/blog/paged-result.model';
 import { BlogService } from 'src/app/services/blog.service';
+import { Meta, Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-blogs',
@@ -16,9 +17,19 @@ export class BlogsComponent implements OnInit {
 
 
   constructor(
-    private blogService: BlogService
+    private blogService: BlogService,
+    private meta: Meta, 
+    private title: Title
+  ) { 
+    this.meta.addTags([
+      {name: 'description', content: 'Blogs about the Crowe Family from Western Maryland'},
+      {name: 'author', content: 'Ben Crowe / open-source code'},
+      {name: 'keywords', content: 'Genealogy, William, Crowe, Crow, Research, Family History'}
 
-  ) { }
+    ]);
+    this.setTitle('Crowe Genealogy Blogs');
+
+  }
 
   ngOnInit(): void {
     this.loadPagedBlogResult(1,6);
@@ -35,4 +46,8 @@ export class BlogsComponent implements OnInit {
       this.pagedBlogResult = pagedBlogs;
     })
   }
+
+  public setTitle(newTitle: string){
+    this.title.setTitle( newTitle);
+   }
 }

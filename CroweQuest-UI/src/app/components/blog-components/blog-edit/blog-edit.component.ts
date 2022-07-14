@@ -9,6 +9,7 @@ import { Blog } from 'src/app/models/blog/blog.model';
 import { Photo } from 'src/app/models/photo/photo.model';
 import { BlogService } from 'src/app/services/blog.service';
 import { PhotoService } from 'src/app/services/photo.service';
+import { Meta, Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-blog-edit',
@@ -27,7 +28,17 @@ export class BlogEditComponent implements OnInit {
     private photoService: PhotoService,
     private  toastr: ToastrService,
     private router: Router,
-  ) { }
+    private meta: Meta,
+    private title: Title
+  ) {
+    this.meta.addTags([
+      {name: 'description', content: 'Form to edit user Crowe family history journal entry, photo, title '},
+      {name: 'author', content: 'Ben Crowe / open-source code'},
+      {name: 'keywords', content: 'Genealogy, William, Crowe, Crow, Research, Family History'}
+
+    ]);
+    this.setTitle('Editing a Blog');
+   }
 
   ngOnInit(): void {
 
@@ -96,7 +107,10 @@ export class BlogEditComponent implements OnInit {
       photoDescription: null
     });
   }
-
+  
+  public setTitle(newTitle: string){
+    this.title.setTitle( newTitle);
+   }
   updateForm(blog: Blog){
     //had to add assertion operator onto blog.photoId(!)
     let photoDescription = this.getPhoto(blog.photoId!)?.description;

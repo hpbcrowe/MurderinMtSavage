@@ -4,6 +4,7 @@ import { BlogComment } from 'src/app/models/blog-comment/blog-comment';
 import { BlogCommentViewModel } from 'src/app/models/blog-comment/blog-comment-view-model';
 import { AccountService } from 'src/app/services/account.service';
 import { BlogCommentService } from 'src/app/services/blog-comment.service';
+import { Meta, Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-comments',
@@ -17,9 +18,22 @@ export class CommentsComponent implements OnInit {
   constructor(
     public accountService: AccountService,
     private toastr: ToastrService,
-    private blogCommentService: BlogCommentService
+    private blogCommentService: BlogCommentService,
+    private meta: Meta,
+    private title: Title
 
-  ) { }
+  ) { 
+    
+      this.meta.addTags([
+        {name: 'description', content: 'Crowequest Comment Page'},
+        {name: 'author', content: 'Ben Crowe / open-source code'},
+        {name: 'keywords', content: 'Genealogy, William, Crowe, Crow, Research, Family History'}
+
+      ]);
+      this.setTitle('Comment Section');
+   }
+
+  
 
   ngOnInit(): void {
   }
@@ -35,6 +49,10 @@ export class CommentsComponent implements OnInit {
   cancelDeleteConfirm(comment: BlogCommentViewModel){
     comment.deleteConfirm = false;
   }
+
+  public setTitle(newTitle: string){
+    this.title.setTitle( newTitle);
+   }
 
   /**
    * Delete Confirm

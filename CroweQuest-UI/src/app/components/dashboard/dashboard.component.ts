@@ -4,6 +4,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Blog } from 'src/app/models/blog/blog.model';
 import { AccountService } from 'src/app/services/account.service';
 import { BlogService } from 'src/app/services/blog.service';
+import { Meta, Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,9 +20,19 @@ export class DashboardComponent implements OnInit {
     private blogService: BlogService,
     private router: Router,
     private toastr: ToastrService,
-    public accountService: AccountService
+    public accountService: AccountService,
+    private meta: Meta,
+    private title: Title
     
-  ) { }
+  ) {
+    this.meta.addTags([
+      {name: 'description', content: 'Crowequest Home Page'},
+      {name: 'author', content: 'Ben Crowe / open-source code'},
+      {name: 'keywords', content: 'Genealogy, William, Crowe, Crow, Research, Family History'}
+
+    ]);
+    this.setTitle('Dashboard');
+   }
 
   ngOnInit(): void {
     this.userBlogs = [];
@@ -68,4 +79,8 @@ export class DashboardComponent implements OnInit {
   createBlog() {
     this.router.navigate([`/dashboard/-1`]);
   }
+
+  public setTitle(newTitle: string){
+    this.title.setTitle( newTitle);
+   }
 }

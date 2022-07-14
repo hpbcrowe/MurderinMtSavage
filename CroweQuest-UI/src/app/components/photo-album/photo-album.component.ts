@@ -11,6 +11,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Photo } from 'src/app/models/photo/photo.model';
 import { PhotoService } from 'src/app/services/photo.service';
 import { AccountService } from 'src/app/services/account.service';
+import { Meta, Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-photo-album',
@@ -29,8 +30,21 @@ export class PhotoAlbumComponent implements OnInit {
   constructor(
     private photoService: PhotoService,
     private toastr: ToastrService,
+    private meta: Meta,
+    private title: Title,
     public accountService: AccountService
-  ) { }
+    
+  ) { 
+    this.meta.addTags([
+      {name: 'description', content: 'Users Photo Album uploaded images displayed'},
+      {name: 'author', content: 'Ben Crowe / open-source code'},
+      {name: 'keywords', content: 'Genealogy, William, Crowe, Crow, Research, Family History'}
+
+    ]);
+    this.setTitle('Photo Album');
+   
+
+  }
 
   ngOnInit(): void {
     this.photoService.getByApplicationUserId().subscribe(userPhotos => {
@@ -71,6 +85,9 @@ export class PhotoAlbumComponent implements OnInit {
     }
   }
 
+  public setTitle(newTitle: string){
+    this.title.setTitle( newTitle);
+   }
   onSubmit() {
 
     const formData = new FormData();

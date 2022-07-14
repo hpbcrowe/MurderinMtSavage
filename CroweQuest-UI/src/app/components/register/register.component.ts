@@ -3,6 +3,7 @@ import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from
 import { Router } from '@angular/router';
 import { ApplicationUserCreate } from 'src/app/models/account/application-user-create.model';
 import { AccountService } from 'src/app/services/account.service';
+import { Meta, Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-register',
@@ -16,8 +17,19 @@ export class RegisterComponent implements OnInit {
   constructor(
     private accountService: AccountService,
     private router: Router,
-    private formBuilder: FormBuilder
-  ) { }
+    private formBuilder: FormBuilder,
+    private meta: Meta, 
+    private title: Title
+  ) {
+    this.meta.addTags([
+      {name: 'description', content: 'Register Page for Users requesting account'},
+      {name: 'author', content: 'Ben Crowe / open-source code'},
+      {name: 'keywords', content: 'Genealogy, William, Crowe, Crow, Research, Family History'}
+
+    ]);
+    this.setTitle('Register Component');
+
+   }
 
   ngOnInit(): void {
     this.registerForm = this.formBuilder.group({
@@ -77,7 +89,9 @@ export class RegisterComponent implements OnInit {
     return password === confirmPassword ? null : { isMatching: true };
   }
 
-  
+  public setTitle(newTitle: string){
+    this.title.setTitle( newTitle);
+   }  
 
   onSubmit(): void {
     let applicationUserCreate: ApplicationUserCreate = new ApplicationUserCreate(
