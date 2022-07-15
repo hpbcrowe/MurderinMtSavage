@@ -1,5 +1,6 @@
 <div class="card" style="width: 25rem;">
-    <img *ngIf="!!blogPhotoUrl" class="card-img-top img-fluid" src="{{blogPhotoUrl}}">
+    <img *ngIf="!!blogPhotoUrl" class="card-img-top img-fluid" src="{{blogPhotoUrl}}"
+    alt="{{blogAlt}}">
     <div class="card-body">
         <h4 class="card-title">
             {{blog.title}}

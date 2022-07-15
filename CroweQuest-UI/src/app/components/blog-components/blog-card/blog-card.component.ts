@@ -15,6 +15,7 @@ export class BlogCardComponent implements OnInit {
   @Input()  blog!: Blog;
 
   blogPhotoUrl!: string;
+  blogAlt!: string;
 
   constructor(
     private router: Router,
@@ -26,6 +27,8 @@ export class BlogCardComponent implements OnInit {
       this.photoService.get(this.blog.photoId).subscribe(photo => {
         if(!!photo){
           this.blogPhotoUrl = photo.imageUrl;
+          this.blogAlt = photo.description; 
+
         }
       })
     }

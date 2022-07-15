@@ -14,6 +14,7 @@ export class BlogComponent implements OnInit {
 
   blog!: Blog;
   blogPhotoUrl!: string;
+  blogAlt!: string;
   constructor(
     private route: ActivatedRoute,
     private blogService: BlogService,
@@ -44,6 +45,7 @@ export class BlogComponent implements OnInit {
       if(!!this.blog.photoId){
         this.photoService.get(this.blog.photoId).subscribe(photo => {
           this.blogPhotoUrl = photo.imageUrl;
+          this.blogAlt = photo.description; 
         });
       }
     });    

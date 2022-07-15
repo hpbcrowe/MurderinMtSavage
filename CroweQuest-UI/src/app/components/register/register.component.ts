@@ -27,7 +27,7 @@ export class RegisterComponent implements OnInit {
       {name: 'keywords', content: 'Genealogy, William, Crowe, Crow, Research, Family History'}
 
     ]);
-    this.setTitle('Register Component');
+    this.setTitle('Home Page/Register');
 
    }
 
