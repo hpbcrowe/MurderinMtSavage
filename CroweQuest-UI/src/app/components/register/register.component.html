@@ -5,7 +5,7 @@
 
     <div class="form-group">
 
-        
+       
         <input
             type="text"
             [ngClass]="{'is-invalid' : hasErrors('fullname') && isTouched('fullname'),
@@ -21,14 +21,15 @@
 
     <div class="form-group">
         
-       
+        
         <input
             type="text"
             [ngClass]="{'is-invalid' : hasErrors('username') && isTouched('username'),
                         'is-valid' : !hasErrors('username') && isTouched('username')}"
             class="form-control form-control-lg"
             formControlName="username"
-            placeholder="Username">
+            placeholder="Username"
+            >         
 
         <div *ngIf="hasError('username', 'required')" class="invalid-feedback">
             Username is required
@@ -37,11 +38,12 @@
         <div *ngIf="hasError('username', 'minlength') || hasError('username', 'maxlength')" class="invalid-feedback">
             Must be between 5-20 characters
         </div>
+      
     </div>
 
     <div class="form-group">
 
-      
+     
         <input
             type="text"
             [ngClass]="{'is-invalid' : hasErrors('email') && isTouched('email'),
@@ -49,7 +51,6 @@
             class="form-control form-control-lg"
             formControlName="email"
             placeholder="Email">
-
         <div *ngIf="hasError('email', 'required')" class="invalid-feedback">
             Email is required
         </div>
@@ -65,7 +66,7 @@
 
            
    <div class="form-group">
-            
+    <label for="lineOfDescent">Please enter your lineage from William F. Crowe 1793</label>
         <input
             type="text"
             [ngClass]="{'is-invalid' : hasErrors('lineOfDescent') && isTouched('lineOfDescent'),
@@ -83,14 +84,13 @@
 
 
     <div class="form-group">
-
         <input        
             type="password"
             [ngClass]="{'is-invalid' : hasErrors('password') && isTouched('password'),
                         'is-valid' : !hasErrors('password') && isTouched('password')}"
             class="form-control form-control-lg"
             formControlName="password"
-            placeholder="Password">
+            placeholder="Password" >
 
         <div *ngIf="hasError('password', 'required')" class="invalid-feedback">
             Password is required
@@ -104,7 +104,7 @@
     <div class="form-group">
 
        
-
+     
         <input
             type="password"
             [ngClass]="{'is-invalid' : 

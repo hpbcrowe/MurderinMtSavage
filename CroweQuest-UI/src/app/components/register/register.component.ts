@@ -5,6 +5,8 @@ import { ApplicationUserCreate } from 'src/app/models/account/application-user-c
 import { AccountService } from 'src/app/services/account.service';
 import { Meta, Title } from '@angular/platform-browser';
 
+
+
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
