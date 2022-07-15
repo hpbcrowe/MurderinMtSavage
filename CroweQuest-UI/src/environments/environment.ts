@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  webApi: "https://crowequestweb20220711194507.azurewebsites.net/api"
+ 
  
   
 };
