@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  webApi: "somehting"
+  webApi: "something"
  
   
 };
