@@ -14,10 +14,14 @@ namespace CroweQuest.Models.BlogComment
 {
     public class BlogCommentCreate
     {
+        //Property
         public int BlogCommentId { get; set; }
+
+        //Property ? means optional
         public int? ParentBlogCommentId { get; set; }
         public int BlogId { get; set; }
 
+        
         [Required(ErrorMessage = "Content is Required")]
         [MinLength(10, ErrorMessage = "At Least Ten Characters are Required")]
         [MaxLength(300, ErrorMessage = "No More Than Three Hundred Characters are Allowed")]

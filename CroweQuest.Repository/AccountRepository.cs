@@ -33,7 +33,7 @@ namespace CroweQuest.Repository
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            //Creating a virtual table to represent type in the database
+            //Creating a virtual table to represent a type in the database
             var dataTable = new DataTable();
             dataTable.Columns.Add("Username", typeof(string));
             dataTable.Columns.Add("NormalizedUsername", typeof(string));
@@ -95,9 +95,6 @@ namespace CroweQuest.Repository
                     "Account_GetByUsername", new { NormalizedUsername = normalizedUsername },
                     commandType: CommandType.StoredProcedure
                     );
-
-
-
             }
             // return application user loaded from database
             return applicationUser;
