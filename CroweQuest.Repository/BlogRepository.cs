@@ -214,6 +214,7 @@ namespace CroweQuest.Repository
 
             using (var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
             {
+
                 await connection.OpenAsync();
 
                 using (var multi = await connection.QueryMultipleAsync("Blog_GetAll",

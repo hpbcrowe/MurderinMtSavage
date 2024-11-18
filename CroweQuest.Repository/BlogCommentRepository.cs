@@ -35,7 +35,11 @@ namespace CroweQuest.Repository
                 await connection.OpenAsync();
 
                 affectedRows = await connection.ExecuteAsync(
+                    //BlogComment_Delete is the name of the stored procedure
                     "BlogComment_Delete",
+                    //blogCommentId is the parameter passed in 
+                    // need to load it into the blogcomment model object that has
+                    // a BlogCommentId Property ie getter and setter
                     new { BlogCommentId = blogCommentId },
                     commandType: CommandType.StoredProcedure);
 
@@ -54,7 +58,11 @@ namespace CroweQuest.Repository
                 //If something goes wrong with .net core Identity cancel
                 await connection.OpenAsync();
                 blogComments = await connection.QueryAsync<BlogComment>(
+                    //BlogComment_GetAll is the name of the stored procedure
                     "BlogComment_GetAll",
+                    //blogId is the parameter passed in 
+                    // need to load it into the blog comment model object that has
+                    // a BlogId Property ie getter and setter
                     new { BlogId = blogId },
                     commandType: CommandType.StoredProcedure);
 
@@ -77,6 +85,9 @@ namespace CroweQuest.Repository
                     //Call Blog Comment Stored Procedure
                     "BlogComment_Get",
                     //Insert the Blog Comment Id that was passed into the method
+                    //blogCommentId is the parameter passed in 
+                    // need to load it into the blogcomment model object that has
+                    // a BlogCommentId Property ie getter and setter
                     new { BlogCommentId = blogCommentId },
                     commandType: CommandType.StoredProcedure);
 
@@ -87,6 +98,8 @@ namespace CroweQuest.Repository
 
         public async Task<BlogComment> UpsertAsync(BlogCommentCreate blogCommentCreate, int applicationUserId)
         {
+            //Create a datatable and add the members of the blog comment create object created from
+            //the model blogcommentcreate
             var dataTable = new DataTable();
             dataTable.Columns.Add("BlogCommentId", typeof(int));
             dataTable.Columns.Add("ParentBlogCommentId", typeof(int));
@@ -113,6 +126,7 @@ namespace CroweQuest.Repository
                     "BlogComment_Upsert",
                     //Use the BlogComment type in the database to insert into the table
                     new { 
+                        // Notice passing in a type instead of the name of the stored procedure
                         BlogComment = dataTable.AsTableValuedParameter("dbo.BlogCommentType"),
                         ApplicationUserId = applicationUserId
 
