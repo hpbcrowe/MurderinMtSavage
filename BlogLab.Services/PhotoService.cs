@@ -33,8 +33,10 @@ namespace BlogLab.Services
                 {
                     var uploadParams = new ImageUploadParams
                     {
+                        //The following line is required by Cloudinary
                         File = new FileDescription(file.FileName, stream),
-                        //Transform the image to fit this project
+                        //Transform the image to fit this project, can provide different options
+                        //crop(fill) won't distort photo
                         Transformation = new Transformation().Height(300).Width(500).Crop("fill")
                     };
                     uploadResult = await _cloudinary.UploadAsync(uploadParams);
