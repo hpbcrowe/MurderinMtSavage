@@ -7,6 +7,14 @@ using System.Threading.Tasks;
 
 namespace CroweQuest.Identity
 {
+    /******************************************
+     * User store inherits from three interfaces
+     * iuserstore, iuseremailstore, and iuserpasswordstore
+     * Have to use these three interfaces if you want 
+     * to use Identity
+     * 
+     * ****************************************/
+
     public class UserStore :
         IUserStore<ApplicationUserIdentity>,
         IUserEmailStore<ApplicationUserIdentity>,
@@ -30,6 +38,7 @@ namespace CroweQuest.Identity
         //Microsoft Entity Framework ORM I wouldn't have to do this.
         public async Task<ApplicationUserIdentity> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
+            // Using the method built in the accountrepository getByUsernameAsync
             return await _accountRepository.GetByUsernameAsync(normalizedUserName, cancellationToken);
 
         }
@@ -54,6 +63,7 @@ namespace CroweQuest.Identity
 
         public Task<string> GetEmailAsync(ApplicationUserIdentity user, CancellationToken cancellationToken)
         {
+            //Return the email address for the user, this is a built in identity method
             return Task.FromResult(user.Email);
         }
 
