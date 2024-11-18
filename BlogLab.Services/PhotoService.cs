@@ -14,6 +14,7 @@ namespace BlogLab.Services
     {
         private readonly Cloudinary _cloudinary;
 
+        //The parameter Cloudinary Options comes from the model settings/ cloudinaryOptions
         public PhotoService(IOptions<CloudinaryOptions> config)
         {
             var account = new Account(config.Value.CloudName, config.Value.ApiKey, config.Value.ApiSecret);
