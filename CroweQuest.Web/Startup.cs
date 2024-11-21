@@ -26,7 +26,9 @@ namespace CroweQuest.Web
         public IConfiguration Configuration { get;}
         public Startup(IConfiguration config)
         {
-            //Clear defaults
+            //Clear() default claim types such as given name, gender and 
+            //We will creating our own: applicationUserId and username
+            //applicationUserId and username will be our own claim type and claim key
              JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
              Configuration = config;
         }
@@ -35,6 +37,17 @@ namespace CroweQuest.Web
        
 
         // This method gets called by the runtime. Use this method to add services to the container.
+        //
+        /**************************************************************
+         * CONFIGURE SERVICES METHOD
+         * Declaration of this method is not mandatory in startup class.
+         * This method is used to configure services that are used by the app.
+         * When the application is requested for the first time, it calls the Configure Services
+         * Method. This Method must be declared with a public access modifier. so that environment
+         * will be able to read the content from the metadata
+         * 
+         */
+      
         public void ConfigureServices(IServiceCollection services)
         {
             //Add Cloudinary service
@@ -52,17 +65,20 @@ namespace CroweQuest.Web
             services.AddScoped<IPhotoRepository, PhotoRepository>();
 
             //Hook into Asp.core Identity
-            services.AddIdentityCore<ApplicationUserIdentity>(opt =>
+            services.AddIdentityCore<ApplicationUserIdentity>(options =>
             {
                 //Don't require special characters
-                opt.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireNonAlphanumeric = false;
             })
                 .AddUserStore<UserStore>()
+
                 .AddDefaultTokenProviders()
                 .AddSignInManager<SignInManager<ApplicationUserIdentity>>();
             services.AddControllers();
+            //CORS
             services.AddCors();
-
+            //currently jwtbearer 3.1.10
+            //Creating data that will be used to create token
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -84,6 +100,7 @@ namespace CroweQuest.Web
                             ValidateIssuerSigningKey = true,
                             ValidIssuer = Configuration["Jwt:Issuer"],
                             ValidAudience = Configuration["Jwt:Issuer"],
+                            //See token service
                             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])),
                             ClockSkew = TimeSpan.Zero
                         };
@@ -92,6 +109,19 @@ namespace CroweQuest.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /**********************************************
+         * Configure Method:
+         * This method is used to define how the application will respond on each
+         * HTTP request. ie we can can control the ASP.net pipelin. This method is also used
+         * to configure middleware in HTTP pipeline
+         * This method accept IApplicationBuilder as a parameter.
+         * This method may accept some optional parameter such as Ihosting environment
+         * and Iloggerfactory (used for logging errors etc) When any service is added to configureservices method
+         * it is available to use in this method.
+         * ************************************/
+        //THE FOLLOWING ITEMS IN CONFIGURE ARE ALL MIDDLEWARE
+        // All of the app.UseDeveloperExceptionPage();  app.UseRouting();  app.UseAuthentication();
+        // MIDDLEWARE
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -127,10 +157,13 @@ namespace CroweQuest.Web
             }
             else
             {
+                //Might need to change the below 
+                //you need to provide it with the types of headers, origin or methods that we will allow
+                // to allow =>  app.UseCors(options => options.WithOrigins("https://ourwebsite.com"));
                 app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
             }
             
-
+            //Enable controllers use
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

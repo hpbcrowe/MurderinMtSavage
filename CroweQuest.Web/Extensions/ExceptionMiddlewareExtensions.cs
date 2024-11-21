@@ -24,12 +24,15 @@ namespace CroweQuest.Web.Extensions
                     if (contextFeature != null)
                     {
                         //IN production version log exceptions into database
+                        //this is where you would enter them into the database
+
                         await context.Response.WriteAsync(new ApiException()
                         {
                             StatusCode = context.Response.StatusCode,
-                            Message = "Internal Server Error"
+                            Message = "Internal Server Error From Middleware",
+                            stackTrace = contextFeature.Error.StackTrace
 
-                        }.ToString());
+                        }.ToString()); ;
                     }
                 });
             });
