@@ -5,6 +5,10 @@
  * Check to see if requested is logged in
  * then it will be sent from API
  * 
+ * INTERCEPTOR: TOOL FROM ANGULAR
+ * CAN HOOK INTO HTTP REQUEST AND CAN WRITE THINGS
+ * TO THE RESPONSE THIS CAN BE DONE GLOBALLY
+ * 
  */
 
 
