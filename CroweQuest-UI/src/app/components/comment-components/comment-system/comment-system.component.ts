@@ -1,18 +1,16 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { first } from 'rxjs/operators';
-import { BlogComment } from 'src/app/models/blog-comment/blog-comment';
-import { BlogCommentViewModel } from 'src/app/models/blog-comment/blog-comment-view-model';
+import { BlogComment } from 'src/app/models/blog-comment/blog-comment.model';
+import { BlogCommentViewModel } from 'src/app/models/blog-comment/blog-comment-view-model.model';
 import { AccountService } from 'src/app/services/account.service';
 import { BlogCommentService } from 'src/app/services/blog-comment.service';
-
 
 @Component({
   selector: 'app-comment-system',
   templateUrl: './comment-system.component.html',
-  styleUrls: ['./comment-system.component.css']
+  styleUrls: ['./comment-system.component.css'],
 })
 export class CommentSystemComponent implements OnInit {
-
   @Input() blogId!: number;
 
   standAloneComment!: BlogCommentViewModel;
@@ -22,11 +20,10 @@ export class CommentSystemComponent implements OnInit {
   constructor(
     private blogCommentService: BlogCommentService,
     public accountService: AccountService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    this.blogCommentService.getAll(this.blogId).subscribe(blogComments => {
-
+    this.blogCommentService.getAll(this.blogId).subscribe((blogComments) => {
       if (this.accountService.isLoggedIn()) {
         this.initComment(this.accountService.currentUserValue.username);
       }
@@ -34,12 +31,11 @@ export class CommentSystemComponent implements OnInit {
       this.blogComments = blogComments;
       this.blogCommentViewModels = [];
 
-      for (let i=0; i<this.blogComments.length; i++) {
+      for (let i = 0; i < this.blogComments.length; i++) {
         if (!this.blogComments[i].parentBlogCommentId) {
           this.findCommentReplies(this.blogCommentViewModels, i);
         }
       }
-
     });
   }
 
@@ -55,18 +51,20 @@ export class CommentSystemComponent implements OnInit {
       isEditable: false,
       deleteConfirm: false,
       isReplying: false,
-      comments: []
+      comments: [],
     };
   }
 
   /**Find comment replies
-   * 
-   * @param blogCommentViewModels 
-   * @param index 
+   *
+   * @param blogCommentViewModels
+   * @param index
    * This matches the source code
    */
-  findCommentReplies(blogCommentViewModels: BlogCommentViewModel[], index: number) {
-
+  findCommentReplies(
+    blogCommentViewModels: BlogCommentViewModel[],
+    index: number
+  ) {
     let firstElement = this.blogComments[index];
     let newComments: BlogCommentViewModel[] = [];
 
@@ -81,13 +79,15 @@ export class CommentSystemComponent implements OnInit {
       isEditable: false,
       deleteConfirm: false,
       isReplying: false,
-      comments: newComments
-    }
+      comments: newComments,
+    };
 
     blogCommentViewModels.push(commentViewModel);
 
-    for (let i=0; i<this.blogComments.length; i++) {
-      if (this.blogComments[i].parentBlogCommentId === firstElement.blogCommentId) {
+    for (let i = 0; i < this.blogComments.length; i++) {
+      if (
+        this.blogComments[i].parentBlogCommentId === firstElement.blogCommentId
+      ) {
         this.findCommentReplies(newComments, i);
       }
     }
@@ -96,7 +96,7 @@ export class CommentSystemComponent implements OnInit {
   /**
    * On Comment Saved
    * @param blogComment
-   * Matches source code 
+   * Matches source code
    */
   onCommentSaved(blogComment: BlogComment) {
     //Save as a view model
@@ -111,11 +111,10 @@ export class CommentSystemComponent implements OnInit {
       isEditable: false,
       deleteConfirm: false,
       isReplying: false,
-      comments: []
-    }
+      comments: [],
+    };
 
     //Add to view model
     this.blogCommentViewModels.unshift(commentViewModel);
   }
-
 }
