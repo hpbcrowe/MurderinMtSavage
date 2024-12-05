@@ -4,6 +4,10 @@
  * Verifies user is logged in....
  * Only allows logged in users to visit
  * certain endpoints.
+ * protects certain paths, only allows logged in users
+ * to view certain components
+ * true security should be on the back end
+ * (jwt tokens) 
  */
 
 import { Injectable } from '@angular/core';

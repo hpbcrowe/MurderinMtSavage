@@ -1,5 +1,15 @@
+/********
+ * SERVICES: WHERE YOU MAKE HTTP CALLS TO THE API SERVICE ON THE BACKEND
+ * PLACE WHERE YOU HAVE REUSABLE FUNCTIONALITY THAT YOUR COMPONENTS WILL
+ * USE, DOESN'T NECESSARILY HAVE TO HAVE AN HTTP CALL TO THE BACK END SERVICE.
+ * OBSERVABLES ARE ONLY FOR FE TO BE COMMUNICATION.
+ */
+
+
+
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+
 import { map } from 'rxjs/operators';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -14,6 +24,7 @@ export class AccountService {
 
   private currentUserSubject$: BehaviorSubject<ApplicationUser> 
 
+  //USING HTTP AS A DEPENDENCY
   constructor(
     private http: HttpClient
   ) {
@@ -29,7 +40,7 @@ export class AccountService {
       //Had to change ApplicationUser to type any to make errors go away in
       // map(user: ApplicationUser)
       map((user : ApplicationUser) => {
-
+//JSON.stringiy turns object into string
         if (user) {
           localStorage.setItem('croweQuest-currentUser', JSON.stringify(user));
           this.setCurrentUser(user);
@@ -38,6 +49,7 @@ export class AccountService {
       })
     )
    }
+
    register(model: ApplicationUserCreate) : Observable<ApplicationUser> {
     return this.http.post<ApplicationUser>(`${environment.webApi}/Account/register`, model).pipe(
       //Had to change ApplicationUser to type any to make errors go away in
