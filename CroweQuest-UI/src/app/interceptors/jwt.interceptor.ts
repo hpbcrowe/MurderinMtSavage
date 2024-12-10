@@ -7,6 +7,8 @@
  * 
  * INTERCEPTOR: TOOL FROM ANGULAR
  * CAN HOOK INTO HTTP REQUEST AND CAN WRITE THINGS
+ * OR MANIPULATE THE REQUEST
+ * ADD THINGS TO THE HEADER
  * TO THE RESPONSE THIS CAN BE DONE GLOBALLY
  * 
  */
@@ -39,6 +41,7 @@ export class JwtInterceptor implements HttpInterceptor {
 
     if(this.accountService.isLoggedIn() && isApiUrl){
       request = request.clone({
+        //ADD THE BEARER TOKEN TO THE HEADER
         setHeaders: {
           Authorization: `Bearer ${currentUser.token}` 
         }

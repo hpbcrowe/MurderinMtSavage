@@ -89,7 +89,7 @@ import { LoadingInterceptor } from './interceptors/loading.interceptor';
   //PROVIDERS ARE INJECTED SERVICES REQUIRED BY THE COMPONENTS DIRECTIVES OR PIPES IN THE CURRENT MODULE
   providers: [
     HttpClient,
-    //hook interceptors int app module
+    //hook interceptors int app module MULTI MEANS
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
