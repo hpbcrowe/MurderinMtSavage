@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -24,6 +24,7 @@ export class RegisterComponent implements OnInit {
     private router: Router,
     private formBuilder: FormBuilder,
     private meta: Meta,
+    private hoverBtn: ElementRef,
     private title: Title
   ) {
     this.meta.addTags([
@@ -93,6 +94,18 @@ export class RegisterComponent implements OnInit {
 
   hasError(field: string, error: string) {
     return !!this.registerForm.get(field)?.hasError(error);
+  }
+
+ 
+
+  mouseEnter() {
+    console.log('mouseEnter', this.hoverBtn.nativeElement);
+    this.hoverBtn.nativeElement.click();
+  }
+
+  mouseLeave() {
+    console.log('mouse leave :');
+    this.hoverBtn.nativeElement.click();
   }
 
   //Had to change Type FormGroup to AbstractControl, will need

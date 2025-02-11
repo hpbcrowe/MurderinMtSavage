@@ -12,6 +12,7 @@
       class="form-control form-control-lg"
       formControlName="fullname"
       placeholder="Full Name"
+      title="Please enter your full name."
     />
 
     <div
@@ -24,6 +25,32 @@
     </div>
   </div>
 
+  <div
+    class="form-group hotSauce"
+    (mouseenter)="mouseEnter()"
+    (mouseleave)="mouseLeave()"
+  >
+    <input
+      type="text"
+      [ngClass]="{
+        'is-invalid': hasErrors('lineOfDescent') && isTouched('lineOfDescent'),
+        'is-valid': !hasErrors('lineOfDescent') && isTouched('lineOfDescent')
+      }"
+      class="form-control form-control-lg"
+      formControlName="lineOfDescent"
+      placeholder="Line of Descent"
+      #hoverBtn
+      [popover]="
+        'Please enter your lineage from William F. Crowe 1793.  Example: William F. Crowe, Frederick G Crowe, Nathan Peter Crowe'
+      "
+      [outsideClick]="true"
+      position="absolute"
+      id="lineOfDescent"
+    />
+  </div>
+  <div *ngIf="hasError('lineOfDescent', 'minlength')" class="invalid-feedback">
+    Line of Descent Must Have at Least One Name.
+  </div>
   <div class="form-group">
     <input
       type="text"
@@ -34,6 +61,8 @@
       class="form-control form-control-lg"
       formControlName="username"
       placeholder="Username"
+      title="Please enter your username."
+      id="username"
     />
 
     <div *ngIf="hasError('username', 'required')" class="invalid-feedback">
@@ -60,6 +89,8 @@
       class="form-control form-control-lg"
       formControlName="email"
       placeholder="Email"
+      title="Please enter your email used for your account."
+      id="email"
     />
     <div *ngIf="hasError('email', 'required')" class="invalid-feedback">
       Email is required
@@ -75,32 +106,6 @@
   </div>
 
   <div class="form-group">
-   
-    <input
-      type="text"
-      [ngClass]="{
-        'is-invalid': hasErrors('lineOfDescent') && isTouched('lineOfDescent'),
-        'is-valid': !hasErrors('lineOfDescent') && isTouched('lineOfDescent')
-      }"
-      class="form-control form-control-lg"
-      formControlName="lineOfDescent"
-      placeholder="Line of Descent"
-      matTooltip="This is a test try hovering over it"
-      data-toggle="tooltip"
-      title="Please enter your lineage from William F. Crowe 1793"
-      
-
-    />
-
-    <div
-      *ngIf="hasError('lineOfDescent', 'minlength')"
-      class="invalid-feedback"
-    >
-      Line of Descent Must Have at Least One Name.
-    </div>
-  </div>
-
-  <div class="form-group">
     <input
       type="password"
       [ngClass]="{
@@ -110,6 +115,8 @@
       class="form-control form-control-lg"
       formControlName="password"
       placeholder="Password"
+      title="Please enter your password."
+      id="password"
     />
 
     <div *ngIf="hasError('password', 'required')" class="invalid-feedback">
@@ -141,6 +148,7 @@
       class="form-control form-control-lg"
       formControlName="confirmPassword"
       placeholder="Confirm Password"
+      title="Please re-enter your password to confirm it."
     />
 
     <div

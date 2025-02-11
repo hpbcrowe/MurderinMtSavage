@@ -20,10 +20,8 @@ import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 import { CarouselModule } from 'ngx-bootstrap/carousel';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { NgxSpinnerModule } from 'ngx-spinner';
-import { MatTooltipModule } from '@angular/material/tooltip';
-
-
-
+import { TooltipModule } from 'ngx-bootstrap/tooltip';
+import { PopoverModule, PopoverConfig } from 'ngx-bootstrap/popover';
 
 import { ToastrModule } from 'ngx-toastr';
 import { AppRoutingModule } from './app-routing.module';
@@ -49,7 +47,6 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { LoadingInterceptor } from './interceptors/loading.interceptor';
 
-
 //declarations are to declare components, pipes and directives in the current module
 @NgModule({
   declarations: [
@@ -70,7 +67,6 @@ import { LoadingInterceptor } from './interceptors/loading.interceptor';
     NotFoundComponent,
     PhotoAlbumComponent,
     RegisterComponent,
-    
   ],
 
   //IMPORTS are to import custom modules into the app
@@ -79,10 +75,10 @@ import { LoadingInterceptor } from './interceptors/loading.interceptor';
     AppRoutingModule,
     BrowserAnimationsModule,
     HttpClientModule,
-    FormsModule,    
+    FormsModule,
     ReactiveFormsModule,
     NgxSpinnerModule,
-    MatTooltipModule,
+    PopoverModule,
     ToastrModule.forRoot({
       positionClass: 'toast-bottom-right',
     }),
@@ -91,7 +87,9 @@ import { LoadingInterceptor } from './interceptors/loading.interceptor';
     TypeaheadModule.forRoot(),
     CarouselModule.forRoot(),
     PaginationModule.forRoot(),
+    TooltipModule.forRoot(),
     
+
   ],
 
   //PROVIDERS ARE INJECTED SERVICES REQUIRED BY THE COMPONENTS DIRECTIVES OR PIPES IN THE CURRENT MODULE

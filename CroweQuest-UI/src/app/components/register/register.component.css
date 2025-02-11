@@ -1,0 +1,23 @@
+/* this code was changing the background color behind the tooltip */
+/*:host ::ng-deep .bs-popover-top {
+
+ margin: 50px;
+ margin-top: 140px;
+ z-index: 10002 !important;
+}
+*/
+
+.popover-inner {
+  background-color: pink !important;
+}
+
+
+
+.hotSauce {
+  background: none;
+ 
+  
+}
+
+
+
