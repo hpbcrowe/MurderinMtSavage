@@ -84,7 +84,7 @@
                         <small class="form-text text-muted" id="fileHelp">Max 10mb size</small>
                 </div>
 
-                <button class="btn btn-primary" >
+                <button class="btn btn-primary" [disabled]="!photoFile || !photoForm.valid" >
                     Upload Image
                 </button>
             </div>
