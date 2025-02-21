@@ -1,20 +1,30 @@
-<div class="card" style="width: 25rem;">
-    <img *ngIf="!!blogPhotoUrl" class="card-img-top img-fluid" src="{{blogPhotoUrl}}"
-    alt="{{blogAlt}}">
-    <div class="card-body">
-        <h4 class="card-title">
-            {{blog.title}}
-        </h4>
+<div class="card" style="width: 25rem">
+  <img
+    *ngIf="!!blogPhotoUrl"
+    class="card-img-top img-fluid"
+    src="{{ blogPhotoUrl }}"
+    alt="{{ blogAlt }}"
+  />
+  <!--BLOG CARD COMPONENT IS THE CARD WHERE A SUMMARY OF EACH BLOG IS DISPLAYED IN CARD FORM THIS IS USED IN THE
+ FAMOUS BLOGS COMPONENT AND THE BLOGS COMPONENT WHERE ALL OF THE BLOGS ON THE APP ARE DISPLAYED-->
+  <div class="card-body">
+    <h4 class="card-title">
+      {{ blog.title }}
+    </h4>
 
-        <p class="card-text" *ngIf="!!blogPhotoUrl">{{blog.content | summary:100}}</p>
+    <p class="card-text" *ngIf="!!blogPhotoUrl">
+      {{ blog.content | summary : 100 }}
+    </p>
 
-        <p class="card-text" *ngIf="!blogPhotoUrl">{{blog.content | summary:300}}</p>
+    <p class="card-text" *ngIf="!blogPhotoUrl">
+      {{ blog.content | summary : 650 }}
+    </p>
 
-        <button class="btn btn-xs text-white bg-dark" (click)="readMore(blog.blogId)">
-            Read More
-        </button>
-
-    </div>
+    <button
+      class="btn btn-xs text-white bg-dark"
+      (click)="readMore(blog.blogId)"
+    >
+      Read More
+    </button>
+  </div>
 </div>
-
-

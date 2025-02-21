@@ -25,6 +25,7 @@ export class BlogCardComponent implements OnInit {
   ngOnInit(): void {
     if(!!this.blog.photoId){
       this.photoService.get(this.blog.photoId).subscribe(photo => {
+        //if photo exists then load the imageUrl into the variable created in this service.
         if(!!photo){
           this.blogPhotoUrl = photo.imageUrl;
           this.blogAlt = photo.description; 

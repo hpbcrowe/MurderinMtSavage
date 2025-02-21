@@ -44,6 +44,10 @@ export class CommentBoxComponent implements OnInit {
 
   ngOnInit(): void {}
 
+  /**
+   * resetComment()
+   * resests coment form
+   */
   resetComment() {
     this.commentForm.reset();
   }
@@ -55,6 +59,7 @@ export class CommentBoxComponent implements OnInit {
   /**
    * onSubmit
    * This matches the source code.
+   * this is the function called by the submit button
    */
   onSubmit() {
     let blogCommentCreate: BlogCommentCreate = {
@@ -67,7 +72,7 @@ export class CommentBoxComponent implements OnInit {
     this.blogCommentService
       .create(blogCommentCreate)
       .subscribe((blogComment) => {
-        this.toastr.info('Comment Saved.');
+        this.toastr.info(` ${blogComment.username}'s Comment Saved. `);
         this.resetComment();
         this.commentSaved.emit(blogComment);
       });

@@ -3,7 +3,7 @@
         <h1 class="display-4 mt-5">{{ accountService.currentUserValue.username }}'s Photo Album</h1>
     </div>
 
-    <div class="mt-4" [ngClass]="{'photo-album-empty': photos.length === 0}">
+    <div class="mt-4 d-lg-flex justify-content-center" [ngClass]="{'photo-album-empty': photos.length === 0}">
         <ng-template [ngIf]="photos.length > 0" [ngIfElse]="nophotos">
             <carousel [pauseOnFocus]="true">
                 <slide *ngFor="let photo of photos">

@@ -32,12 +32,20 @@ export class CommentSystemComponent implements OnInit {
       this.blogCommentViewModels = [];
 
       for (let i = 0; i < this.blogComments.length; i++) {
+        //if the comment has a parent id then that means it is a reply
         if (!this.blogComments[i].parentBlogCommentId) {
+          // call the find comment replies function which is recursive to find all of the replies to that 
+          // reply
           this.findCommentReplies(this.blogCommentViewModels, i);
         }
       }
     });
   }
+
+/** initComment
+ * empy comment that is going to be initialized
+ * @param username 
+ */
 
   initComment(username: string) {
     this.standAloneComment = {
@@ -82,12 +90,19 @@ export class CommentSystemComponent implements OnInit {
       comments: newComments,
     };
 
+    //Push the commentviewmodel we just initialized above onto the 
+    //blogcommentviewmodels from line 18
     blogCommentViewModels.push(commentViewModel);
 
+    // loop through all blog comments
+  
     for (let i = 0; i < this.blogComments.length; i++) {
       if (
+        //if comments [current one]'s parent id is equal to the first element's id then
+        // the current one [the comment] is a reply to the first element
         this.blogComments[i].parentBlogCommentId === firstElement.blogCommentId
       ) {
+        //call this same function {recursion} to find the replies of the reply
         this.findCommentReplies(newComments, i);
       }
     }

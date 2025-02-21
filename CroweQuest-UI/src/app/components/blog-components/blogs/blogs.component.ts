@@ -30,11 +30,12 @@ export class BlogsComponent implements OnInit {
     this.setTitle('Crowe Genealogy Blogs');
 
   }
-
+//ngOnInit calls the loadPagedBlogResult it will go to the first page and display 6 items
   ngOnInit(): void {
     this.loadPagedBlogResult(1,6);
   }
 
+// this will be called when the page is changed page 2, page 3 etc  
   pageChanged(event: PageChangedEvent): void {
     this.loadPagedBlogResult(event.page, event.itemsPerPage);
   }

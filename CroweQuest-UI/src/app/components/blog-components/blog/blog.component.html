@@ -1,24 +1,31 @@
-
 <!-- ngIf !!blog means if blog exists -->
 <div class="container" *ngIf="!!blog">
+  <!--BLOG COMPONENT IS THE COMPONENT THAT IS USED TO DISPLAY A SINGLE BLOGG AND ITS COMMENTS YOU CAN VIEW 
+    THIS LOGGED IN OR NOT LOGGED IN-->
 
-    <div class="d-flex justify-content-center">
-        <h1 class="display-4 mt-5 text-center">{{blog.title}}</h1>
-    </div>
+  <div class="d-flex justify-content-center">
+    <h1 class="display-4 mt-5 text-center">{{ blog.title }}</h1>
+  </div>
 
-    <div class="d-flex justify-content-center mt-4">
-        <h6>Written by {{blog.username}} - {{blog.publishDate | date:'medium'}}
-            <span *ngIf="blog.publishDate !== blog.updateDate"> | Updated on {{blog.updateDate | date:'medium'}}</span>
-        </h6>
-    </div>
+  <div class="d-flex justify-content-center mt-4">
+    <h6>
+      Written by {{ blog.username }} - {{ blog.publishDate | date : "medium" }}
+      <span *ngIf="blog.publishDate !== blog.updateDate">
+        | Updated on {{ blog.updateDate | date : "medium" }}</span
+      >
+    </h6>
+  </div>
 
-    <div class="mt-4 justify-content-center">
-        <img src="{{blogPhotoUrl}}" class="blog-image img-fluid text-wrapper" alt="{{blogAlt}}">
-        <p class="blog-content">
-            {{blog.content}}
-        </p>
-    </div>
+  <div class="mt-4 justify-content-center">
+    <img
+      src="{{ blogPhotoUrl }}"
+      class="blog-image img-fluid text-wrapper"
+      alt="{{ blogAlt }}"
+    />
+    <p class="blog-content">
+      {{ blog.content }}
+    </p>
+  </div>
 
-    <app-comment-system *ngIf="blog" [blogId]="blog.blogId"></app-comment-system>
-
+  <app-comment-system *ngIf="blog" [blogId]="blog.blogId"></app-comment-system>
 </div>

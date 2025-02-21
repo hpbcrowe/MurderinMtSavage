@@ -34,18 +34,40 @@ export class CommentsComponent implements OnInit {
 
   ngOnInit(): void {}
 
+  /**
+   * SETS FLAG TO BE ABLE TO EDIT A COMENT TO TREU
+   * @param comment BLOGCOMENTVIEWODEL
+   */
+
   editComment(comment: BlogCommentViewModel) {
     comment.isEditable = true;
   }
 
+  /**
+   *
+   * @param comment BLOGCOMMENTVIEWMODEL
+   * SETS FLAG TO CONFIRM THAT THEY WANT TO DELETE THE COMMENT
+   * TO TRUE
+   */
   showDeleteConfirm(comment: BlogCommentViewModel) {
     comment.deleteConfirm = true;
   }
 
+  /**
+   *
+   *
+   * @param comment  BLOGCOMMENTVIEWMODEL
+   * SETS THE FLAG TO CONFIRM THE DELETE TO FALSE
+   */
   cancelDeleteConfirm(comment: BlogCommentViewModel) {
     comment.deleteConfirm = false;
   }
 
+  /**
+   *
+   * @param newTitle STRING
+   * SETS THE TITLE OF THE PAGE FOR THE META,
+   */
   public setTitle(newTitle: string) {
     this.title.setTitle(newTitle);
   }
@@ -70,7 +92,10 @@ export class CommentsComponent implements OnInit {
           index = i;
         }
       }
+      //IF INDEX IS GREATER THAN -1 THAT MEANS THERE WAS A COMMENT
       if (index > -1) {
+        //SPLICE CUTS THE VALUE AT THAT INDEX OUT OF THE ARRAY OR LIST, THE SECOND PARAMETER
+        //IS HOW MANY VALUES TO CUT OUT
         comments.splice(index, 1);
       }
 
@@ -105,8 +130,8 @@ export class CommentsComponent implements OnInit {
 
   /**
    * onCommentSaved
-   * @param blogComment
-   * @param comment
+   * @param blogComment BLOGCOMMENTVIEWMODEL
+   * @param comment BLOGCOMMENT 
    * This matches the source code
    */
 
