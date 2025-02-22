@@ -74,12 +74,25 @@ export class AccountService {
     return this.currentUserSubject$.value;
    }
 
+   /**
+    * givenUserIsLoggedIn()
+    * @param username string
+    * @returns bool if user is logged in and it is the user that was passed into
+    * the function givenUserIsLoggedIn
+    */
    public givenUserIsLoggedIn(username: string){
     return this.isLoggedIn() && this.currentUserValue.username === username;
 
    }
   
-   public isLoggedIn() {
+   /**
+    * isLoggedIn()
+    *  checks to see if current user is logged in
+    * can be any user not just user that has access to that page
+    * @returns bool isLoggedIn
+    */
+
+    public isLoggedIn() {
     const currentUser = this.currentUserValue;
       //Taken from JWT Interceptor 
       //If there is a user and they are logged in

@@ -115,6 +115,7 @@ export class CommentsComponent implements OnInit {
       parentBlogCommentId: comment.blogCommentId,
       content: '',
       blogId: comment.blogId,
+      //-1 means this is new there isnt a coment. 0 would be the first comment
       blogCommentId: -1,
       username: this.accountService.currentUserValue.username,
       publishDate: new Date(),

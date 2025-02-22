@@ -14,7 +14,9 @@
         >
           {{ comment.content }}
         </blockquote>
-
+        
+<!-- oncomentSaved($event, comment) $event is the current comment and comment
+  is the comment view model-->
         <app-comment-box
           *ngIf="
             (comment.isEditable &&
@@ -78,9 +80,11 @@
         </div>
       </div>
     </div>
-
-    <app-comments
-      [comments]="comment.comments"
+<!-- recursive component is passing component into itself
+ [comments is the component and it is taking in comment.comments the same type/object]
+ nested replies one within the other take in the comment and look for its comment on so on-->
+    <app-comments   
+          [comments]="comment.comments"
       *ngIf="comment.comments"
     ></app-comments>
   </div>
