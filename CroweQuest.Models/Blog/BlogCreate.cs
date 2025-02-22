@@ -50,8 +50,8 @@ namespace CroweQuest.Models.Blog
         public string Title { get; set; }
 
         [Required(ErrorMessage = "Content is required")]
-        [MinLength(300, ErrorMessage = "At Least Three Hundred Characters are Required")]
-        [MaxLength(5000, ErrorMessage = "Must be 300-5000 characters")]
+        [MinLength(50, ErrorMessage = "At Least fifty Characters are Required")]
+        [MaxLength(5000, ErrorMessage = "Must be 50-5000 characters")]
         public string Content { get; set; }
 
         public int? PhotoId { get; set; }
