@@ -253,6 +253,9 @@ namespace CroweQuest.Repository
         {
             IEnumerable<Blog> famousBlogs;
 
+             string connectionSTring = _config.GetConnectionString("DefaultConnection");
+            Console.WriteLine("**********************  " + connectionSTring + "   *****************");
+
             using (var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
             {
                 await connection.OpenAsync();
