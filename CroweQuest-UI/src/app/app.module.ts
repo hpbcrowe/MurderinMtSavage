@@ -1,22 +1,27 @@
 /*****
  * App.Module
- * This is like the Startup.CS 
+ * This is like the Startup.CS
  * for Angular
  * This is where everything is bundled up so the
  * App knows about them.
  */
 
-
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpClientModule,
+  HTTP_INTERCEPTORS,
+} from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { CollapseModule } from 'ngx-bootstrap/collapse';
 import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 import { CarouselModule } from 'ngx-bootstrap/carousel';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
-
+import { NgxSpinnerModule } from 'ngx-spinner';
+import { TooltipModule } from 'ngx-bootstrap/tooltip';
+import { PopoverModule, PopoverConfig } from 'ngx-bootstrap/popover';
 
 import { ToastrModule } from 'ngx-toastr';
 import { AppRoutingModule } from './app-routing.module';
@@ -40,9 +45,9 @@ import { PhotoAlbumComponent } from './components/photo-album/photo-album.compon
 import { RegisterComponent } from './components/register/register.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
+import { LoadingInterceptor } from './interceptors/loading.interceptor';
 
-
-
+//declarations are to declare components, pipes and directives in the current module
 @NgModule({
   declarations: [
     AppComponent,
@@ -61,8 +66,10 @@ import { ErrorInterceptor } from './interceptors/error.interceptor';
     NavbarComponent,
     NotFoundComponent,
     PhotoAlbumComponent,
-    RegisterComponent
+    RegisterComponent,
   ],
+
+  //IMPORTS are to import custom modules into the app
   imports: [
     BrowserModule,
     AppRoutingModule,
@@ -70,21 +77,29 @@ import { ErrorInterceptor } from './interceptors/error.interceptor';
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
+    NgxSpinnerModule,
+    PopoverModule,
     ToastrModule.forRoot({
-      positionClass: 'toast-bottom-right'
+      positionClass: 'toast-bottom-right',
     }),
     BsDropdownModule.forRoot(),
     CollapseModule.forRoot(),
     TypeaheadModule.forRoot(),
     CarouselModule.forRoot(),
-    PaginationModule.forRoot()
+    PaginationModule.forRoot(),
+    TooltipModule.forRoot(),
+    
+
   ],
+
+  //PROVIDERS ARE INJECTED SERVICES REQUIRED BY THE COMPONENTS DIRECTIVES OR PIPES IN THE CURRENT MODULE
   providers: [
     HttpClient,
-    //hook interceptors int app module
+    //hook interceptors int app module MULTI MEANS
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

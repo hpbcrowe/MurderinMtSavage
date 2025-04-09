@@ -4,6 +4,10 @@
  * Verifies user is logged in....
  * Only allows logged in users to visit
  * certain endpoints.
+ * protects certain paths, only allows logged in users
+ * to view certain components
+ * true security should be on the back end
+ * (jwt tokens) 
  */
 
 import { Injectable } from '@angular/core';
@@ -35,6 +39,7 @@ export class AuthGuard implements CanActivate {
       //(Per Angular Docs)
       //Had to change to this from 
       //this.router.navigate['/']
+      //return to home page if not logged in
       this.router.navigate(['/']);
       return false;
   }

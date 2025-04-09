@@ -7,13 +7,24 @@
 <!-- * * * * * * * to get started with your project! * * * * * * * * -->
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 
+<ngx-spinner
+  bdColor="rgba(255,255,255,0)"
+  size="large"
+  color="#333333"
+  type="ball-scale-multiple"
+>
+  <h2 class="text-center">CroweQuest Loading...</h2>
+</ngx-spinner>
+
 <app-navbar></app-navbar>
 
 <div class="content">
-    <router-outlet></router-outlet>
+  <router-outlet></router-outlet>
 </div>
 <footer class="footer">
-    <div class="container">
-        <span class="text-muted"> &copy; <span id="year">2022</span> Crow(e)Quest - All rights reserved. </span>
-    </div>
+  <div class="container">
+    <span class="text-dark">
+      &copy; <span id="year">2022</span> Crow(e)Quest - All rights reserved.
+    </span>
+  </div>
 </footer>
