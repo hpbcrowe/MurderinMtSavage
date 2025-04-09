@@ -1,4 +1,5 @@
 {
     "appService.defaultWebAppToDeploy": "/subscriptions/8cee710d-5a53-4483-848f-eaf4cd32ab5f/microsoft.web/sites/subscriptions/8cee710d-5a53-4483-848f-eaf4cd32ab5f/resourceGroups/SeniorProject/providers/Microsoft.Web/sites/CroweQuestStretch",
-    "appService.deploySubpath": "CroweQuest-UI\\dist\\crowe-quest-ui"
+    "appService.deploySubpath": "CroweQuest-UI\\dist\\crowe-quest-ui",
+    "appService.showBuildDuringDeployPrompt": false
 }

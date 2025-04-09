@@ -82,8 +82,8 @@ namespace CroweQuest.Repository
         {
             IEnumerable<Blog> famousBlogs;
 
-             string connectionSTring = _config.GetConnectionString("DefaultConnection");
-            Console.WriteLine("**********************  " + connectionSTring + "   *****************");
+            //string connectionSTring = _config.GetConnectionString("DefaultConnection");
+            //Console.WriteLine("**********************  " + connectionSTring + "   *****************");
 
             using (var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
             {
@@ -95,6 +95,8 @@ namespace CroweQuest.Repository
                     commandType: CommandType.StoredProcedure);
             }
 
+
+        
             return famousBlogs.ToList();
         }
 
