@@ -123,12 +123,12 @@ namespace CroweQuest.Web
              //was after UseAuthorization()
             if (env.IsDevelopment())
             {
-                app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
-            }
-            else
-            {
-                app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
-            }
+                 app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+             }
+             else
+             {
+                 app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+             }
             
 
             app.UseEndpoints(endpoints =>

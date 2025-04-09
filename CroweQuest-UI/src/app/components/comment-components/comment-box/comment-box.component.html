@@ -1,43 +1,45 @@
-<form #commentForm="ngForm" (ngSubmit)="onSubmit()" >
-    
-        <div class="form-group">
-            
-                <textarea
-                    name="commentContent"
-                    #userCommentContent="ngModel"
-                    [(ngModel)]="comment.content"
-                    [ngClass]="{'is-invalid' : userCommentContent.errors && userCommentContent.touched}"
-                    placeholder="Leave a Comment"
-                    class="form-control mb-3"
-                    rows="3"
-                    required
-                    minlength="10"
-                    maxlength="300"
-                    ></textarea>
+<form #commentForm="ngForm" (ngSubmit)="onSubmit()">
+  <!--Coment box is the component where coments can be added it is a text area input-->
+  <div class="form-group">
+    <textarea
+      name="commentContent"
+      #userCommentContent="ngModel"
+      [(ngModel)]="comment.content"
+      [ngClass]="{
+        'is-invalid': userCommentContent.errors && userCommentContent.touched
+      }"
+      placeholder="Leave a Comment"
+      class="form-control mb-3"
+      rows="3"
+      required
+      minlength="10"
+      maxlength="300"
+    ></textarea>
 
-                <div *ngIf="!!userCommentContent.errors?.['required']" class="invalid-feedback">
-                    Please Enter a Comment Before Saving
-                </div>
+    <div
+      *ngIf="!!userCommentContent.errors?.['required']"
+      class="invalid-feedback"
+    >
+      Please Enter a Comment Before Saving
+    </div>
 
-                <div *ngIf="!!userCommentContent.errors?.['minlength']" class="invalid-feedback">
-                    Must be between 10-300 characters
-                </div>
-            
+    <div
+      *ngIf="!!userCommentContent.errors?.['minlength']"
+      class="invalid-feedback"
+    >
+      Must be between 10-300 characters
+    </div>
+  </div>
 
-         </div>
+  <button
+    type="submit"
+    class="btn btn-sm btn-primary mr-1"
+    [disabled]="!commentForm.form.valid"
+  >
+    Save
+  </button>
 
-         <button
-            type="submit"
-            class="btn btn-sm btn-primary mr-1"
-            [disabled]="!commentForm.form.valid">
-            Save
-         </button>
-
-         <button
-            type="reset"
-            class="btn btn-sm btn-danger"
-            (click)="resetComment()">
-            Reset    
-        </button>
-      
+  <button type="reset" class="btn btn-sm btn-danger" (click)="resetComment()">
+    Reset
+  </button>
 </form>

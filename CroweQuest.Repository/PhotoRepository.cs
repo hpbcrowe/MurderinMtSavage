@@ -130,6 +130,7 @@ namespace CroweQuest.Repository
     public class PhotoRepository : IPhotoRepository
     {
         private readonly IConfiguration _config;
+        
 
         public PhotoRepository(IConfiguration config)
         {
@@ -139,9 +140,12 @@ namespace CroweQuest.Repository
         public async Task<int> DeleteAsync(int photoId)
         {
             int affectedRows = 0;
+            string connectionSTring = _config.GetConnectionString("DefaultConnection");
+            Console.WriteLine("**********************  " + connectionSTring + "   *****************");
 
             using (var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
             {
+                
                 await connection.OpenAsync();
 
                 affectedRows = await connection.ExecuteAsync(

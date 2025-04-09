@@ -93,7 +93,8 @@ namespace CroweQuest.Repository
             dataTable.Columns.Add("BlogId", typeof(int));
             dataTable.Columns.Add("Content", typeof(string));
 
-            //Insert the fields passed into the method into the BlogComment Data Table
+           
+           //Insert the fields passed into the method into the BlogComment Data Table
             dataTable.Rows.Add(
                 blogCommentCreate.BlogCommentId,
                 blogCommentCreate.ParentBlogCommentId, 
