@@ -6,6 +6,11 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 /appsettings.json
+
+# Sensitive app configuration
+/CroweQuest.Web/appsettings.json
+/CroweQuest-UI/src/environments/environment.ts
+/CroweQuest-UI/src/environments/environment.prod.ts
 ###  Angular files
 /.angular/cache
 

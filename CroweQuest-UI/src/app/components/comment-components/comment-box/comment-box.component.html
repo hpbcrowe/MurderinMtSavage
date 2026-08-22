@@ -13,8 +13,13 @@
       rows="3"
       required
       minlength="10"
-      maxlength="300"
+      [attr.maxlength]="maxLength"
+      (input)="onCommentInput($any($event.target).value)"
     ></textarea>
+
+    <div class="comment-counter" [class.warning]="remainingCharacters <= 30">
+      {{ remainingCharacters }} characters left
+    </div>
 
     <div
       *ngIf="!!userCommentContent.errors?.['required']"

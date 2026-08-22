@@ -1,0 +1,10 @@
+.comment-counter {
+    color: #6c757d;
+    margin: -0.5rem 0 0.75rem;
+    font-size: 0.85rem;
+}
+
+.comment-counter.warning {
+    color: #dc3545;
+    font-weight: 600;
+}
