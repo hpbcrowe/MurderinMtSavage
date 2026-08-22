@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +16,10 @@ namespace CroweQuest.Web.Extensions
     {
         public static void ConfigureExceptionHandler(this IApplicationBuilder app)
         {
+            var env = app.ApplicationServices.GetService(typeof(IHostEnvironment)) as IHostEnvironment;
+            var loggerFactory = app.ApplicationServices.GetService(typeof(ILoggerFactory)) as ILoggerFactory;
+            var logger = loggerFactory?.CreateLogger("GlobalException");
+
             app.UseExceptionHandler(appError =>
             {
                 appError.Run(async context =>
@@ -23,11 +29,23 @@ namespace CroweQuest.Web.Extensions
                     var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
                     if (contextFeature != null)
                     {
-                        //IN production version log exceptions into database
+                        logger?.LogError(
+                            contextFeature.Error,
+                            "Unhandled exception for {Method} {Path}. TraceId: {TraceId}",
+                            context.Request.Method,
+                            context.Request.Path,
+                            context.TraceIdentifier);
+
+                        bool includeDetails = env != null && env.IsDevelopment();
+
                         await context.Response.WriteAsync(new ApiException()
                         {
                             StatusCode = context.Response.StatusCode,
-                            Message = "Internal Server Error"
+                            Message = includeDetails ? contextFeature.Error.Message : "Internal Server Error",
+                            Path = context.Request.Path,
+                            TraceId = context.TraceIdentifier,
+                            Source = contextFeature.Error.Source,
+                            Detail = includeDetails ? contextFeature.Error.ToString() : null
 
                         }.ToString());
                     }

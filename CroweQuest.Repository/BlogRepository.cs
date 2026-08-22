@@ -14,20 +14,72 @@ namespace CroweQuest.Repository
     public class BlogRepository : IBlogRepository
     {
         private readonly IConfiguration _config;
+        private const int MaxOpenAttempts = 3;
 
         public BlogRepository(IConfiguration config)
         {
             _config = config;
         }
 
+        private static bool IsTransientSqlException(SqlException ex)
+        {
+            foreach (SqlError error in ex.Errors)
+            {
+                switch (error.Number)
+                {
+                    case 64:    // A connection was successfully established with the server, but then an error occurred during login process.
+                    case 233:   // The client was unable to establish a connection.
+                    case 4060:  // Cannot open database requested by the login.
+                    case 40197: // The service has encountered an error processing your request.
+                    case 40501: // The service is currently busy.
+                    case 40613: // Database is not currently available.
+                    case 49918:
+                    case 49919:
+                    case 49920:
+                    case 10053:
+                    case 10054:
+                    case 10060:
+                    case 10928:
+                    case 10929:
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private async Task<SqlConnection> CreateOpenConnectionAsync()
+        {
+            for (var attempt = 1; attempt <= MaxOpenAttempts; attempt++)
+            {
+                var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+
+                try
+                {
+                    await connection.OpenAsync();
+                    return connection;
+                }
+                catch (SqlException ex) when (IsTransientSqlException(ex) && attempt < MaxOpenAttempts)
+                {
+                    connection.Dispose();
+                    await Task.Delay(TimeSpan.FromSeconds(attempt * 2));
+                }
+                catch
+                {
+                    connection.Dispose();
+                    throw;
+                }
+            }
+
+            throw new InvalidOperationException("Unable to open SQL connection after retry attempts.");
+        }
+
         public async Task<int> DeleteAsync(int blogId)
         {
             int affectedRows = 0;
 
-            using (var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
+            using (var connection = await CreateOpenConnectionAsync())
             {
-                await connection.OpenAsync();
-
                 affectedRows = await connection.ExecuteAsync(
                     "Blog_Delete",
                     new { BlogId = blogId },
@@ -41,15 +93,14 @@ namespace CroweQuest.Repository
         {
             var results = new PagedResults<Blog>();
 
-            using (var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
+            using (var connection = await CreateOpenConnectionAsync())
             {
-                await connection.OpenAsync();
-
                 using (var multi = await connection.QueryMultipleAsync("Blog_GetAll",
-                    new { 
+                    new
+                    {
                         Offset = (blogPaging.Page - 1) * blogPaging.PageSize,
                         PageSize = blogPaging.PageSize
-                    }, 
+                    },
                     commandType: CommandType.StoredProcedure))
                 {
                     results.Items = multi.Read<Blog>();
@@ -65,10 +116,8 @@ namespace CroweQuest.Repository
         {
             IEnumerable<Blog> blogs;
 
-            using (var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
+            using (var connection = await CreateOpenConnectionAsync())
             {
-                await connection.OpenAsync();
-
                 blogs = await connection.QueryAsync<Blog>(
                     "Blog_GetByUserId",
                     new { ApplicationUserId = applicationUserId },
@@ -85,10 +134,8 @@ namespace CroweQuest.Repository
             //string connectionSTring = _config.GetConnectionString("DefaultConnection");
             //Console.WriteLine("**********************  " + connectionSTring + "   *****************");
 
-            using (var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
+            using (var connection = await CreateOpenConnectionAsync())
             {
-                await connection.OpenAsync();
-
                 famousBlogs = await connection.QueryAsync<Blog>(
                     "Blog_GetAllFamous",
                     new { },
@@ -96,7 +143,7 @@ namespace CroweQuest.Repository
             }
 
 
-        
+
             return famousBlogs.ToList();
         }
 
@@ -104,10 +151,8 @@ namespace CroweQuest.Repository
         {
             Blog blog;
 
-            using (var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
+            using (var connection = await CreateOpenConnectionAsync())
             {
-                await connection.OpenAsync();
-
                 blog = await connection.QueryFirstOrDefaultAsync<Blog>(
                     "Blog_Get",
                     new { BlogId = blogId },
@@ -125,15 +170,13 @@ namespace CroweQuest.Repository
             dataTable.Columns.Add("Content", typeof(string));
             dataTable.Columns.Add("PhotoId", typeof(int));
 
-         
+
             dataTable.Rows.Add(blogCreate.BlogId, blogCreate.Title, blogCreate.Content, blogCreate.PhotoId);
 
             int? newBlogId;
 
-            using (var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
+            using (var connection = await CreateOpenConnectionAsync())
             {
-                await connection.OpenAsync();
-
                 newBlogId = await connection.ExecuteScalarAsync<int?>(
                     "Blog_Upsert",
                     new { Blog = dataTable.AsTableValuedParameter("dbo.BlogType"), ApplicationUserId = applicationUserId },
