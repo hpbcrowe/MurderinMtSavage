@@ -2,6 +2,10 @@
   <div class="d-flex justify-content-center">
     <h1 class="display-4">Most Discussed Posts</h1>
   </div>
+
+  <div *ngIf="!!errorMessage" class="alert alert-danger mt-3" role="alert">
+    {{ errorMessage }}
+  </div>
 </div>
 
 <ng-template [ngIf]="famousBlogs.length! > 0" [ngIfElse]="noBlogs">

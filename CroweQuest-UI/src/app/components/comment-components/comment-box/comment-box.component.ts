@@ -42,7 +42,12 @@ export class CommentBoxComponent implements OnInit {
     this.setTitle('Comment Box');
   }
 
-  ngOnInit(): void {}
+  public maxLength = 300;
+  public remainingCharacters = this.maxLength;
+
+  ngOnInit(): void {
+    this.updateRemainingCharacters(this.comment?.content);
+  }
 
   /**
    * resetComment()
@@ -50,6 +55,11 @@ export class CommentBoxComponent implements OnInit {
    */
   resetComment() {
     this.commentForm.reset();
+    this.updateRemainingCharacters('');
+  }
+
+  onCommentInput(value: string): void {
+    this.updateRemainingCharacters(value);
   }
 
   public setTitle(newTitle: string) {
@@ -76,5 +86,10 @@ export class CommentBoxComponent implements OnInit {
         this.resetComment();
         this.commentSaved.emit(blogComment);
       });
+  }
+
+  private updateRemainingCharacters(content: string | null | undefined): void {
+    const length = (content ?? '').length;
+    this.remainingCharacters = Math.max(this.maxLength - length, 0);
   }
 }
