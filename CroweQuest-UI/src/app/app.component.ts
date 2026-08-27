@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { InactivityService } from './services/inactivity.service';
 
 
 
@@ -9,4 +10,16 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'CroweQuest-UI';
+
+  constructor(
+    private inactivityService: InactivityService
+  ) {}
+
+  ngOnInit(): void {
+    this.inactivityService.startMonitoring();
+  }
+
+  ngOnDestroy(): void {
+    this.inactivityService.stopMonitoring();
+  }
 }
