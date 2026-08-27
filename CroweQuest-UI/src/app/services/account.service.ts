@@ -94,10 +94,44 @@ export class AccountService {
 
     public isLoggedIn() {
     const currentUser = this.currentUserValue;
-      //Taken from JWT Interceptor 
-      //If there is a user and they are logged in
-      const isLoggedIn = !!currentUser && !!currentUser.token;
-      return isLoggedIn;
+      const token = currentUser?.token;
+      if (!token) {
+        return false;
+      }
+
+      if (this.isTokenExpired(token)) {
+        this.logout();
+        return false;
+      }
+
+      return true;
+   }
+
+   private isTokenExpired(token: string): boolean {
+    const expirationDate = this.getTokenExpirationDate(token);
+    if (!expirationDate) {
+      return true;
+    }
+
+    return expirationDate.getTime() <= Date.now();
+   }
+
+   private getTokenExpirationDate(token: string): Date | null {
+    try {
+      const tokenParts = token.split('.');
+      if (tokenParts.length < 2) {
+        return null;
+      }
+
+      const payload = JSON.parse(atob(tokenParts[1]));
+      if (!payload?.exp) {
+        return null;
+      }
+
+      return new Date(payload.exp * 1000);
+    } catch {
+      return null;
+    }
    }
 
 
@@ -106,6 +140,6 @@ export class AccountService {
     //using localStorage.clear instead of this.currentUserSubject$.next(null!);
     //Got this to work adding the ! operator answer from Stack Overflow
     this.currentUserSubject$.next(null!);
-    localStorage.clear;
+    localStorage.clear();
    }
 }
