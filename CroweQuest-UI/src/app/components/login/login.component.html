@@ -67,6 +67,10 @@
           </div>
         </div>
 
+        <div *ngIf="loginError" class="alert alert-danger mt-3" role="alert">
+          {{ loginError }}
+        </div>
+
         <button
           class="btn btn-block mb-3 bg-primary text-light"
           [disabled]="!loginForm.valid"
