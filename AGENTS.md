@@ -56,10 +56,11 @@ Use this exact workflow for the current Azure setup:
    - `cd CroweQuest-UI`
    - `npm install`
    - `npm run build`
-2. Deploy the generated `CroweQuest-UI/dist/crowe-quest-ui` output to the Azure App Service named `CroweQuest` in resource group `CroweQuestGroup`.
+2. Zip the generated `CroweQuest-UI/dist/crowe-quest-ui` output and deploy the zip to the Azure App Service named `CroweQuest` in resource group `CroweQuestGroup`.
 3. Validate the live frontend by requesting the `CroweQuest` public URL.
 4. For API changes, deploy the backend to `CroweQuestWebAPI` and validate that backend URL before calling the work complete.
 5. Do not use `ng serve` as the deployment mechanism. Local dev is for iteration only; Azure is the authoritative deployment target.
+6. Do not use a file-by-file static deployment for this App Service. The Linux App Service can fail with Kudu 400 errors when uploading individual files; prefer a single zip deploy using `az webapp deploy --type zip --clean true --restart true` after creating a zip from the dist output.
 
 ## Frontend guidance
 

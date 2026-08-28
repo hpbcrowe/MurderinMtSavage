@@ -56,10 +56,11 @@ Use these exact Azure deployment targets for this repo:
 Use the current Azure configuration instead of guessing:
 
 1. Build the frontend from the repo root with `cd CroweQuest-UI && npm run build`.
-2. Deploy the generated `CroweQuest-UI/dist/crowe-quest-ui` contents to the `CroweQuest` app service in `CroweQuestGroup`.
+2. Create a single zip from `CroweQuest-UI/dist/crowe-quest-ui` and deploy that zip to the `CroweQuest` app service in `CroweQuestGroup` using `az webapp deploy --type zip --clean true --restart true`.
 3. Validate the frontend via the `CroweQuest` URL above.
 4. For API changes, deploy to `CroweQuestWebAPI` and confirm the API is responding before code is considered complete.
 5. Avoid local-only validation as a deployment substitute; Azure targets are authoritative.
+6. Do not rely on a file-by-file static upload for this Linux App Service. Azure has returned Kudu 400 errors with per-file static deploys; zip deployment is the reliable path for this app.
 
 ## Security
 
