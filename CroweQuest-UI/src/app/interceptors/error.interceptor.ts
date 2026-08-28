@@ -32,6 +32,12 @@ export class ErrorInterceptor implements HttpInterceptor {
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
+    if (request.url.includes('/Account/login')) {
+      return next.handle(request).pipe(
+        catchError((error) => throwError(() => error))
+      );
+    }
+
     return next.handle(request).pipe(
       catchError((error) => {
         if (error) {
@@ -51,7 +57,7 @@ export class ErrorInterceptor implements HttpInterceptor {
           }
         }
 
-        return throwError(error);
+        return throwError(() => error);
       })
     );
   }

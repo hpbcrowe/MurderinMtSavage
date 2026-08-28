@@ -12,6 +12,7 @@ import { Meta, Title } from '@angular/platform-browser';
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
+  loginError: string | null = null;
 
   constructor(
     private accountService: AccountService,
@@ -74,13 +75,30 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit() {
-    let applicationUserLogin: ApplicationUserLogin = new ApplicationUserLogin(
+    this.loginError = null;
+
+    const applicationUserLogin: ApplicationUserLogin = new ApplicationUserLogin(
       this.loginForm.get('username')?.value,
       this.loginForm.get('password')?.value
     );
 
-    this.accountService.login(applicationUserLogin).subscribe(() => {
-      this.router.navigate(['/dashboard']);
+    this.accountService.login(applicationUserLogin).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        if (error?.status === 401 || error?.status === 400) {
+          this.loginError = 'Invalid username or password.';
+          return;
+        }
+
+        const backendMessage =
+          typeof error?.error === 'string' && error.error
+            ? error.error
+            : 'Unable to log in right now. Please try again.';
+
+        this.loginError = backendMessage;
+      },
     });
   }
 
