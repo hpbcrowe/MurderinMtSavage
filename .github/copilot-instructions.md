@@ -62,6 +62,21 @@ Use the current Azure configuration instead of guessing:
 5. Avoid local-only validation as a deployment substitute; Azure targets are authoritative.
 6. Do not rely on a file-by-file static upload for this Linux App Service. Azure has returned Kudu 400 errors with per-file static deploys; zip deployment is the reliable path for this app.
 
+### Deployment troubleshooting (required when deploy fails)
+
+1. If `az` is not on PATH in PowerShell, invoke CLI explicitly with `C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd`.
+2. If `az webapp deploy --type zip` returns Kudu 400, collect deployment evidence immediately:
+
+- `az webapp log deployment list --resource-group CroweQuestGroup --name CroweQuest`
+- `az webapp log deployment show --resource-group CroweQuestGroup --name CroweQuest`
+
+3. Verify what is live before claiming success:
+
+- Read the local expected bundle filename from `dist/crowe-quest-ui/main.*.js`.
+- Request `https://crowequest-f5crfzfpg6hrd4f4.westus2-01.azurewebsites.net` and confirm the `main.*.js` reference matches the local expected bundle.
+
+4. Do not mark deployment complete when App Service is only "Running"; require bundle-hash match or equivalent artifact-level verification.
+
 ## Security
 
 - Never add secrets, API keys, tokens, passwords, or connection strings to source code.

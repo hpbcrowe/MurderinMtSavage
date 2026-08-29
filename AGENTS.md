@@ -62,6 +62,21 @@ Use this exact workflow for the current Azure setup:
 5. Do not use `ng serve` as the deployment mechanism. Local dev is for iteration only; Azure is the authoritative deployment target.
 6. Do not use a file-by-file static deployment for this App Service. The Linux App Service can fail with Kudu 400 errors when uploading individual files; prefer a single zip deploy using `az webapp deploy --type zip --clean true --restart true` after creating a zip from the dist output.
 
+### Deployment troubleshooting (required when deploy fails)
+
+1. If `az` is not on PATH in PowerShell, invoke CLI explicitly with `C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd`.
+2. If `az webapp deploy --type zip` returns Kudu 400, collect deployment evidence immediately:
+
+- `az webapp log deployment list --resource-group CroweQuestGroup --name CroweQuest`
+- `az webapp log deployment show --resource-group CroweQuestGroup --name CroweQuest`
+
+3. Verify what is live before claiming success:
+
+- Read the local expected bundle filename from `dist/crowe-quest-ui/main.*.js`.
+- Request `https://crowequest-f5crfzfpg6hrd4f4.westus2-01.azurewebsites.net` and confirm the `main.*.js` reference matches the local expected bundle.
+
+4. Do not mark deployment complete when App Service is only "Running"; require bundle-hash match or equivalent artifact-level verification.
+
 ## Frontend guidance
 
 - Angular code lives under `CroweQuest-UI/src/app/`.
