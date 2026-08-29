@@ -32,7 +32,7 @@ export class ErrorInterceptor implements HttpInterceptor {
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
-    if (request.url.includes('/Account/login')) {
+    if (this.isLoginRequest(request.url)) {
       return next.handle(request).pipe(
         catchError((error) => throwError(() => error))
       );
@@ -49,7 +49,7 @@ export class ErrorInterceptor implements HttpInterceptor {
               this.handle401Error(error);
               break;
             case 500:
-              this.handle500Error(error);
+              this.handle500Error(error, request);
               break;
             default:
               this.handleUnexpectedError(error);
@@ -106,11 +106,20 @@ export class ErrorInterceptor implements HttpInterceptor {
     this.router.navigate(['/login']);
   }
   // 500 server error
-  handle500Error(error: any) {
+  handle500Error(error: any, request?: HttpRequest<unknown>) {
+    // Login failures are handled by the login component so users get inline feedback.
+    if (request && this.isLoginRequest(request.url)) {
+      return;
+    }
+
     this.toastr.error(
       'Please contact the administrator. An error occurred in the server.'
     );
     console.log(error);
+  }
+
+  private isLoginRequest(url: string): boolean {
+    return /\/account\/login(?:[/?#]|$)/i.test(url);
   }
 
   handleUnexpectedError(error: any) {
