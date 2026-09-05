@@ -10,6 +10,10 @@ import { Photo } from 'src/app/models/photo/photo.model';
 import { BlogService } from 'src/app/services/blog.service';
 import { PhotoService } from 'src/app/services/photo.service';
 import { Meta, Title } from '@angular/platform-browser';
+import { AncestorProfile } from 'src/app/models/genealogy/ancestor-profile.model';
+import { Source } from 'src/app/models/genealogy/source.model';
+import { AncestorProfileService } from 'src/app/services/genealogy/ancestor-profile.service';
+import { SourceService } from 'src/app/services/genealogy/source.service';
 
 @Component({
   selector: 'app-blog-edit',
@@ -21,12 +25,16 @@ export class BlogEditComponent implements OnInit {
   blogForm!: FormGroup;
   confirmImageDelete: boolean = false;
   userPhotos: Photo[] = [];
+  ancestorProfiles: AncestorProfile[] = [];
+  sources: Source[] = [];
   constructor(
     //dependencies
     private route: ActivatedRoute,
     private formBuilder: FormBuilder,
     private blogService: BlogService,
     private photoService: PhotoService,
+    private ancestorProfileService: AncestorProfileService,
+    private sourceService: SourceService,
     private toastr: ToastrService,
     private router: Router,
     private meta: Meta,
@@ -72,10 +80,27 @@ export class BlogEditComponent implements OnInit {
       ],
       photoDescription: [null],
       photoId: [null],
+      ancestorProfileId: [null],
+      sourceId: [null],
+      ancestorName: [''],
+      recordType: [''],
+      location: [''],
+      familyBranch: [''],
+      tags: [''],
+      confidenceLevel: ['Possible'],
+      researchStatus: ['Researching'],
     });
 
     this.photoService.getByApplicationUserId().subscribe((userPhotos) => {
       this.userPhotos = userPhotos;
+    });
+
+    this.ancestorProfileService.getAll().subscribe((ancestorProfiles) => {
+      this.ancestorProfiles = ancestorProfiles;
+    });
+
+    this.sourceService.getAll().subscribe((sources) => {
+      this.sources = sources;
     });
 
     if (!!blogId && blogId !== -1) {
@@ -135,6 +160,15 @@ export class BlogEditComponent implements OnInit {
       content: blog.content,
       photoId: blog.photoId,
       photoDescription: photoDescription,
+      ancestorProfileId: blog.ancestorProfileId,
+      sourceId: blog.sourceId,
+      ancestorName: blog.ancestorName,
+      recordType: blog.recordType,
+      location: blog.location,
+      familyBranch: blog.familyBranch,
+      tags: blog.tags,
+      confidenceLevel: blog.confidenceLevel,
+      researchStatus: blog.researchStatus,
     });
   }
 
@@ -157,7 +191,16 @@ export class BlogEditComponent implements OnInit {
       this.blogForm.get('blogId')?.value,
       this.blogForm.get('title')?.value,
       this.blogForm.get('content')?.value,
-      this.blogForm.get('photoId')?.value
+      this.blogForm.get('photoId')?.value,
+      this.blogForm.get('ancestorProfileId')?.value,
+      this.blogForm.get('sourceId')?.value,
+      this.blogForm.get('ancestorName')?.value,
+      this.blogForm.get('recordType')?.value,
+      this.blogForm.get('location')?.value,
+      this.blogForm.get('familyBranch')?.value,
+      this.blogForm.get('tags')?.value,
+      this.blogForm.get('confidenceLevel')?.value,
+      this.blogForm.get('researchStatus')?.value
     );
 
     this.blogService.create(blogCreate).subscribe((createdBlog) => {

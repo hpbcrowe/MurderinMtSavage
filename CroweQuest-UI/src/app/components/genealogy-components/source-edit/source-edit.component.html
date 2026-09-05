@@ -1,0 +1,31 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-center">
+    <h1 class="display-4 mt-5">{{ isNew() ? 'Create' : 'Edit' }} Source</h1>
+  </div>
+
+  <div class="alert alert-info mt-3" (drop)="onFileDropped($event)" (dragover)="onDragOver($event)">
+    Drag and drop a record here to stage it for source tracking.
+  </div>
+
+  <div class="form-group">
+    <label for="fileUpload">Select File</label>
+    <input id="fileUpload" type="file" class="form-control" (change)="onFileSelected($event)" />
+    <small class="form-text text-muted" *ngIf="uploadedFileName">Selected: {{ uploadedFileName }}</small>
+  </div>
+
+  <form [formGroup]="sourceForm" (ngSubmit)="onSubmit()">
+    <div class="form-group"><label>Title</label><input class="form-control" formControlName="title" /></div>
+    <div class="form-row">
+      <div class="form-group col-md-6"><label>Source Type</label><input class="form-control" formControlName="sourceType" placeholder="Census, Birth Certificate, etc." /></div>
+      <div class="form-group col-md-6"><label>Document Date</label><input class="form-control" formControlName="documentDate" type="date" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-6"><label>Location</label><input class="form-control" formControlName="location" /></div>
+      <div class="form-group col-md-6"><label>Repository</label><input class="form-control" formControlName="repository" /></div>
+    </div>
+    <div class="form-group"><label>Citation</label><textarea class="form-control" rows="4" formControlName="citation"></textarea></div>
+    <div class="form-group"><label>Description</label><textarea class="form-control" rows="5" formControlName="description"></textarea></div>
+    <div class="form-group"><label>Attached File Reference</label><input class="form-control" formControlName="attachedFileUrl" /></div>
+    <button class="btn bg-primary text-light" [disabled]="!sourceForm.valid && sourceForm.pristine">Save</button>
+  </form>
+</div>

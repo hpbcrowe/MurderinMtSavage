@@ -1,0 +1,58 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-center">
+    <h1 class="display-4 mt-5">{{ isNew() ? 'Create' : 'Edit' }} Ancestor Profile</h1>
+  </div>
+
+  <form [formGroup]="ancestorProfileForm" (ngSubmit)="onSubmit()">
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label>First Name</label>
+        <input class="form-control" formControlName="firstName" />
+      </div>
+      <div class="form-group col-md-6">
+        <label>Last Name</label>
+        <input class="form-control" formControlName="lastName" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group col-md-4"><label>Middle Name</label><input class="form-control" formControlName="middleName" /></div>
+      <div class="form-group col-md-4"><label>Suffix</label><input class="form-control" formControlName="suffix" /></div>
+      <div class="form-group col-md-4">
+        <label>Gender</label>
+        <select class="form-control" formControlName="gender">
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group col-md-6"><label>Birth Date</label><input class="form-control" formControlName="birthDate" type="date" /></div>
+      <div class="form-group col-md-6"><label>Birth Location</label><input class="form-control" formControlName="birthLocation" /></div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group col-md-6"><label>Death Date</label><input class="form-control" formControlName="deathDate" type="date" /></div>
+      <div class="form-group col-md-6"><label>Death Location</label><input class="form-control" formControlName="deathLocation" /></div>
+    </div>
+
+    <div class="form-group">
+      <label>Biography</label>
+      <textarea class="form-control" rows="10" formControlName="biography"></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group col-md-4"><label>Research Status</label><input class="form-control" formControlName="researchStatus" /></div>
+      <div class="form-group col-md-4"><label>Family Branch</label><input class="form-control" formControlName="familyBranch" /></div>
+      <div class="form-group col-md-4"><label>Confidence Level</label><input class="form-control" formControlName="confidenceLevel" /></div>
+    </div>
+
+    <div class="form-group">
+      <label>Tags</label>
+      <input class="form-control" formControlName="tags" placeholder="Smith, Crowe, Utah, England" />
+    </div>
+
+    <button class="btn bg-primary text-light" [disabled]="!ancestorProfileForm.valid && ancestorProfileForm.pristine">Save</button>
+  </form>
+</div>

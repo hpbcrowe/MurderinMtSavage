@@ -19,6 +19,18 @@
                     <a class="nav-link" routerLink='/blogs' routerLinkActive='active'>Blogs / Journal Entries</a>
                 </li>
 
+                <li class="nav-item">
+                    <a class="nav-link" routerLink='/genealogy/ancestors' routerLinkActive='active'>Ancestors</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" routerLink='/genealogy/sources' routerLinkActive='active'>Sources</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" routerLink='/genealogy/research-notes' routerLinkActive='active'>Research Notes</a>
+                </li>
+
                 <li class="nav-item" *ngIf="!accountService.isLoggedIn()">
                     <a class="nav-link" routerLink='/login' routerLinkActive='active'>Login</a>
                 </li>
@@ -39,6 +51,9 @@
                     aria-labelledby="button-animated">
                     <li role="menuitem">
                         <a class="dropdown-item" routerLink='/photo-album'>Photo Album</a>
+                    </li>
+                    <li role="menuitem">
+                        <a class="dropdown-item" routerLink='/notifications'>Notifications</a>
                     </li>
                     <li role="menuitem">
                         <a class="dropdown-item" routerLink='/dashboard'>Dashboard</a>

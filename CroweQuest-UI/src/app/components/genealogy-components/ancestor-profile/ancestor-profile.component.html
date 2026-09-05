@@ -1,0 +1,40 @@
+<div class="container mt-4" *ngIf="ancestorProfile">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="mb-0">{{ ancestorProfile.firstName }} {{ ancestorProfile.middleName }} {{ ancestorProfile.lastName }}</h2>
+      <div class="text-muted">{{ ancestorProfile.familyBranch || 'No branch' }} | {{ ancestorProfile.researchStatus || 'Researching' }}</div>
+    </div>
+    <button class="btn btn-outline-primary" (click)="edit()">Edit</button>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <p><strong>Birth:</strong> {{ ancestorProfile.birthDate | date : 'mediumDate' }} {{ ancestorProfile.birthLocation }}</p>
+      <p><strong>Death:</strong> {{ ancestorProfile.deathDate | date : 'mediumDate' }} {{ ancestorProfile.deathLocation }}</p>
+      <p><strong>Confidence:</strong> {{ ancestorProfile.confidenceLevel || 'Unknown' }}</p>
+      <p><strong>Tags:</strong> {{ ancestorProfile.tags || 'None' }}</p>
+      <p class="mb-0">{{ ancestorProfile.biography }}</p>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <button class="btn btn-success mr-2" (click)="follow()">Follow</button>
+    <button class="btn btn-outline-secondary" (click)="unfollow()">Unfollow</button>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5>Add Relationship</h5>
+      <form [formGroup]="relationshipForm" (ngSubmit)="addRelationship()" class="form-inline">
+        <input class="form-control mr-2 mb-2" formControlName="relatedAncestorProfileId" type="number" placeholder="Related ancestor id" />
+        <select class="form-control mr-2 mb-2" formControlName="relationshipType">
+          <option>Parent</option>
+          <option>Child</option>
+          <option>Spouse</option>
+          <option>Sibling</option>
+        </select>
+        <button class="btn btn-primary mb-2" [disabled]="!relationshipForm.valid">Save</button>
+      </form>
+    </div>
+  </div>
+</div>
