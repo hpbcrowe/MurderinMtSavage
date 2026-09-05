@@ -1,0 +1,38 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Ancestor Profiles</h2>
+    <button class="btn btn-primary" (click)="createNew()">Add Ancestor</button>
+  </div>
+
+  <div class="form-group mb-3">
+    <input
+      class="form-control"
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="load()"
+      placeholder="Search ancestor name, surname, location, or branch"
+    />
+  </div>
+
+  <div *ngIf="ancestorProfiles.length > 0; else noAncestors" class="list-group">
+    <a
+      *ngFor="let ancestor of ancestorProfiles"
+      class="list-group-item list-group-item-action"
+      (click)="view(ancestor.ancestorProfileId)"
+      style="cursor: pointer"
+    >
+      <div class="d-flex justify-content-between">
+        <div>
+          <strong>{{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}</strong>
+          <div class="text-muted small">
+            {{ ancestor.familyBranch || 'No branch' }} | {{ ancestor.researchStatus || 'Researching' }}
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline-primary" (click)="$event.stopPropagation(); edit(ancestor.ancestorProfileId)">Edit</button>
+      </div>
+    </a>
+  </div>
+
+  <ng-template #noAncestors>
+    <div class="alert alert-info">No ancestor profiles found.</div>
+  </ng-template>
+</div>

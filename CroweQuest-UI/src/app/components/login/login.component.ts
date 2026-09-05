@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApplicationUserLogin } from 'src/app/models/account/application-user-login.model';
 import { AccountService } from 'src/app/services/account.service';
 import { Meta, Title } from '@angular/platform-browser';
@@ -13,16 +13,20 @@ import { Meta, Title } from '@angular/platform-browser';
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   loginError: string | null = null;
+  private returnUrl = '/dashboard';
 
   constructor(
     private accountService: AccountService,
     private router: Router,
+    private route: ActivatedRoute,
     private formBuilder: FormBuilder,
     private meta: Meta,
     private title: Title
   ) {
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/dashboard';
+
     if (this.accountService.isLoggedIn()) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigateByUrl(this.returnUrl);
     }
 
     this.meta.addTags([
@@ -84,7 +88,7 @@ export class LoginComponent implements OnInit {
 
     this.accountService.login(applicationUserLogin).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard']);
+        this.router.navigateByUrl(this.returnUrl);
       },
       error: (error) => {
         if (error?.status === 401 || error?.status === 400) {
