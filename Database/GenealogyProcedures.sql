@@ -477,6 +477,87 @@ END
 
 
 GO
+CREATE OR ALTER PROCEDURE dbo.AncestorProfilePhoto_GetByAncestorProfileId
+@AncestorProfileId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT   p.PhotoId,
+             p.ApplicationUserId,
+             p.PublicId,
+             p.ImageUrl,
+             p.Description,
+             p.PublishDate,
+             p.UpdateDate
+    FROM     dbo.AncestorProfilePhotos AS ap
+             INNER JOIN
+             dbo.Photo AS p
+             ON p.PhotoId = ap.PhotoId
+    WHERE    ap.AncestorProfileId = @AncestorProfileId
+    ORDER BY ap.CreatedDate DESC, p.PhotoId DESC;
+END
+
+
+GO
+CREATE OR ALTER PROCEDURE dbo.AncestorProfilePhoto_Upsert
+@AncestorProfileId INT, @PhotoId INT, @ApplicationUserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF EXISTS (SELECT 1
+               FROM   dbo.AncestorProfiles
+               WHERE  AncestorProfileId = @AncestorProfileId
+                      AND ApplicationUserId = @ApplicationUserId)
+       AND EXISTS (SELECT 1
+                   FROM   dbo.Photo
+                   WHERE  PhotoId = @PhotoId
+                          AND ApplicationUserId = @ApplicationUserId)
+       AND NOT EXISTS (SELECT 1
+                       FROM   dbo.AncestorProfilePhotos
+                       WHERE  AncestorProfileId = @AncestorProfileId
+                              AND PhotoId = @PhotoId)
+        BEGIN
+            INSERT  INTO dbo.AncestorProfilePhotos (
+                AncestorProfileId,
+                PhotoId,
+                CreatedDate
+            )
+            VALUES                                (@AncestorProfileId, @PhotoId, GETDATE());
+        END
+    SELECT @@ROWCOUNT;
+END
+
+
+GO
+CREATE OR ALTER PROCEDURE dbo.AncestorProfilePhoto_Delete
+@AncestorProfileId INT, @PhotoId INT, @ApplicationUserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DELETE ap
+    FROM   dbo.AncestorProfilePhotos AS ap
+           INNER JOIN
+           dbo.AncestorProfiles AS a
+           ON a.AncestorProfileId = ap.AncestorProfileId
+    WHERE  ap.AncestorProfileId = @AncestorProfileId
+           AND ap.PhotoId = @PhotoId
+           AND a.ApplicationUserId = @ApplicationUserId;
+    IF @@ROWCOUNT > 0
+       AND EXISTS (SELECT 1
+                   FROM   dbo.AncestorProfiles
+                   WHERE  AncestorProfileId = @AncestorProfileId
+                          AND ProfilePhotoId = @PhotoId)
+        BEGIN
+            UPDATE dbo.AncestorProfiles
+            SET    ProfilePhotoId = NULL,
+                   UpdateDate     = GETDATE()
+            WHERE  AncestorProfileId = @AncestorProfileId;
+        END
+    SELECT @@ROWCOUNT;
+END
+
+
+GO
 CREATE OR ALTER PROCEDURE dbo.Source_Delete
 @SourceId INT
 AS

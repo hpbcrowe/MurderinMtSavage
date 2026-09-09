@@ -1,0 +1,74 @@
+<step title="BackgroundTrace" date="2026-09-04T04:00:17.621" instance="f5a3c0" url="/api/zipdeploy" method="POST" >
+  <step title="Updating shutdown sentinel last write time" date="2026-09-04T04:00:17.714" SemaphoreCount="7" /><!-- duration: 0ms -->
+  <step title="LockFile &apos;C:\home\site\locks\deployments.lock&apos; acquired" date="2026-09-04T04:00:17.714" /><!-- duration: 0ms -->
+  <step title="Creating temporary deployment" date="2026-09-04T04:00:17.714" /><!-- duration: 31ms -->
+  <step title="Performing fetch based deployment" date="2026-09-04T04:00:17.746" >
+    <step title="Fetching changes." date="2026-09-04T04:00:17.777" /><!-- duration: 16ms -->
+    <step title="Starting LocalZipHandler" date="2026-09-04T04:00:17.808" /><!-- duration: 0ms -->
+    <step title="Cleaning up temp folders from previous zip deployments and extracting pushed zip file C:\local\Temp\zipdeploy\tzlsy2xv.zip (4.97 MB) to C:\local\Temp\zipdeploy\extracted" date="2026-09-04T04:00:17.824" /><!-- duration: 0ms -->
+    <step title="Cleaning up temp folders from previous zip deployments and extracting pushed zip file C:\local\Temp\zipdeploy\tzlsy2xv.zip (4.97 MB) to C:\local\Temp\zipdeploy\extracted" date="2026-09-04T04:00:17.824" >
+      <step title="Extracting 73 entries to C:\local\Temp\zipdeploy\extracted directory" date="2026-09-04T04:00:18.355" >
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\runtimes\unix\lib\netcoreapp2.0\System.Runtime.Caching.dll ..." date="2026-09-04T04:00:18.355" /><!-- duration: 16ms -->
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\runtimes\unix\lib\netcoreapp2.1\Microsoft.Data.SqlClient.dll ..." date="2026-09-04T04:00:18.371" /><!-- duration: 16ms -->
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\runtimes\unix\lib\netcoreapp2.1\System.Data.SqlClient.dll ..." date="2026-09-04T04:00:18.386" /><!-- duration: 16ms -->
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\runtimes\win\lib\netcoreapp2.0\System.Runtime.Caching.dll ..." date="2026-09-04T04:00:18.402" /><!-- duration: 16ms -->
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\runtimes\win\lib\netcoreapp2.1\Microsoft.Data.SqlClient.dll ..." date="2026-09-04T04:00:18.418" /><!-- duration: 16ms -->
+        <step title="Omitting extracting file traces ..." date="2026-09-04T04:00:18.433" /><!-- duration: 16ms -->
+      </step><!-- duration: 234ms -->
+    </step><!-- duration: 781ms -->
+    <step title="Before sending BuildRequestReceived status to /api/updatedeploystatus" date="2026-09-04T04:00:18.605" /><!-- duration: 0ms -->
+    <step title="DeploymentManager.Deploy(id:0538c6f0e19946c6bafa7ea2f3031a1c)" date="2026-09-04T04:00:18.605" >
+      <step title="Collecting changeset information" date="2026-09-04T04:00:18.621" /><!-- duration: 31ms -->
+      <step title="Updating submodules" date="2026-09-04T04:00:18.652" >
+        <step title="Updating submodules." date="2026-09-04T04:00:18.683" /><!-- duration: 0ms -->
+      </step><!-- duration: 31ms -->
+      <step title="Preparing deployment for commit id &apos;0538c6f0e1&apos;." date="2026-09-04T04:00:18.699" /><!-- duration: 0ms -->
+      <step title="Determining deployment builder" date="2026-09-04T04:00:18.714" >
+        <step title="Builder is BasicBuilder" date="2026-09-04T04:00:18.730" /><!-- duration: 0ms -->
+      </step><!-- duration: 16ms -->
+      <step title="Copying SSH keys" date="2026-09-04T04:00:18.746" /><!-- duration: 0ms -->
+      <step title="Building" date="2026-09-04T04:00:18.746" >
+        <step title="Generating deployment script." date="2026-09-04T04:00:18.777" /><!-- duration: 16ms -->
+        <step title="Generating deployment script" date="2026-09-04T04:00:18.793" >
+          <step title="Using the following command to generate deployment script: &apos;azure site deploymentscript -y --no-dot-deployment -r &quot;C:\local\Temp\zipdeploy\extracted&quot; -o &quot;C:\home\site\deployments\tools&quot; --basic --sitePath &quot;C:\local\Temp\zipdeploy\extracted&quot;&apos;." date="2026-09-04T04:00:18.793" /><!-- duration: 16ms -->
+          <step title="Executing external process" date="2026-09-04T04:00:18.855" type="process" path="starter.cmd" arguments="&quot;C:\Program Files (x86)\SiteExtensions\Kudu\2026.08.1.2\bin\node_modules\.bin\kuduscript.cmd&quot; -y --no-dot-deployment -r &quot;C:\local\Temp\zipdeploy\extracted&quot; -o &quot;C:\home\site\deployments\tools&quot; --basic --sitePath &quot;C:\local\Temp\zipdeploy\extracted&quot;" >
+            <step title="Generating deployment script for Web Site" date="2026-09-04T04:00:20.168" /><!-- duration: 0ms -->
+            <step title="Generated deployment script files" date="2026-09-04T04:00:20.168" /><!-- duration: 0ms -->
+          </step><!-- duration: 1313ms -->
+          <step title="Saved cached version of the deployment script for command -y --no-dot-deployment -r &quot;C:\local\Temp\zipdeploy\extracted&quot; -o &quot;C:\home\site\deployments\tools&quot; --basic --sitePath &quot;C:\local\Temp\zipdeploy\extracted&quot;" date="2026-09-04T04:00:20.183" /><!-- duration: 0ms -->
+        </step><!-- duration: 1391ms -->
+        <step title="Running deployment command..." date="2026-09-04T04:00:20.215" /><!-- duration: 0ms -->
+        <step title="Command: &quot;C:\home\site\deployments\tools\deploy.cmd&quot;" date="2026-09-04T04:00:20.215" /><!-- duration: 16ms -->
+        <step title="Executing external process" date="2026-09-04T04:00:20.230" type="process" path="starter.cmd" arguments="&quot;C:\home\site\deployments\tools\deploy.cmd&quot;" >
+          <step title="Handling Basic Web Site deployment." date="2026-09-04T04:00:20.449" /><!-- duration: 16ms -->
+          <step title="Creating app_offline.htm" date="2026-09-04T04:00:23.480" /><!-- duration: 0ms -->
+          <step title="KuduSync.NET from: &apos;C:\local\Temp\zipdeploy\extracted&apos; to: &apos;C:\home\site\wwwroot&apos;" date="2026-09-04T04:00:23.480" /><!-- duration: 16ms -->
+          <step title="Copying file: &apos;BlogLab.Services.dll&apos;" date="2026-09-04T04:00:23.496" /><!-- duration: 0ms -->
+          <step title="Copying file: &apos;BlogLab.Services.pdb&apos;" date="2026-09-04T04:00:23.496" /><!-- duration: 0ms -->
+          <step title="Copying file: &apos;CroweQuest.Identity.dll&apos;" date="2026-09-04T04:00:23.512" /><!-- duration: 0ms -->
+          <step title="Copying file: &apos;CroweQuest.Identity.pdb&apos;" date="2026-09-04T04:00:23.512" /><!-- duration: 16ms -->
+          <step title="Copying file: &apos;CroweQuest.Models.dll&apos;" date="2026-09-04T04:00:23.527" /><!-- duration: 0ms -->
+          <step title="Copying file: &apos;CroweQuest.Models.pdb&apos;" date="2026-09-04T04:00:23.527" /><!-- duration: 0ms -->
+          <step title="Copying file: &apos;CroweQuest.Repository.dll&apos;" date="2026-09-04T04:00:23.527" /><!-- duration: 16ms -->
+          <step title="Copying file: &apos;CroweQuest.Repository.pdb&apos;" date="2026-09-04T04:00:23.543" /><!-- duration: 0ms -->
+          <step title="Copying file: &apos;CroweQuest.Web.dll&apos;" date="2026-09-04T04:00:23.543" /><!-- duration: 0ms -->
+          <step title="Copying file: &apos;CroweQuest.Web.exe&apos;" date="2026-09-04T04:00:23.558" /><!-- duration: 0ms -->
+          <step title="Copying file: &apos;CroweQuest.Web.pdb&apos;" date="2026-09-04T04:00:23.558" /><!-- duration: 16ms -->
+          <step title="Copying file: &apos;CroweQuest.Web.Views.dll&apos;" date="2026-09-04T04:00:23.574" /><!-- duration: 0ms -->
+          <step title="Copying file: &apos;CroweQuest.Web.Views.pdb&apos;" date="2026-09-04T04:00:23.574" /><!-- duration: 0ms -->
+          <step title="Deleting app_offline.htm" date="2026-09-04T04:00:23.590" /><!-- duration: 0ms -->
+          <step title="Finished successfully." date="2026-09-04T04:00:23.590" /><!-- duration: 0ms -->
+        </step><!-- duration: 3360ms -->
+        <step title="Running post deployment command(s)..." date="2026-09-04T04:00:23.605" /><!-- duration: 16ms -->
+        <step title="Triggering recycle (preview mode disabled)." date="2026-09-04T04:00:23.637" /><!-- duration: 16ms -->
+        <step title="Ignoring FS watcher based recycle request as this is a classic Windows app." date="2026-09-04T04:00:23.652" /><!-- duration: 0ms -->
+        <step title="Deployment successful. DEPLOYMENTINFO: deploymentPath = ZipDeploy. Extract zip. , deployer = ZipDeploy, os = windows, sku = Free, siteName = CroweQuestWebAPI, siteHostName = crowequestwebapi-fyg8a3dhcpfudugv.westus2-01.azurewebsites.net, deploymentStatus = Success" date="2026-09-04T04:00:23.668" /><!-- duration: 0ms -->
+      </step><!-- duration: 5016ms -->
+    </step><!-- duration: 5157ms -->
+    <step title="Cleaning up temp files" date="2026-09-04T04:00:23.762" /><!-- duration: 0ms -->
+    <step title="Skip function trigger and logicapp sync because function is not enabled." date="2026-09-04T04:00:23.777" /><!-- duration: 0ms -->
+  </step><!-- duration: 6047ms -->
+  <step title="Deployment completed. Total deployment time: 6050ms" date="2026-09-04T04:00:23.793" /><!-- duration: 16ms -->
+  <step title="LockFile &apos;C:\home\site\locks\deployments.lock&apos; released" date="2026-09-04T04:00:23.808" /><!-- duration: 0ms -->
+  <step title="Deleting shutdown sentinel file" date="2026-09-04T04:00:23.808" SemaphoreCount="8" /><!-- duration: 0ms -->
+</step><!-- duration: 6203ms -->

@@ -22,5 +22,8 @@ namespace CroweQuest.Repository
 
         public Task<ApplicationUserIdentity> GetByUsernameAsync(string normalizedUsername,
             CancellationToken cancellationToken);
+
+        public Task<IdentityResult> UpdatePasswordHashAsync(ApplicationUserIdentity user,
+            CancellationToken cancellationToken);
     }
 }

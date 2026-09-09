@@ -1,0 +1,55 @@
+2025-03-09T00:41:20  PID[10980] Error       Request ID 7fc95064-2892-4a2f-b45d-13e75331561d timed out while waiting for a subsequent request and will be removed from the stream table.
+2025-03-09T00:41:23  PID[10980] Error       User: ***
+Client IP: 24.11.30.000
+Content-Type: application/msdeploy
+Version: 9.0.0.0
+MSDeploy.VersionMin: 7.1.600.0
+MSDeploy.VersionMax: 9.0.8305.0
+MSDeploy.Method: Sync
+MSDeploy.RequestId: e7c990e2-cd36-4d61-aad0-efd057012341
+MSDeploy.RequestCulture: en-US
+MSDeploy.RequestUICulture: en-US
+ServerVersion: 9.0.1987.0
+Skip: objectName="^configProtectedData$"
+Provider: auto, Path: 
+A tracing deployment agent exception occurred that was propagated to the client. Request ID 'e7c990e2-cd36-4d61-aad0-efd057012341'. Request Timestamp: '3/9/2025 12:41:23 AM'. Error Details:
+System.Web.HttpException (0x800704CD): The remote host closed the connection. The error code is 0x800704CD.
+   at System.Web.Hosting.IIS7WorkerRequest.RaiseCommunicationError(Int32 result, Boolean throwOnDisconnect)
+   at System.Web.Hosting.IIS7WorkerRequest.ExplicitFlush()
+   at System.Web.HttpResponse.Flush(Boolean finalFlush, Boolean async)
+   at System.Web.HttpResponse.Flush()
+   at System.Web.HttpWriter.WriteFromStream(Byte[] data, Int32 offset, Int32 size)
+   at System.Web.HttpResponseStream.Write(Byte[] buffer, Int32 offset, Int32 count)
+   at Microsoft.Web.Deployment.TraceEventSerializer.WriteEmptyTraceStream(Stream traceOutputStream)
+   at Microsoft.Web.Deployment.TraceEventStreamSerializer.Dispose(Stream stream)
+   at Microsoft.Web.Deployment.DeploymentAgent.HandleSync(DeploymentAgentAsyncData asyncData, Nullable`1 passId, String user, String siteName)
+   at Microsoft.Web.Deployment.DeploymentAgent.HandleRequestWorker(DeploymentAgentAsyncData asyncData)
+   at Microsoft.Web.Deployment.DeploymentAgent.HandleRequest(DeploymentAgentAsyncData asyncData)
+
+2025-03-09T00:41:24  PID[10980] Error       User: ***
+Client IP: 24.11.30.000
+Content-Type: application/msdeploy
+Version: 9.0.0.0
+MSDeploy.VersionMin: 7.1.600.0
+MSDeploy.VersionMax: 9.0.8305.0
+MSDeploy.Method: Sync
+MSDeploy.RequestId: 519bade1-83df-4ebf-801e-ce22fead0cab
+MSDeploy.RequestCulture: en-US
+MSDeploy.RequestUICulture: en-US
+ServerVersion: 9.0.1987.0
+Skip: objectName="^configProtectedData$"
+Provider: auto, Path: 
+A tracing deployment agent exception occurred that was propagated to the client. Request ID '519bade1-83df-4ebf-801e-ce22fead0cab'. Request Timestamp: '3/9/2025 12:41:24 AM'. Error Details:
+System.Web.HttpException (0x800704CD): The remote host closed the connection. The error code is 0x800704CD.
+   at System.Web.Hosting.IIS7WorkerRequest.RaiseCommunicationError(Int32 result, Boolean throwOnDisconnect)
+   at System.Web.Hosting.IIS7WorkerRequest.ExplicitFlush()
+   at System.Web.HttpResponse.Flush(Boolean finalFlush, Boolean async)
+   at System.Web.HttpResponse.Flush()
+   at System.Web.HttpWriter.WriteFromStream(Byte[] data, Int32 offset, Int32 size)
+   at System.Web.HttpResponseStream.Write(Byte[] buffer, Int32 offset, Int32 count)
+   at Microsoft.Web.Deployment.TraceEventSerializer.WriteEmptyTraceStream(Stream traceOutputStream)
+   at Microsoft.Web.Deployment.TraceEventStreamSerializer.Dispose(Stream stream)
+   at Microsoft.Web.Deployment.DeploymentAgent.HandleSync(DeploymentAgentAsyncData asyncData, Nullable`1 passId, String user, String siteName)
+   at Microsoft.Web.Deployment.DeploymentAgent.HandleRequestWorker(DeploymentAgentAsyncData asyncData)
+   at Microsoft.Web.Deployment.DeploymentAgent.HandleRequest(DeploymentAgentAsyncData asyncData)
+

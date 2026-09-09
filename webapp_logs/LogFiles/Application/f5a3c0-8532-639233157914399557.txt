@@ -1,0 +1,10 @@
+2026-08-26T04:36:30  PID[8532] Information 8/26/2026 4:36:30 AM [[5.0]] [WEBWK000000] DaasRunner.exe with version 5.0.22526.4 and ProcessId=8532 started
+2026-08-26T04:36:30  PID[8532] Information 8/26/2026 4:36:30 AM [[5.0]] [WEBWK000000] Checking DaaS bits and updating if required
+2026-08-26T04:36:30  PID[8532] Information 8/26/2026 4:36:30 AM [[5.0]] [WEBWK000000] [daasrunner.exe] Version in DaaS Installation path (5.0.22526.4) is lower or equal to the existing version 5.0.22526.4. Version Compare result = 0
+2026-08-26T04:36:30  PID[8532] Information 8/26/2026 4:36:30 AM [[5.0]] [WEBWK000000] Binary Comparing files C:\Program Files (x86)\SiteExtensions\DaaS\5.0.22526.4\bin\daasrunner.exe and C:\home\site\Jobs\Continuous\DaaS\DaasRunner.exe
+2026-08-26T04:36:30  PID[8532] Information 8/26/2026 4:36:30 AM [[5.0]] [WEBWK000000] Binary Comparison succeeded: C:\Program Files (x86)\SiteExtensions\DaaS\5.0.22526.4\bin\daasrunner.exe and C:\home\site\Jobs\Continuous\DaaS\DaasRunner.exe
+2026-08-26T04:36:30  PID[8532] Information 8/26/2026 4:36:30 AM [[5.0]] [WEBWK000000] [daasconsole.exe] Version in DaaS Installation path (5.0.22526.4) is lower or equal to the existing version 5.0.22526.4. Version Compare result = 0
+2026-08-26T04:36:30  PID[8532] Information 8/26/2026 4:36:30 AM [[5.0]] [WEBWK000000] Binary Comparing files C:\Program Files (x86)\SiteExtensions\DaaS\5.0.22526.4\bin\daasconsole.exe and C:\home\data\DaaS\bin\DaasConsole.exe
+2026-08-26T04:36:30  PID[8532] Information 8/26/2026 4:36:30 AM [[5.0]] [WEBWK000000] Binary Comparison succeeded: C:\Program Files (x86)\SiteExtensions\DaaS\5.0.22526.4\bin\daasconsole.exe and C:\home\data\DaaS\bin\DaasConsole.exe
+2026-08-26T04:36:30  PID[8532] Information 8/26/2026 4:36:30 AM [[5.0]] [WEBWK000000] Done checking DaaS bits for any new updates
+2026-08-26T04:37:51  PID[8532] Warning     The trace listener is disabled after running too long.

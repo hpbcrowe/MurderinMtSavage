@@ -13,6 +13,7 @@ import { Meta, Title } from '@angular/platform-browser';
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   loginError: string | null = null;
+  showPassword: boolean = false;
   private returnUrl = '/dashboard';
 
   constructor(
@@ -76,6 +77,10 @@ export class LoginComponent implements OnInit {
 
   hasError(field: string, error: string) {
     return !!this.loginForm.get(field)?.hasError(error);
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
   onSubmit() {

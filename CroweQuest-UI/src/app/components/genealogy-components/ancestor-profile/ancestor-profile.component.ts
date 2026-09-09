@@ -4,7 +4,9 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { AncestorProfile } from 'src/app/models/genealogy/ancestor-profile.model';
 import { AncestorRelationship } from 'src/app/models/genealogy/ancestor-relationship.model';
+import { Photo } from 'src/app/models/photo/photo.model';
 import { AncestorProfileService } from 'src/app/services/genealogy/ancestor-profile.service';
+import { PhotoService } from 'src/app/services/photo.service';
 
 @Component({
   selector: 'app-ancestor-profile',
@@ -12,6 +14,7 @@ import { AncestorProfileService } from 'src/app/services/genealogy/ancestor-prof
 })
 export class AncestorProfileComponent implements OnInit {
   ancestorProfile!: AncestorProfile;
+  profilePhoto: Photo | null = null;
   relationshipForm!: FormGroup;
 
   constructor(
@@ -19,6 +22,7 @@ export class AncestorProfileComponent implements OnInit {
     private router: Router,
     private formBuilder: FormBuilder,
     private ancestorProfileService: AncestorProfileService,
+    private photoService: PhotoService,
     private meta: Meta,
     private title: Title
   ) {
@@ -40,6 +44,12 @@ export class AncestorProfileComponent implements OnInit {
 
     this.ancestorProfileService.get(ancestorProfileId).subscribe((ancestorProfile) => {
       this.ancestorProfile = ancestorProfile;
+
+      if (ancestorProfile.profilePhotoId) {
+        this.photoService.get(ancestorProfile.profilePhotoId).subscribe((photo) => {
+          this.profilePhoto = photo;
+        });
+      }
     });
   }
 

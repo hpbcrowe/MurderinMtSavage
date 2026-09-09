@@ -176,6 +176,21 @@ IF OBJECT_ID('dbo.AncestorFollowers', 'U') IS NULL
 
 
 GO
+IF OBJECT_ID('dbo.AncestorProfilePhotos', 'U') IS NULL
+    BEGIN
+        CREATE TABLE dbo.AncestorProfilePhotos (
+            AncestorProfilePhotoId INT      IDENTITY (1, 1) NOT NULL CONSTRAINT PK_AncestorProfilePhotos PRIMARY KEY,
+            AncestorProfileId      INT      NOT NULL,
+            PhotoId                INT      NOT NULL,
+            CreatedDate            DATETIME CONSTRAINT DF_AncestorProfilePhotos_CreatedDate DEFAULT GETDATE() NOT NULL,
+            CONSTRAINT UQ_AncestorProfilePhotos_AncestorProfileId_PhotoId UNIQUE (AncestorProfileId, PhotoId),
+            CONSTRAINT FK_AncestorProfilePhotos_AncestorProfiles FOREIGN KEY (AncestorProfileId) REFERENCES dbo.AncestorProfiles (AncestorProfileId) ON DELETE CASCADE,
+            CONSTRAINT FK_AncestorProfilePhotos_Photo FOREIGN KEY (PhotoId) REFERENCES dbo.Photo (PhotoId) ON DELETE CASCADE
+        );
+    END
+
+
+GO
 IF OBJECT_ID('dbo.Sources', 'U') IS NULL
     BEGIN
         CREATE TABLE dbo.Sources (
@@ -263,6 +278,17 @@ IF NOT EXISTS (SELECT 1
     BEGIN
         CREATE INDEX IX_ResearchNotes_AncestorProfileId
             ON dbo.ResearchNotes(AncestorProfileId);
+    END
+
+
+GO
+IF NOT EXISTS (SELECT 1
+               FROM   sys.indexes
+               WHERE  name = 'IX_AncestorProfilePhotos_AncestorProfileId_CreatedDate'
+                      AND object_id = OBJECT_ID('dbo.AncestorProfilePhotos'))
+    BEGIN
+        CREATE INDEX IX_AncestorProfilePhotos_AncestorProfileId_CreatedDate
+            ON dbo.AncestorProfilePhotos(AncestorProfileId, CreatedDate DESC);
     END
 
 

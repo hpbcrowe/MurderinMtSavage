@@ -1,4 +1,5 @@
 using CroweQuest.Models.Genealogy;
+using CroweQuest.Models.Photo;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -43,6 +44,22 @@ namespace CroweQuest.Repository
                 commandType: CommandType.StoredProcedure);
         }
 
+        public async Task<int> AddPhotoAsync(int ancestorProfileId, int photoId, int applicationUserId)
+        {
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            return await connection.ExecuteScalarAsync<int>(
+                "AncestorProfilePhoto_Upsert",
+                new
+                {
+                    AncestorProfileId = ancestorProfileId,
+                    PhotoId = photoId,
+                    ApplicationUserId = applicationUserId
+                },
+                commandType: CommandType.StoredProcedure);
+        }
+
         public async Task<int> DeleteAsync(int ancestorProfileId)
         {
             using var connection = CreateConnection();
@@ -75,6 +92,19 @@ namespace CroweQuest.Repository
                 "AncestorProfile_Get",
                 new { AncestorProfileId = ancestorProfileId },
                 commandType: CommandType.StoredProcedure);
+        }
+
+        public async Task<List<Photo>> GetPhotosAsync(int ancestorProfileId)
+        {
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            var photos = await connection.QueryAsync<Photo>(
+                "AncestorProfilePhoto_GetByAncestorProfileId",
+                new { AncestorProfileId = ancestorProfileId },
+                commandType: CommandType.StoredProcedure);
+
+            return photos.ToList();
         }
 
         public async Task<List<AncestorProfile>> SearchAsync(string query)
@@ -132,6 +162,22 @@ namespace CroweQuest.Repository
             return await connection.ExecuteAsync(
                 "AncestorFollower_Delete",
                 new { AncestorProfileId = ancestorProfileId, ApplicationUserId = applicationUserId },
+                commandType: CommandType.StoredProcedure);
+        }
+
+        public async Task<int> RemovePhotoAsync(int ancestorProfileId, int photoId, int applicationUserId)
+        {
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            return await connection.ExecuteScalarAsync<int>(
+                "AncestorProfilePhoto_Delete",
+                new
+                {
+                    AncestorProfileId = ancestorProfileId,
+                    PhotoId = photoId,
+                    ApplicationUserId = applicationUserId
+                },
                 commandType: CommandType.StoredProcedure);
         }
     }

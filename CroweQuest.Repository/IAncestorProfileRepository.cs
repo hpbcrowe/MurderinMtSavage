@@ -1,4 +1,5 @@
 using CroweQuest.Models.Genealogy;
+using CroweQuest.Models.Photo;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -21,5 +22,11 @@ namespace CroweQuest.Repository
         Task<int> RemoveFollowerAsync(int ancestorProfileId, int applicationUserId);
 
         Task<int> AddRelationshipAsync(AncestorRelationship ancestorRelationship);
+
+        Task<List<Photo>> GetPhotosAsync(int ancestorProfileId);
+
+        Task<int> AddPhotoAsync(int ancestorProfileId, int photoId, int applicationUserId);
+
+        Task<int> RemovePhotoAsync(int ancestorProfileId, int photoId, int applicationUserId);
     }
 }
