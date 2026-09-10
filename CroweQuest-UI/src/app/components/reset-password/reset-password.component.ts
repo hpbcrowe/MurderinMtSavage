@@ -134,14 +134,17 @@ export class ResetPasswordComponent implements OnInit {
           return;
         }
 
+        if (httpError?.status === 0) {
+          this.resetError = 'The server is still starting up. Please try again in a moment.';
+          return;
+        }
+
         const backendMessage =
           typeof httpError?.error === 'string' && httpError.error
             ? httpError.error
             : 'Unable to reset your password right now. Please try again.';
 
-        this.resetError = httpError?.status
-          ? `${httpError.status}: ${backendMessage}`
-          : backendMessage;
+        this.resetError = backendMessage;
       },
     });
   }

@@ -96,19 +96,33 @@ export class LoginComponent implements OnInit {
         this.router.navigateByUrl(this.returnUrl);
       },
       error: (error) => {
-        if (error?.status === 401 || error?.status === 400) {
-          this.loginError = 'Invalid username or password.';
-          return;
-        }
-
-        const backendMessage =
-          typeof error?.error === 'string' && error.error
-            ? error.error
-            : 'Unable to log in right now. Please try again.';
-
-        this.loginError = backendMessage;
+        this.loginError = this.getFriendlyErrorMessage(
+          error,
+          'Unable to log in right now. Please try again.',
+          'Invalid username or password.'
+        );
       },
     });
+  }
+
+  private getFriendlyErrorMessage(
+    error: any,
+    fallbackMessage: string,
+    invalidCredentialsMessage: string
+  ): string {
+    if (error?.status === 401 || error?.status === 400) {
+      return invalidCredentialsMessage;
+    }
+
+    if (error?.status === 0) {
+      return 'The server is still starting up. Please try again in a moment.';
+    }
+
+    if (typeof error?.error === 'string' && error.error) {
+      return error.error;
+    }
+
+    return fallbackMessage;
   }
 
   public setTitle(newTitle: string) {
