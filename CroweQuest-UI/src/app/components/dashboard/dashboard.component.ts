@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { Blog } from 'src/app/models/blog/blog.model';
+import { Photo } from 'src/app/models/photo/photo.model';
 import { AccountService } from 'src/app/services/account.service';
 import { BlogService } from 'src/app/services/blog.service';
+import { PhotoService } from 'src/app/services/photo.service';
 import { Meta, Title } from '@angular/platform-browser';
 
 @Component({
@@ -14,10 +16,12 @@ import { Meta, Title } from '@angular/platform-browser';
 export class DashboardComponent implements OnInit {
   //had to add ! definite assignment
   userBlogs!: Blog[];
+  userPhotos: Photo[] = [];
 
   constructor(
     //Dependencies
     private blogService: BlogService,
+    private photoService: PhotoService,
     private router: Router,
     private toastr: ToastrService,
     public accountService: AccountService,
@@ -48,6 +52,10 @@ export class DashboardComponent implements OnInit {
         // to the this.userBlogs we create on line 39
         this.userBlogs = userBlogs;
       });
+
+    this.photoService.getByApplicationUserId().subscribe((userPhotos) => {
+      this.userPhotos = userPhotos;
+    });
   }
 
   confirmDelete(blog: Blog) {

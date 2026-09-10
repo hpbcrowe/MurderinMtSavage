@@ -8,6 +8,7 @@ import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { PhotoAlbumComponent } from './components/photo-album/photo-album.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { AncestorProfilesComponent } from './components/genealogy-components/ancestor-profiles/ancestor-profiles.component';
 import { AncestorProfileComponent } from './components/genealogy-components/ancestor-profile/ancestor-profile.component';
 import { AncestorProfileEditComponent } from './components/genealogy-components/ancestor-profile-edit/ancestor-profile-edit.component';
@@ -21,6 +22,7 @@ import { AuthGuard } from './guards/auth.guard';
 const routes: Routes = [
   {path: '', component: HomeComponent},
   {path: 'login', component: LoginComponent},
+  {path: 'reset-password', component: ResetPasswordComponent},
   {path: 'blogs', component: BlogsComponent},
   {path: 'blogs/:id', component: BlogComponent},
   {path: 'photo-album', component: PhotoAlbumComponent, canActivate: [AuthGuard]},

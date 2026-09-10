@@ -51,6 +51,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { PhotoAlbumComponent } from './components/photo-album/photo-album.component';
 import { RegisterComponent } from './components/register/register.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { LoadingInterceptor } from './interceptors/loading.interceptor';
@@ -83,6 +84,7 @@ import { LoadingInterceptor } from './interceptors/loading.interceptor';
     NotFoundComponent,
     PhotoAlbumComponent,
     RegisterComponent,
+    ResetPasswordComponent,
   ],
 
   //IMPORTS are to import custom modules into the app

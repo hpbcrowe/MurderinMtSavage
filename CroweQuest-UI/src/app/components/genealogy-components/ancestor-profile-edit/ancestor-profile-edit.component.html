@@ -53,6 +53,100 @@
       <input class="form-control" formControlName="tags" placeholder="Smith, Crowe, Utah, England" />
     </div>
 
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Profile Photo</h5>
+
+        <div
+          class="border rounded p-3 text-center mb-3"
+          [ngClass]="{ 'bg-light': isPhotoDragActive }"
+          (dragover)="onPhotoDragOver($event)"
+          (dragleave)="onPhotoDragLeave($event)"
+          (drop)="onPhotoDrop($event)"
+        >
+          <p class="mb-2">Drag and drop an image here</p>
+          <p class="text-muted mb-2">or</p>
+          <label class="btn btn-outline-primary mb-0" for="ancestor-photo-upload-input">Choose image from device</label>
+          <input
+            id="ancestor-photo-upload-input"
+            type="file"
+            class="d-none"
+            accept="image/*"
+            (change)="onPhotoPickerChange($event)"
+          />
+          <div class="text-center mt-2">
+            <small class="form-text text-muted">Supported files: images up to 10MB.</small>
+          </div>
+        </div>
+
+        <div class="border rounded p-3 mb-3" *ngIf="photoFile">
+          <div class="row align-items-center">
+            <div class="col-md-3 mb-2 mb-md-0" *ngIf="photoPreviewUrl">
+              <img [src]="photoPreviewUrl" [alt]="photoFile.name" class="img-fluid rounded" />
+            </div>
+
+            <div class="col-md-9">
+              <div><strong>Selected file:</strong> {{ photoFile.name }}</div>
+              <div class="text-muted mb-2">{{ (photoFile.size / 1024 / 1024).toFixed(2) }} MB</div>
+              <button type="button" class="btn btn-primary mr-2" [disabled]="isPhotoUploading" (click)="uploadPhotoAndAttach()">
+                {{ isPhotoUploading ? 'Uploading...' : 'Upload and attach photo' }}
+              </button>
+              <button type="button" class="btn btn-outline-secondary" [disabled]="isPhotoUploading" (click)="clearPendingPhoto()">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group mb-2" *ngIf="!isNew()">
+          <label for="selectedUserPhotoId">Attach one of your uploaded photos</label>
+          <div class="d-flex">
+            <select class="form-control mr-2" id="selectedUserPhotoId" [(ngModel)]="selectedUserPhotoId" [ngModelOptions]="{ standalone: true }">
+              <option [ngValue]="null">Choose a photo to attach</option>
+              <option *ngFor="let photo of getAvailableUserPhotosForAttach()" [ngValue]="photo.photoId">{{ photo.description }}</option>
+            </select>
+            <button type="button" class="btn btn-outline-primary" (click)="attachSelectedExistingPhoto()">Attach</button>
+          </div>
+        </div>
+
+        <div class="alert alert-info mb-3" *ngIf="isNew()">
+          Save the ancestor first to attach multiple photos to this profile.
+        </div>
+
+        <div class="form-group mb-2">
+          <label for="profilePhotoId">Choose profile picture from attached photos</label>
+          <select class="form-control" formControlName="profilePhotoId" id="profilePhotoId">
+            <option [ngValue]="null">No profile picture selected</option>
+            <option *ngFor="let photo of ancestorPhotos" [ngValue]="photo.photoId">{{ photo.description }}</option>
+          </select>
+        </div>
+
+        <div class="mt-3" *ngIf="getSelectedPhoto() as selectedPhoto">
+          <div class="mb-2"><strong>Selected profile photo:</strong> {{ selectedPhoto.description }}</div>
+          <img [src]="selectedPhoto.imageUrl" [alt]="selectedPhoto.description" class="img-fluid rounded mb-2" style="max-height: 280px;" />
+          <div>
+            <button type="button" class="btn btn-outline-danger" (click)="clearProfilePhotoSelection()">Clear profile picture</button>
+          </div>
+        </div>
+
+        <div class="mt-4" *ngIf="ancestorPhotos.length > 0">
+          <h6>Attached ancestor photos</h6>
+          <div class="row">
+            <div class="col-sm-6 col-md-4 mb-3" *ngFor="let photo of ancestorPhotos">
+              <div class="card h-100">
+                <img [src]="photo.imageUrl" [alt]="photo.description" class="card-img-top" style="height: 170px; object-fit: cover;" />
+                <div class="card-body p-2">
+                  <div class="small mb-2">{{ photo.description }}</div>
+                  <button type="button" class="btn btn-sm mr-2" [ngClass]="isProfilePhoto(photo.photoId) ? 'btn-success' : 'btn-outline-success'" (click)="setProfilePhoto(photo.photoId)">
+                    {{ isProfilePhoto(photo.photoId) ? 'Profile picture' : 'Set as profile' }}
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeAncestorPhoto(photo.photoId)">Remove</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <button class="btn bg-primary text-light" [disabled]="!ancestorProfileForm.valid && ancestorProfileForm.pristine">Save</button>
   </form>
 </div>

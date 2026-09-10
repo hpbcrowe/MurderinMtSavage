@@ -102,5 +102,35 @@ namespace CroweQuest.Repository
             // return application user loaded from database
             return applicationUser;
         }
+
+        public async Task<IdentityResult> UpdatePasswordHashAsync(ApplicationUserIdentity user, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            using (var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
+            {
+                await connection.OpenAsync(cancellationToken);
+
+                var rowsAffected = await connection.ExecuteAsync(
+                    @"UPDATE dbo.ApplicationUser
+                      SET PasswordHash = @PasswordHash
+                      WHERE ApplicationUserId = @ApplicationUserId",
+                    new
+                    {
+                        user.PasswordHash,
+                        user.ApplicationUserId
+                    });
+
+                if (rowsAffected > 0)
+                {
+                    return IdentityResult.Success;
+                }
+
+                return IdentityResult.Failed(new IdentityError
+                {
+                    Description = "Unable to update the user's password."
+                });
+            }
+        }
     }
 }

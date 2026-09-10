@@ -5,6 +5,7 @@ import { environment } from 'src/environments/environment';
 import { AncestorProfileCreate } from '../../models/genealogy/ancestor-profile-create.model';
 import { AncestorProfile } from '../../models/genealogy/ancestor-profile.model';
 import { AncestorRelationship } from '../../models/genealogy/ancestor-relationship.model';
+import { Photo } from '../../models/photo/photo.model';
 
 @Injectable({ providedIn: 'root' })
 export class AncestorProfileService {
@@ -37,5 +38,17 @@ export class AncestorProfileService {
 
   addRelationship(ancestorProfileId: number, model: AncestorRelationship): Observable<number> {
     return this.http.post<number>(`${environment.webApi}/AncestorProfile/${ancestorProfileId}/relationships`, model);
+  }
+
+  getPhotos(ancestorProfileId: number): Observable<Photo[]> {
+    return this.http.get<Photo[]>(`${environment.webApi}/AncestorProfile/${ancestorProfileId}/photos`);
+  }
+
+  addPhoto(ancestorProfileId: number, photoId: number): Observable<number> {
+    return this.http.post<number>(`${environment.webApi}/AncestorProfile/${ancestorProfileId}/photos/${photoId}`, {});
+  }
+
+  removePhoto(ancestorProfileId: number, photoId: number): Observable<number> {
+    return this.http.delete<number>(`${environment.webApi}/AncestorProfile/${ancestorProfileId}/photos/${photoId}`);
   }
 }

@@ -10,6 +10,7 @@ using BlogLab.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using CroweQuest.Repository;
 
 namespace CroweQuest.Web.Controllers
 {
@@ -20,15 +21,18 @@ namespace CroweQuest.Web.Controllers
         private readonly ITokenService _tokenService;
         private readonly UserManager<ApplicationUserIdentity> _userManager;
         private readonly SignInManager<ApplicationUserIdentity> _signInManager;
+        private readonly IAccountRepository _accountRepository;
 
         public AccountController(
-            ITokenService tokenService, 
+            ITokenService tokenService,
             UserManager<ApplicationUserIdentity> userManager,
-            SignInManager<ApplicationUserIdentity> signInManager)
+            SignInManager<ApplicationUserIdentity> signInManager,
+            IAccountRepository accountRepository)
         {
             _tokenService = tokenService;
             _userManager = userManager;
             _signInManager = signInManager;
+            _accountRepository = accountRepository;
         }
 
         [HttpPost("register")]
@@ -71,11 +75,11 @@ namespace CroweQuest.Web.Controllers
 
             if (applicationUserIdentity != null)
             {
-                var result = await _signInManager.CheckPasswordSignInAsync(
+                var passwordIsValid = await _userManager.CheckPasswordAsync(
                     applicationUserIdentity,
-                    applicationUserLogin.Password, false);
+                    applicationUserLogin.Password);
 
-                if (result.Succeeded)
+                if (passwordIsValid)
                 {
                     ApplicationUser applicationUser = new ApplicationUser
                     {
@@ -92,6 +96,41 @@ namespace CroweQuest.Web.Controllers
             }
 
             return BadRequest("Invalid login attempt.");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<ActionResult> ResetPassword(ApplicationUserPasswordReset applicationUserPasswordReset)
+        {
+            var applicationUserIdentity = await _userManager.FindByNameAsync(applicationUserPasswordReset.Username);
+
+            if (applicationUserIdentity == null)
+            {
+                return BadRequest("Unable to reset password.");
+            }
+
+            var providedEmail = applicationUserPasswordReset.Email?.Trim();
+            var storedEmail = applicationUserIdentity.Email?.Trim();
+
+            if (!string.Equals(providedEmail, storedEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest("Unable to reset password.");
+            }
+
+            var passwordHasher = new PasswordHasher<ApplicationUserIdentity>();
+            applicationUserIdentity.PasswordHash = passwordHasher.HashPassword(
+                applicationUserIdentity,
+                applicationUserPasswordReset.Password);
+
+            var updateResult = await _accountRepository.UpdatePasswordHashAsync(
+                applicationUserIdentity,
+                HttpContext.RequestAborted);
+
+            if (updateResult.Succeeded)
+            {
+                return Ok("Password updated successfully. You can log in with your new password.");
+            }
+
+            return BadRequest("Unable to reset password.");
         }
     }
 }

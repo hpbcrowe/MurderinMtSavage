@@ -1,4 +1,5 @@
 using CroweQuest.Models.Genealogy;
+using CroweQuest.Models.Photo;
 using CroweQuest.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -74,6 +75,28 @@ namespace CroweQuest.Web.Controllers
         {
             ancestorRelationship.AncestorProfileId = ancestorProfileId;
             return Ok(await _ancestorProfileRepository.AddRelationshipAsync(ancestorRelationship));
+        }
+
+        [HttpGet("{ancestorProfileId}/photos")]
+        public async Task<ActionResult<List<Photo>>> GetPhotos(int ancestorProfileId)
+        {
+            return Ok(await _ancestorProfileRepository.GetPhotosAsync(ancestorProfileId));
+        }
+
+        [Authorize]
+        [HttpPost("{ancestorProfileId}/photos/{photoId}")]
+        public async Task<ActionResult<int>> AddPhoto(int ancestorProfileId, int photoId)
+        {
+            int applicationUserId = int.Parse(User.Claims.First(i => i.Type == JwtRegisteredClaimNames.NameId).Value);
+            return Ok(await _ancestorProfileRepository.AddPhotoAsync(ancestorProfileId, photoId, applicationUserId));
+        }
+
+        [Authorize]
+        [HttpDelete("{ancestorProfileId}/photos/{photoId}")]
+        public async Task<ActionResult<int>> RemovePhoto(int ancestorProfileId, int photoId)
+        {
+            int applicationUserId = int.Parse(User.Claims.First(i => i.Type == JwtRegisteredClaimNames.NameId).Value);
+            return Ok(await _ancestorProfileRepository.RemovePhotoAsync(ancestorProfileId, photoId, applicationUserId));
         }
     }
 }
