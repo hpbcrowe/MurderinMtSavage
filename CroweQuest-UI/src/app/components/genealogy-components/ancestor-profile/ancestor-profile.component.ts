@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { AncestorProfile } from 'src/app/models/genealogy/ancestor-profile.model';
-import { AncestorRelationship } from 'src/app/models/genealogy/ancestor-relationship.model';
 import { Photo } from 'src/app/models/photo/photo.model';
 import { AncestorProfileService } from 'src/app/services/genealogy/ancestor-profile.service';
 import { PhotoService } from 'src/app/services/photo.service';
@@ -15,12 +13,10 @@ import { PhotoService } from 'src/app/services/photo.service';
 export class AncestorProfileComponent implements OnInit {
   ancestorProfile!: AncestorProfile;
   profilePhoto: Photo | null = null;
-  relationshipForm!: FormGroup;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private formBuilder: FormBuilder,
     private ancestorProfileService: AncestorProfileService,
     private photoService: PhotoService,
     private meta: Meta,
@@ -36,11 +32,6 @@ export class AncestorProfileComponent implements OnInit {
 
   ngOnInit(): void {
     const ancestorProfileId = parseInt(this.route.snapshot.paramMap.get('id')!);
-
-    this.relationshipForm = this.formBuilder.group({
-      relatedAncestorProfileId: [null, Validators.required],
-      relationshipType: ['Parent', Validators.required]
-    });
 
     this.ancestorProfileService.get(ancestorProfileId).subscribe((ancestorProfile) => {
       this.ancestorProfile = ancestorProfile;
@@ -59,19 +50,6 @@ export class AncestorProfileComponent implements OnInit {
 
   unfollow(): void {
     this.ancestorProfileService.unfollow(this.ancestorProfile.ancestorProfileId).subscribe();
-  }
-
-  addRelationship(): void {
-    const relationship = new AncestorRelationship(
-      0,
-      this.ancestorProfile.ancestorProfileId,
-      this.relationshipForm.get('relatedAncestorProfileId')?.value,
-      this.relationshipForm.get('relationshipType')?.value
-    );
-
-    this.ancestorProfileService.addRelationship(this.ancestorProfile.ancestorProfileId, relationship).subscribe(() => {
-      this.relationshipForm.reset({ relationshipType: 'Parent' });
-    });
   }
 
   edit(): void {

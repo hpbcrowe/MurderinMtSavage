@@ -120,26 +120,30 @@ GO
 IF OBJECT_ID('dbo.AncestorProfiles', 'U') IS NULL
     BEGIN
         CREATE TABLE dbo.AncestorProfiles (
-            AncestorProfileId INT            IDENTITY (1, 1) NOT NULL CONSTRAINT PK_AncestorProfiles PRIMARY KEY,
-            FirstName         NVARCHAR (50)  NOT NULL,
-            MiddleName        NVARCHAR (50)  NULL,
-            LastName          NVARCHAR (50)  NOT NULL,
-            Suffix            NVARCHAR (20)  NULL,
-            Gender            NVARCHAR (20)  NULL,
-            BirthDate         DATETIME       NULL,
-            BirthLocation     NVARCHAR (100) NULL,
-            DeathDate         DATETIME       NULL,
-            DeathLocation     NVARCHAR (100) NULL,
-            Biography         NVARCHAR (MAX) NULL,
-            ResearchStatus    NVARCHAR (50)  NULL,
-            FamilyBranch      NVARCHAR (100) NULL,
-            Tags              NVARCHAR (200) NULL,
-            ConfidenceLevel   NVARCHAR (50)  NULL,
-            ProfilePhotoId    INT            NULL,
-            ApplicationUserId INT            NOT NULL,
-            PublishDate       DATETIME       CONSTRAINT DF_AncestorProfiles_PublishDate DEFAULT GETDATE() NOT NULL,
-            UpdateDate        DATETIME       CONSTRAINT DF_AncestorProfiles_UpdateDate DEFAULT GETDATE() NOT NULL,
-            CONSTRAINT FK_AncestorProfiles_AspNetUsers FOREIGN KEY (ApplicationUserId) REFERENCES dbo.ApplicationUser (ApplicationUserId)
+            AncestorProfileId       INT            IDENTITY (1, 1) NOT NULL CONSTRAINT PK_AncestorProfiles PRIMARY KEY,
+            FirstName               NVARCHAR (50)  NOT NULL,
+            MiddleName              NVARCHAR (50)  NULL,
+            LastName                NVARCHAR (50)  NOT NULL,
+            Suffix                  NVARCHAR (20)  NULL,
+            Gender                  NVARCHAR (20)  NULL,
+            BirthDate               DATETIME       NULL,
+            BirthLocation           NVARCHAR (100) NULL,
+            DeathDate               DATETIME       NULL,
+            DeathLocation           NVARCHAR (100) NULL,
+            Biography               NVARCHAR (MAX) NULL,
+            ResearchStatus          NVARCHAR (50)  NULL,
+            FamilyBranch            NVARCHAR (100) NULL,
+            Tags                    NVARCHAR (200) NULL,
+            ConfidenceLevel         NVARCHAR (50)  NULL,
+            ProfilePhotoId          INT            NULL,
+            FatherAncestorProfileId INT            NULL,
+            MotherAncestorProfileId INT            NULL,
+            ApplicationUserId       INT            NOT NULL,
+            PublishDate             DATETIME       CONSTRAINT DF_AncestorProfiles_PublishDate DEFAULT GETDATE() NOT NULL,
+            UpdateDate              DATETIME       CONSTRAINT DF_AncestorProfiles_UpdateDate DEFAULT GETDATE() NOT NULL,
+            CONSTRAINT FK_AncestorProfiles_AspNetUsers FOREIGN KEY (ApplicationUserId) REFERENCES dbo.ApplicationUser (ApplicationUserId),
+            CONSTRAINT FK_AncestorProfiles_Father FOREIGN KEY (FatherAncestorProfileId) REFERENCES dbo.AncestorProfiles (AncestorProfileId),
+            CONSTRAINT FK_AncestorProfiles_Mother FOREIGN KEY (MotherAncestorProfileId) REFERENCES dbo.AncestorProfiles (AncestorProfileId)
         );
     END
 
@@ -249,6 +253,44 @@ IF OBJECT_ID('dbo.Notifications', 'U') IS NULL
 
 
 GO
+IF COL_LENGTH('dbo.AncestorProfiles', 'FatherAncestorProfileId') IS NULL
+    BEGIN
+        ALTER TABLE dbo.AncestorProfiles
+            ADD FatherAncestorProfileId INT NULL;
+    END
+
+
+GO
+IF COL_LENGTH('dbo.AncestorProfiles', 'MotherAncestorProfileId') IS NULL
+    BEGIN
+        ALTER TABLE dbo.AncestorProfiles
+            ADD MotherAncestorProfileId INT NULL;
+    END
+
+
+GO
+IF NOT EXISTS (SELECT 1
+               FROM   sys.foreign_keys
+               WHERE  name = 'FK_AncestorProfiles_Father'
+                      AND parent_object_id = OBJECT_ID('dbo.AncestorProfiles'))
+    BEGIN
+        ALTER TABLE dbo.AncestorProfiles
+            ADD CONSTRAINT FK_AncestorProfiles_Father FOREIGN KEY (FatherAncestorProfileId) REFERENCES dbo.AncestorProfiles (AncestorProfileId);
+    END
+
+
+GO
+IF NOT EXISTS (SELECT 1
+               FROM   sys.foreign_keys
+               WHERE  name = 'FK_AncestorProfiles_Mother'
+                      AND parent_object_id = OBJECT_ID('dbo.AncestorProfiles'))
+    BEGIN
+        ALTER TABLE dbo.AncestorProfiles
+            ADD CONSTRAINT FK_AncestorProfiles_Mother FOREIGN KEY (MotherAncestorProfileId) REFERENCES dbo.AncestorProfiles (AncestorProfileId);
+    END
+
+
+GO
 IF NOT EXISTS (SELECT 1
                FROM   sys.indexes
                WHERE  name = 'IX_AncestorProfiles_LastName_FirstName'
@@ -256,6 +298,28 @@ IF NOT EXISTS (SELECT 1
     BEGIN
         CREATE INDEX IX_AncestorProfiles_LastName_FirstName
             ON dbo.AncestorProfiles(LastName, FirstName);
+    END
+
+
+GO
+IF NOT EXISTS (SELECT 1
+               FROM   sys.indexes
+               WHERE  name = 'IX_AncestorProfiles_FatherAncestorProfileId'
+                      AND object_id = OBJECT_ID('dbo.AncestorProfiles'))
+    BEGIN
+        CREATE INDEX IX_AncestorProfiles_FatherAncestorProfileId
+            ON dbo.AncestorProfiles(FatherAncestorProfileId);
+    END
+
+
+GO
+IF NOT EXISTS (SELECT 1
+               FROM   sys.indexes
+               WHERE  name = 'IX_AncestorProfiles_MotherAncestorProfileId'
+                      AND object_id = OBJECT_ID('dbo.AncestorProfiles'))
+    BEGIN
+        CREATE INDEX IX_AncestorProfiles_MotherAncestorProfileId
+            ON dbo.AncestorProfiles(MotherAncestorProfileId);
     END
 
 

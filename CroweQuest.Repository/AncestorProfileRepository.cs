@@ -80,7 +80,14 @@ namespace CroweQuest.Repository
                 "AncestorProfile_GetAll",
                 commandType: CommandType.StoredProcedure);
 
-            return ancestors.ToList();
+            var ancestorProfiles = ancestors.ToList();
+
+            foreach (var ancestorProfile in ancestorProfiles)
+            {
+                await HydrateRelationshipsAsync(connection, ancestorProfile);
+            }
+
+            return ancestorProfiles;
         }
 
         public async Task<AncestorProfile> GetAsync(int ancestorProfileId)
@@ -88,10 +95,19 @@ namespace CroweQuest.Repository
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
-            return await connection.QueryFirstOrDefaultAsync<AncestorProfile>(
+            var ancestorProfile = await connection.QueryFirstOrDefaultAsync<AncestorProfile>(
                 "AncestorProfile_Get",
                 new { AncestorProfileId = ancestorProfileId },
                 commandType: CommandType.StoredProcedure);
+
+            if (ancestorProfile == null)
+            {
+                return null;
+            }
+
+            await HydrateRelationshipsAsync(connection, ancestorProfile);
+
+            return ancestorProfile;
         }
 
         public async Task<List<Photo>> GetPhotosAsync(int ancestorProfileId)
@@ -117,7 +133,14 @@ namespace CroweQuest.Repository
                 new { Query = query },
                 commandType: CommandType.StoredProcedure);
 
-            return ancestors.ToList();
+            var ancestorProfiles = ancestors.ToList();
+
+            foreach (var ancestorProfile in ancestorProfiles)
+            {
+                await HydrateRelationshipsAsync(connection, ancestorProfile);
+            }
+
+            return ancestorProfiles;
         }
 
         public async Task<AncestorProfile> UpsertAsync(AncestorProfileCreate ancestorProfileCreate, int applicationUserId)
@@ -145,6 +168,11 @@ namespace CroweQuest.Repository
                     ancestorProfileCreate.Tags,
                     ancestorProfileCreate.ConfidenceLevel,
                     ancestorProfileCreate.ProfilePhotoId,
+                    ancestorProfileCreate.FatherAncestorProfileId,
+                    ancestorProfileCreate.MotherAncestorProfileId,
+                    SiblingAncestorProfileIds = ancestorProfileCreate.SiblingAncestorProfileIds != null
+                        ? string.Join(",", ancestorProfileCreate.SiblingAncestorProfileIds)
+                        : null,
                     ApplicationUserId = applicationUserId
                 },
                 commandType: CommandType.StoredProcedure);
@@ -179,6 +207,91 @@ namespace CroweQuest.Repository
                     ApplicationUserId = applicationUserId
                 },
                 commandType: CommandType.StoredProcedure);
+        }
+
+        private async Task HydrateRelationshipsAsync(SqlConnection connection, AncestorProfile ancestorProfile)
+        {
+            var relationshipRows = (await connection.QueryAsync<AncestorRelationshipRow>(
+                "AncestorProfile_GetRelationships",
+                new { AncestorProfileId = ancestorProfile.AncestorProfileId },
+                commandType: CommandType.StoredProcedure)).ToList();
+
+            ancestorProfile.Father = relationshipRows
+                .Where(i => i.RelationshipGroup == "Father")
+                .Select(MapToRelativeSummary)
+                .FirstOrDefault();
+
+            ancestorProfile.Mother = relationshipRows
+                .Where(i => i.RelationshipGroup == "Mother")
+                .Select(MapToRelativeSummary)
+                .FirstOrDefault();
+
+            var fatherId = ancestorProfile.Father?.AncestorProfileId;
+            var motherId = ancestorProfile.Mother?.AncestorProfileId;
+
+            ancestorProfile.Siblings = relationshipRows
+                .Where(i => i.RelationshipGroup == "Sibling")
+                .Select(MapToRelativeSummary)
+                .Where(i => i.AncestorProfileId != fatherId && i.AncestorProfileId != motherId)
+                .GroupBy(i => i.AncestorProfileId)
+                .Select(i => i.First())
+                .OrderBy(i => i.LastName)
+                .ThenBy(i => i.FirstName)
+                .ToList();
+
+            ancestorProfile.Children = relationshipRows
+                .Where(i => i.RelationshipGroup == "Child")
+                .Select(MapToRelativeSummary)
+                .GroupBy(i => i.AncestorProfileId)
+                .Select(i => i.First())
+                .OrderBy(i => i.LastName)
+                .ThenBy(i => i.FirstName)
+                .ToList();
+
+            ancestorProfile.SiblingAncestorProfileIds = ancestorProfile.Siblings
+                .Select(i => i.AncestorProfileId)
+                .Distinct()
+                .ToList();
+        }
+
+        private static AncestorRelativeSummary MapToRelativeSummary(AncestorRelationshipRow relationshipRow)
+        {
+            var relationshipLabel = relationshipRow.RelationshipLabel;
+            if (string.IsNullOrWhiteSpace(relationshipLabel) && relationshipRow.Gender != null)
+            {
+                relationshipLabel = relationshipRow.Gender == "Male"
+                    ? "Brother"
+                    : relationshipRow.Gender == "Female"
+                        ? "Sister"
+                        : "Sibling";
+            }
+
+            return new AncestorRelativeSummary
+            {
+                AncestorProfileId = relationshipRow.AncestorProfileId,
+                FirstName = relationshipRow.FirstName,
+                MiddleName = relationshipRow.MiddleName,
+                LastName = relationshipRow.LastName,
+                Gender = relationshipRow.Gender,
+                RelationshipLabel = relationshipLabel
+            };
+        }
+
+        private sealed class AncestorRelationshipRow
+        {
+            public string RelationshipGroup { get; set; }
+
+            public int AncestorProfileId { get; set; }
+
+            public string FirstName { get; set; }
+
+            public string MiddleName { get; set; }
+
+            public string LastName { get; set; }
+
+            public string Gender { get; set; }
+
+            public string RelationshipLabel { get; set; }
         }
     }
 }
