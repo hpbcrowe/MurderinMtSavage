@@ -15,6 +15,9 @@ export class AncestorProfileCreate {
     public familyBranch?: string,
     public tags?: string,
     public confidenceLevel?: string,
-    public profilePhotoId?: number
+    public profilePhotoId?: number,
+    public fatherAncestorProfileId?: number,
+    public motherAncestorProfileId?: number,
+    public siblingAncestorProfileIds: number[] = []
   ) {}
 }

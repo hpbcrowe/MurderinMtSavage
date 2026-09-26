@@ -1,4 +1,5 @@
 import { AncestorProfileCreate } from './ancestor-profile-create.model';
+import { AncestorRelativeSummary } from './ancestor-relative-summary.model';
 
 export class AncestorProfile extends AncestorProfileCreate {
   constructor(
@@ -18,6 +19,13 @@ export class AncestorProfile extends AncestorProfileCreate {
     tags?: string,
     confidenceLevel?: string,
     profilePhotoId?: number,
+    fatherAncestorProfileId?: number,
+    motherAncestorProfileId?: number,
+    siblingAncestorProfileIds: number[] = [],
+    public father?: AncestorRelativeSummary,
+    public mother?: AncestorRelativeSummary,
+    public siblings: AncestorRelativeSummary[] = [],
+    public children: AncestorRelativeSummary[] = [],
     public username?: string,
     public applicationUserId?: number,
     public publishDate?: Date,
@@ -39,7 +47,10 @@ export class AncestorProfile extends AncestorProfileCreate {
       familyBranch,
       tags,
       confidenceLevel,
-      profilePhotoId
+      profilePhotoId,
+      fatherAncestorProfileId,
+      motherAncestorProfileId,
+      siblingAncestorProfileIds
     );
   }
 }

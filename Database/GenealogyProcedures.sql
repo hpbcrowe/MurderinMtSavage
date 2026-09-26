@@ -141,7 +141,12 @@ BEGIN
              LEFT OUTER JOIN
              dbo.ApplicationUser AS u
              ON u.ApplicationUserId = b.ApplicationUserId
-    ORDER BY b.PublishDate DESC, b.BlogId DESC;
+             INNER JOIN
+             dbo.BlogComment AS bc
+             ON bc.BlogId = b.BlogId
+                AND ISNULL(bc.ActiveInd, 1) = 1
+    GROUP BY b.BlogId, b.Title, b.Content, b.PhotoId, b.AncestorProfileId, b.SourceId, b.AncestorName, b.RecordType, b.Location, b.FamilyBranch, b.Tags, b.ConfidenceLevel, b.ResearchStatus, b.ApplicationUserId, u.UserName, b.PublishDate, b.UpdateDate
+    ORDER BY COUNT_BIG(1) DESC, b.PublishDate DESC, b.BlogId DESC;
 END
 
 
@@ -259,6 +264,8 @@ BEGIN
            a.Tags,
            a.ConfidenceLevel,
            a.ProfilePhotoId,
+           a.FatherAncestorProfileId,
+           a.MotherAncestorProfileId,
            a.ApplicationUserId,
            u.UserName AS Username,
            a.PublishDate,
@@ -292,6 +299,8 @@ BEGIN
              a.Tags,
              a.ConfidenceLevel,
              a.ProfilePhotoId,
+             a.FatherAncestorProfileId,
+             a.MotherAncestorProfileId,
              a.ApplicationUserId,
              u.UserName AS Username,
              a.PublishDate,
@@ -327,6 +336,8 @@ BEGIN
              a.Tags,
              a.ConfidenceLevel,
              a.ProfilePhotoId,
+             a.FatherAncestorProfileId,
+             a.MotherAncestorProfileId,
              a.ApplicationUserId,
              u.UserName AS Username,
              a.PublishDate,
@@ -351,10 +362,38 @@ END
 
 GO
 CREATE OR ALTER PROCEDURE dbo.AncestorProfile_Upsert
-@AncestorProfileId INT, @FirstName NVARCHAR (50), @MiddleName NVARCHAR (50), @LastName NVARCHAR (50), @Suffix NVARCHAR (20), @Gender NVARCHAR (20), @BirthDate DATETIME, @BirthLocation NVARCHAR (100), @DeathDate DATETIME, @DeathLocation NVARCHAR (100), @Biography NVARCHAR (MAX), @ResearchStatus NVARCHAR (50), @FamilyBranch NVARCHAR (100), @Tags NVARCHAR (200), @ConfidenceLevel NVARCHAR (50), @ProfilePhotoId INT, @ApplicationUserId INT
+@AncestorProfileId INT, @FirstName NVARCHAR (50), @MiddleName NVARCHAR (50), @LastName NVARCHAR (50), @Suffix NVARCHAR (20), @Gender NVARCHAR (20), @BirthDate DATETIME, @BirthLocation NVARCHAR (100), @DeathDate DATETIME, @DeathLocation NVARCHAR (100), @Biography NVARCHAR (MAX), @ResearchStatus NVARCHAR (50), @FamilyBranch NVARCHAR (100), @Tags NVARCHAR (200), @ConfidenceLevel NVARCHAR (50), @ProfilePhotoId INT, @FatherAncestorProfileId INT, @MotherAncestorProfileId INT, @SiblingAncestorProfileIds NVARCHAR (MAX)=NULL, @ApplicationUserId INT
 AS
 BEGIN
     SET NOCOUNT ON;
+    SET @FatherAncestorProfileId = NULLIF (@FatherAncestorProfileId, 0);
+    SET @MotherAncestorProfileId = NULLIF (@MotherAncestorProfileId, 0);
+    IF @FatherAncestorProfileId = @AncestorProfileId
+        SET @FatherAncestorProfileId = NULL;
+    IF @MotherAncestorProfileId = @AncestorProfileId
+        SET @MotherAncestorProfileId = NULL;
+    IF @FatherAncestorProfileId IS NOT NULL
+       AND NOT EXISTS (SELECT 1
+                       FROM   dbo.AncestorProfiles
+                       WHERE  AncestorProfileId = @FatherAncestorProfileId)
+        SET @FatherAncestorProfileId = NULL;
+    IF @FatherAncestorProfileId IS NOT NULL
+       AND NOT EXISTS (SELECT 1
+                       FROM   dbo.AncestorProfiles
+                       WHERE  AncestorProfileId = @FatherAncestorProfileId
+                              AND Gender = N'Male')
+        SET @FatherAncestorProfileId = NULL;
+    IF @MotherAncestorProfileId IS NOT NULL
+       AND NOT EXISTS (SELECT 1
+                       FROM   dbo.AncestorProfiles
+                       WHERE  AncestorProfileId = @MotherAncestorProfileId)
+        SET @MotherAncestorProfileId = NULL;
+    IF @MotherAncestorProfileId IS NOT NULL
+       AND NOT EXISTS (SELECT 1
+                       FROM   dbo.AncestorProfiles
+                       WHERE  AncestorProfileId = @MotherAncestorProfileId
+                              AND Gender = N'Female')
+        SET @MotherAncestorProfileId = NULL;
     IF @AncestorProfileId IS NOT NULL
        AND @AncestorProfileId > 0
        AND EXISTS (SELECT 1
@@ -362,23 +401,25 @@ BEGIN
                    WHERE  AncestorProfileId = @AncestorProfileId)
         BEGIN
             UPDATE dbo.AncestorProfiles
-            SET    FirstName         = @FirstName,
-                   MiddleName        = @MiddleName,
-                   LastName          = @LastName,
-                   Suffix            = @Suffix,
-                   Gender            = @Gender,
-                   BirthDate         = @BirthDate,
-                   BirthLocation     = @BirthLocation,
-                   DeathDate         = @DeathDate,
-                   DeathLocation     = @DeathLocation,
-                   Biography         = @Biography,
-                   ResearchStatus    = @ResearchStatus,
-                   FamilyBranch      = @FamilyBranch,
-                   Tags              = @Tags,
-                   ConfidenceLevel   = @ConfidenceLevel,
-                   ProfilePhotoId    = @ProfilePhotoId,
-                   ApplicationUserId = @ApplicationUserId,
-                   UpdateDate        = GETDATE()
+            SET    FirstName               = @FirstName,
+                   MiddleName              = @MiddleName,
+                   LastName                = @LastName,
+                   Suffix                  = @Suffix,
+                   Gender                  = @Gender,
+                   BirthDate               = @BirthDate,
+                   BirthLocation           = @BirthLocation,
+                   DeathDate               = @DeathDate,
+                   DeathLocation           = @DeathLocation,
+                   Biography               = @Biography,
+                   ResearchStatus          = @ResearchStatus,
+                   FamilyBranch            = @FamilyBranch,
+                   Tags                    = @Tags,
+                   ConfidenceLevel         = @ConfidenceLevel,
+                   ProfilePhotoId          = @ProfilePhotoId,
+                   FatherAncestorProfileId = @FatherAncestorProfileId,
+                   MotherAncestorProfileId = @MotherAncestorProfileId,
+                   ApplicationUserId       = @ApplicationUserId,
+                   UpdateDate              = GETDATE()
             WHERE  AncestorProfileId = @AncestorProfileId;
         END
     ELSE
@@ -399,14 +440,196 @@ BEGIN
                 Tags,
                 ConfidenceLevel,
                 ProfilePhotoId,
+                FatherAncestorProfileId,
+                MotherAncestorProfileId,
                 ApplicationUserId,
                 PublishDate,
                 UpdateDate
             )
-            VALUES                           (@FirstName, @MiddleName, @LastName, @Suffix, @Gender, @BirthDate, @BirthLocation, @DeathDate, @DeathLocation, @Biography, @ResearchStatus, @FamilyBranch, @Tags, @ConfidenceLevel, @ProfilePhotoId, @ApplicationUserId, GETDATE(), GETDATE());
+            VALUES                           (@FirstName, @MiddleName, @LastName, @Suffix, @Gender, @BirthDate, @BirthLocation, @DeathDate, @DeathLocation, @Biography, @ResearchStatus, @FamilyBranch, @Tags, @ConfidenceLevel, @ProfilePhotoId, @FatherAncestorProfileId, @MotherAncestorProfileId, @ApplicationUserId, GETDATE(), GETDATE());
             SET @AncestorProfileId = CONVERT (INT, SCOPE_IDENTITY());
         END
+    DECLARE @DesiredSiblings TABLE (
+        AncestorProfileId INT PRIMARY KEY);
+    DECLARE @AllSiblingGroup TABLE (
+        AncestorProfileId INT PRIMARY KEY);
+    IF @SiblingAncestorProfileIds IS NOT NULL
+        BEGIN
+            INSERT INTO @DesiredSiblings (
+                AncestorProfileId
+            )
+            SELECT DISTINCT TRY_CAST (value AS INT)
+            FROM   STRING_SPLIT (@SiblingAncestorProfileIds, ',')
+            WHERE  TRY_CAST (value AS INT) IS NOT NULL
+                   AND TRY_CAST (value AS INT) > 0
+                   AND TRY_CAST (value AS INT) <> @AncestorProfileId
+                   AND (TRY_CAST (value AS INT) <> @FatherAncestorProfileId
+                        OR @FatherAncestorProfileId IS NULL)
+                   AND (TRY_CAST (value AS INT) <> @MotherAncestorProfileId
+                        OR @MotherAncestorProfileId IS NULL);
+        END
+    DELETE ar
+    FROM   dbo.AncestorRelationships AS ar
+    WHERE  ar.AncestorProfileId = @AncestorProfileId
+           AND ar.RelationshipType = N'Sibling'
+           AND (ar.RelatedAncestorProfileId = @FatherAncestorProfileId
+                OR ar.RelatedAncestorProfileId = @MotherAncestorProfileId
+                OR NOT EXISTS (SELECT 1
+                               FROM   @DesiredSiblings AS ds
+                               WHERE  ds.AncestorProfileId = ar.RelatedAncestorProfileId));
+    DELETE ar
+    FROM   dbo.AncestorRelationships AS ar
+    WHERE  ar.RelatedAncestorProfileId = @AncestorProfileId
+           AND ar.RelationshipType = N'Sibling'
+           AND (ar.AncestorProfileId = @FatherAncestorProfileId
+                OR ar.AncestorProfileId = @MotherAncestorProfileId
+                OR NOT EXISTS (SELECT 1
+                               FROM   @DesiredSiblings AS ds
+                               WHERE  ds.AncestorProfileId = ar.AncestorProfileId));
+    INSERT INTO dbo.AncestorRelationships (
+        AncestorProfileId,
+        RelatedAncestorProfileId,
+        RelationshipType,
+        CreatedDate
+    )
+    SELECT @AncestorProfileId,
+           ds.AncestorProfileId,
+           N'Sibling',
+           GETDATE()
+    FROM   @DesiredSiblings AS ds
+    WHERE  EXISTS (SELECT 1
+                   FROM   dbo.AncestorProfiles AS ap
+                   WHERE  ap.AncestorProfileId = ds.AncestorProfileId)
+           AND NOT EXISTS (SELECT 1
+                           FROM   dbo.AncestorRelationships AS ar
+                           WHERE  ar.AncestorProfileId = @AncestorProfileId
+                                  AND ar.RelatedAncestorProfileId = ds.AncestorProfileId
+                                  AND ar.RelationshipType = N'Sibling');
+    INSERT INTO dbo.AncestorRelationships (
+        AncestorProfileId,
+        RelatedAncestorProfileId,
+        RelationshipType,
+        CreatedDate
+    )
+    SELECT ds.AncestorProfileId,
+           @AncestorProfileId,
+           N'Sibling',
+           GETDATE()
+    FROM   @DesiredSiblings AS ds
+    WHERE  EXISTS (SELECT 1
+                   FROM   dbo.AncestorProfiles AS ap
+                   WHERE  ap.AncestorProfileId = ds.AncestorProfileId)
+           AND NOT EXISTS (SELECT 1
+                           FROM   dbo.AncestorRelationships AS ar
+                           WHERE  ar.AncestorProfileId = ds.AncestorProfileId
+                                  AND ar.RelatedAncestorProfileId = @AncestorProfileId
+                                  AND ar.RelationshipType = N'Sibling');
+    IF @FatherAncestorProfileId IS NOT NULL
+       OR @MotherAncestorProfileId IS NOT NULL
+        BEGIN
+            UPDATE ap
+            SET    FatherAncestorProfileId = COALESCE (@FatherAncestorProfileId, ap.FatherAncestorProfileId),
+                   MotherAncestorProfileId = COALESCE (@MotherAncestorProfileId, ap.MotherAncestorProfileId),
+                   UpdateDate              = GETDATE()
+            FROM   dbo.AncestorProfiles AS ap
+                   INNER JOIN
+                   @DesiredSiblings AS ds
+                   ON ds.AncestorProfileId = ap.AncestorProfileId;
+        END
+    INSERT  INTO @AllSiblingGroup (
+        AncestorProfileId
+    )
+    VALUES                       (@AncestorProfileId);
+    INSERT INTO @AllSiblingGroup (
+        AncestorProfileId
+    )
+    SELECT ds.AncestorProfileId
+    FROM   @DesiredSiblings AS ds
+    WHERE  NOT EXISTS (SELECT 1
+                       FROM   @AllSiblingGroup AS sg
+                       WHERE  sg.AncestorProfileId = ds.AncestorProfileId);
+    INSERT INTO dbo.AncestorRelationships (
+        AncestorProfileId,
+        RelatedAncestorProfileId,
+        RelationshipType,
+        CreatedDate
+    )
+    SELECT sg1.AncestorProfileId,
+           sg2.AncestorProfileId,
+           N'Sibling',
+           GETDATE()
+    FROM   @AllSiblingGroup AS sg1 CROSS JOIN @AllSiblingGroup AS sg2
+    WHERE  sg1.AncestorProfileId <> sg2.AncestorProfileId
+           AND NOT EXISTS (SELECT 1
+                           FROM   dbo.AncestorRelationships AS ar
+                           WHERE  ar.AncestorProfileId = sg1.AncestorProfileId
+                                  AND ar.RelatedAncestorProfileId = sg2.AncestorProfileId
+                                  AND ar.RelationshipType = N'Sibling');
     SELECT @AncestorProfileId;
+END
+
+
+GO
+CREATE OR ALTER PROCEDURE dbo.AncestorProfile_GetRelationships
+@AncestorProfileId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT N'Father' AS RelationshipGroup,
+           p.AncestorProfileId,
+           p.FirstName,
+           p.MiddleName,
+           p.LastName,
+           p.Gender,
+           CAST (NULL AS NVARCHAR (20)) AS RelationshipLabel
+    FROM   dbo.AncestorProfiles AS a
+           INNER JOIN
+           dbo.AncestorProfiles AS p
+           ON p.AncestorProfileId = a.FatherAncestorProfileId
+    WHERE  a.AncestorProfileId = @AncestorProfileId
+    UNION ALL
+    SELECT N'Mother' AS RelationshipGroup,
+           p.AncestorProfileId,
+           p.FirstName,
+           p.MiddleName,
+           p.LastName,
+           p.Gender,
+           CAST (NULL AS NVARCHAR (20)) AS RelationshipLabel
+    FROM   dbo.AncestorProfiles AS a
+           INNER JOIN
+           dbo.AncestorProfiles AS p
+           ON p.AncestorProfileId = a.MotherAncestorProfileId
+    WHERE  a.AncestorProfileId = @AncestorProfileId
+    UNION ALL
+    SELECT N'Sibling' AS RelationshipGroup,
+           s.AncestorProfileId,
+           s.FirstName,
+           s.MiddleName,
+           s.LastName,
+           s.Gender,
+           CASE WHEN s.Gender = N'Male' THEN N'Brother' WHEN s.Gender = N'Female' THEN N'Sister' ELSE N'Sibling' END AS RelationshipLabel
+    FROM   dbo.AncestorRelationships AS r
+           INNER JOIN
+           dbo.AncestorProfiles AS s
+           ON s.AncestorProfileId = r.RelatedAncestorProfileId
+           INNER JOIN
+           dbo.AncestorProfiles AS a2
+           ON a2.AncestorProfileId = @AncestorProfileId
+    WHERE  r.AncestorProfileId = @AncestorProfileId
+           AND r.RelationshipType = N'Sibling'
+           AND s.AncestorProfileId <> COALESCE (a2.FatherAncestorProfileId, -1)
+           AND s.AncestorProfileId <> COALESCE (a2.MotherAncestorProfileId, -1)
+    UNION ALL
+    SELECT N'Child' AS RelationshipGroup,
+           c.AncestorProfileId,
+           c.FirstName,
+           c.MiddleName,
+           c.LastName,
+           c.Gender,
+           CASE WHEN c.Gender = N'Male' THEN N'Son' WHEN c.Gender = N'Female' THEN N'Daughter' ELSE N'Child' END AS RelationshipLabel
+    FROM   dbo.AncestorProfiles AS c
+    WHERE  c.FatherAncestorProfileId = @AncestorProfileId
+           OR c.MotherAncestorProfileId = @AncestorProfileId;
 END
 
 

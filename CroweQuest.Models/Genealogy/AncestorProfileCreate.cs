@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace CroweQuest.Models.Genealogy
 {
@@ -50,5 +51,11 @@ namespace CroweQuest.Models.Genealogy
         public string ConfidenceLevel { get; set; }
 
         public int? ProfilePhotoId { get; set; }
+
+        public int? FatherAncestorProfileId { get; set; }
+
+        public int? MotherAncestorProfileId { get; set; }
+
+        public List<int> SiblingAncestorProfileIds { get; set; } = new List<int>();
     }
 }

@@ -4,30 +4,48 @@
   </div>
 
   <form [formGroup]="ancestorProfileForm" (ngSubmit)="onSubmit()">
-    <div class="form-row">
-      <div class="form-group col-md-6">
-        <label>First Name</label>
-        <input class="form-control" formControlName="firstName" />
+    <div class="row align-items-start">
+      <div class="col-12 col-md-4 order-1 order-md-2">
+        <div class="mb-4 mb-md-0" *ngIf="getSelectedPhoto() as selectedPhoto">
+          <div class="mb-2"><strong>Selected profile photo:</strong> {{ selectedPhoto.description }}</div>
+          <img [src]="selectedPhoto.imageUrl" [alt]="selectedPhoto.description" class="img-fluid rounded mb-2" style="max-height: 280px;" />
+          <div>
+            <button type="button" class="btn btn-outline-danger" (click)="clearProfilePhotoSelection()">Clear profile picture</button>
+          </div>
+        </div>
       </div>
-      <div class="form-group col-md-6">
-        <label>Last Name</label>
-        <input class="form-control" formControlName="lastName" />
-      </div>
-    </div>
 
-    <div class="form-row">
-      <div class="form-group col-md-4"><label>Middle Name</label><input class="form-control" formControlName="middleName" /></div>
-      <div class="form-group col-md-4"><label>Suffix</label><input class="form-control" formControlName="suffix" /></div>
-      <div class="form-group col-md-4">
-        <label>Gender</label>
-        <select class="form-control" formControlName="gender">
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-        </select>
-      </div>
-    </div>
+      <div class="col-12 col-md-8 order-2 order-md-1">
+        <div class="form-group">
+          <label>First Name</label>
+          <input class="form-control" formControlName="firstName" />
+        </div>
 
-    <div class="form-row">
+        <div class="form-group">
+          <label>Last Name</label>
+          <input class="form-control" formControlName="lastName" />
+        </div>
+
+        <div class="form-group">
+          <label>Middle Name</label>
+          <input class="form-control" formControlName="middleName" />
+        </div>
+
+        <div class="form-group">
+          <label>Suffix</label>
+          <input class="form-control" formControlName="suffix" />
+        </div>
+
+        <div class="form-group">
+          <label>Gender</label>
+          <select class="form-control" formControlName="gender">
+            <option [ngValue]="null">Unknown</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+
+         <div class="form-row">
       <div class="form-group col-md-6"><label>Birth Date</label><input class="form-control" formControlName="birthDate" type="date" /></div>
       <div class="form-group col-md-6"><label>Birth Location</label><input class="form-control" formControlName="birthLocation" /></div>
     </div>
@@ -37,6 +55,182 @@
       <div class="form-group col-md-6"><label>Death Location</label><input class="form-control" formControlName="deathLocation" /></div>
     </div>
 
+        <div class="form-group">
+          <label>Father</label>
+          <div class="d-flex align-items-center">
+            <select class="form-control" formControlName="fatherAncestorProfileId">
+              <option [ngValue]="null">Unknown</option>
+              <option *ngFor="let ancestor of getEligibleFatherAncestors()" [ngValue]="ancestor.ancestorProfileId">
+                {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
+              </option>
+            </select>
+            <button
+              type="button"
+              class="btn btn-outline-danger ml-2"
+              [disabled]="!ancestorProfileForm.get('fatherAncestorProfileId')?.value"
+              (click)="clearFatherSelection()"
+            >
+              Remove
+            </button>
+          </div>
+          <small class="form-text text-muted">Father must be a male ancestor.</small>
+
+          <div class="input-group mt-2">
+            <input
+              class="form-control"
+              [(ngModel)]="newFatherName"
+              [ngModelOptions]="{ standalone: true }"
+              placeholder="Enter father full name"
+            />
+            <div class="input-group-append">
+              <button
+                type="button"
+                class="btn"
+                [ngClass]="getFatherCreateButtonHighlighted() ? 'btn-warning text-dark' : 'btn-outline-primary'"
+                [disabled]="isCreatingFather"
+                (click)="createAndAssignFather()"
+              >
+                {{ isCreatingFather ? 'Creating...' : 'Create father ancestor' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedFather as father">
+            Father ancestor created with partial details: <strong>{{ father.firstName }} {{ father.middleName }} {{ father.lastName }}</strong>.
+            <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile(father.ancestorProfileId)">Open profile in new tab</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Mother</label>
+          <div class="d-flex align-items-center">
+            <select class="form-control" formControlName="motherAncestorProfileId">
+              <option [ngValue]="null">Unknown</option>
+              <option *ngFor="let ancestor of getEligibleMotherAncestors()" [ngValue]="ancestor.ancestorProfileId">
+                {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
+              </option>
+            </select>
+            <button
+              type="button"
+              class="btn btn-outline-danger ml-2"
+              [disabled]="!ancestorProfileForm.get('motherAncestorProfileId')?.value"
+              (click)="clearMotherSelection()"
+            >
+              Remove
+            </button>
+          </div>
+          <small class="form-text text-muted">Mother must be a female ancestor.</small>
+
+          <div class="input-group mt-2">
+            <input
+              class="form-control"
+              [(ngModel)]="newMotherName"
+              [ngModelOptions]="{ standalone: true }"
+              placeholder="Enter mother full name"
+            />
+            <div class="input-group-append">
+              <button
+                type="button"
+                class="btn"
+                [ngClass]="getMotherCreateButtonHighlighted() ? 'btn-warning text-dark' : 'btn-outline-primary'"
+                [disabled]="isCreatingMother"
+                (click)="createAndAssignMother()"
+              >
+                {{ isCreatingMother ? 'Creating...' : 'Create mother ancestor' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedMother as mother">
+            Mother ancestor created with partial details: <strong>{{ mother.firstName }} {{ mother.middleName }} {{ mother.lastName }}</strong>.
+            <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile(mother.ancestorProfileId)">Open profile in new tab</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Siblings</label>
+          <div class="d-flex align-items-start">
+            <select
+              class="form-control"
+              multiple
+              size="8"
+              (change)="onSiblingSelectionChange($event)"
+              (blur)="onSiblingSelectionBlur($event)"
+            >
+              <option *ngFor="let ancestor of getCurrentSiblingAncestors()" [value]="ancestor.ancestorProfileId">
+                {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
+                {{ ancestor.gender ? ' (' + (ancestor.gender === 'Male' ? 'Brother' : ancestor.gender === 'Female' ? 'Sister' : 'Sibling') + ')' : '' }}
+              </option>
+            </select>
+            <button
+              type="button"
+              class="btn ml-2 align-self-start remove-sibling-button"
+              [ngClass]="selectedSiblingIds.length ? 'btn-danger text-white' : 'btn-outline-danger'"
+              (mousedown)="beginSiblingRemovalClick()"
+              (click)="clearSelectedSiblings()"
+            >
+              Remove selected
+            </button>
+          </div>
+          <small class="form-text text-muted">
+            Hold Ctrl (or Cmd) to select multiple siblings. Saving will sync sibling links in both directions.
+          </small>
+
+          <div class="mt-2">
+            <label class="small text-muted">Add existing sibling</label>
+            <div class="input-group">
+              <select
+                class="form-control"
+                [(ngModel)]="selectedExistingSiblingId"
+                [ngModelOptions]="{ standalone: true }"
+                aria-label="Select an existing sibling"
+              >
+                <option [ngValue]="null">Select an existing ancestor as a sibling</option>
+                <option *ngFor="let ancestor of getSiblingCandidateOptions()" [ngValue]="ancestor.ancestorProfileId">
+                  {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
+                  {{ ancestor.gender ? ' (' + (ancestor.gender === 'Male' ? 'Brother' : ancestor.gender === 'Female' ? 'Sister' : 'Sibling') + ')' : '' }}
+                </option>
+              </select>
+              <div class="input-group-append">
+                <button type="button" class="btn btn-outline-primary" [disabled]="!selectedExistingSiblingId" (click)="addExistingSibling()">
+                  Add existing sibling
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-group mt-3">
+            <input
+              class="form-control"
+              [(ngModel)]="newSiblingName"
+              [ngModelOptions]="{ standalone: true }"
+              placeholder="Or enter sibling full name"
+            />
+            <select
+              class="form-control ml-2 w-auto"
+              [(ngModel)]="newSiblingGender"
+              [ngModelOptions]="{ standalone: true }"
+              aria-label="Sibling gender"
+            >
+              <option value="Male">Brother</option>
+              <option value="Female">Sister</option>
+            </select>
+            <div class="input-group-append">
+              <button type="button" class="btn btn-outline-primary" [disabled]="isCreatingSibling" (click)="createAndAddSibling()">
+                {{ isCreatingSibling ? 'Creating...' : 'Create sibling ancestor' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedSibling as sibling">
+            {{ sibling.gender === 'Male' ? 'Brother' : sibling.gender === 'Female' ? 'Sister' : 'Sibling' }} ancestor created with partial details: <strong>{{ sibling.firstName }} {{ sibling.middleName }} {{ sibling.lastName }}</strong>.
+            <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile(sibling.ancestorProfileId)">Open profile in new tab</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+   
     <div class="form-group">
       <label>Biography</label>
       <textarea class="form-control" rows="10" formControlName="biography"></textarea>
@@ -119,13 +313,6 @@
           </select>
         </div>
 
-        <div class="mt-3" *ngIf="getSelectedPhoto() as selectedPhoto">
-          <div class="mb-2"><strong>Selected profile photo:</strong> {{ selectedPhoto.description }}</div>
-          <img [src]="selectedPhoto.imageUrl" [alt]="selectedPhoto.description" class="img-fluid rounded mb-2" style="max-height: 280px;" />
-          <div>
-            <button type="button" class="btn btn-outline-danger" (click)="clearProfilePhotoSelection()">Clear profile picture</button>
-          </div>
-        </div>
 
         <div class="mt-4" *ngIf="ancestorPhotos.length > 0">
           <h6>Attached ancestor photos</h6>
