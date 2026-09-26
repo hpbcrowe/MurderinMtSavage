@@ -13,6 +13,20 @@
     </div>
   </div>
 
+  <div class="mt-4" *ngIf="userPhotos.length > 0">
+    <h4 class="mb-3">Your Recent Photos</h4>
+    <div class="row">
+      <div class="col-6 col-md-3 mb-3" *ngFor="let userPhoto of userPhotos | slice:0:8">
+        <div class="card h-100">
+          <img [src]="userPhoto.imageUrl" [alt]="userPhoto.description" class="card-img-top" style="height: 160px; object-fit: cover;" />
+          <div class="card-body p-2">
+            <small class="text-muted">{{ userPhoto.description | summary : 32 }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <ng-template #noblogs>
     <div class="d-flex justify-content-center">
       <h3 class="text-dark mt-3">

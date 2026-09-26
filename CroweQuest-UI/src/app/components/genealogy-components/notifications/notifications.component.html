@@ -1,0 +1,21 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Notifications</h2>
+    <button class="btn btn-outline-primary" (click)="markAllRead()">Mark All Read</button>
+  </div>
+
+  <div *ngIf="notifications.length > 0; else noNotifications" class="list-group">
+    <div *ngFor="let notification of notifications" class="list-group-item d-flex justify-content-between align-items-center">
+      <div>
+        <strong>{{ notification.notificationType }}</strong>
+        <div class="small text-muted">{{ notification.message }}</div>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary" *ngIf="!notification.isRead" (click)="markRead(notification.notificationId)">Mark Read</button>
+      <span class="badge badge-success" *ngIf="notification.isRead">Read</span>
+    </div>
+  </div>
+
+  <ng-template #noNotifications>
+    <div class="alert alert-info">No notifications.</div>
+  </ng-template>
+</div>

@@ -16,6 +16,7 @@ import { environment } from 'src/environments/environment';
 import { ApplicationUserCreate } from '../models/account/application-user-create.model';
 import { ApplicationUserLogin } from '../models/account/application-user-login.model';
 import { ApplicationUser } from '../models/account/application-user.model'
+import { ApplicationUserPasswordReset } from '../models/account/application-user-password-reset.model';
 
 @Injectable({
   providedIn: 'root'
@@ -63,6 +64,14 @@ export class AccountService {
         return user;
       })
     )
+  }
+
+  resetPassword(model: ApplicationUserPasswordReset): Observable<string> {
+    return this.http.post(
+      `${environment.webApi}/Account/reset-password`,
+      model,
+      { responseType: 'text' }
+    );
   }
 
    setCurrentUser(user: ApplicationUser){

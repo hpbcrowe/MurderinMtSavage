@@ -1,0 +1,23 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Source Repository</h2>
+    <button class="btn btn-primary" (click)="createNew()">Add Source</button>
+  </div>
+
+  <div *ngIf="sources.length > 0; else noSources" class="list-group">
+    <div *ngFor="let source of sources" class="list-group-item">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ source.title }}</strong>
+          <div class="text-muted small">{{ source.sourceType || 'Source' }} | {{ source.location || 'Unknown location' }}</div>
+        </div>
+        <button class="btn btn-sm btn-outline-primary" (click)="edit(source.sourceId)">Edit</button>
+      </div>
+      <div class="mt-2 small">{{ source.citation || source.description }}</div>
+    </div>
+  </div>
+
+  <ng-template #noSources>
+    <div class="alert alert-info">No sources found.</div>
+  </ng-template>
+</div>

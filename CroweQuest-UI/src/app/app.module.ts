@@ -36,6 +36,14 @@ import { FamousBlogsComponent } from './components/blog-components/famous-blogs/
 import { CommentBoxComponent } from './components/comment-components/comment-box/comment-box.component';
 import { CommentSystemComponent } from './components/comment-components/comment-system/comment-system.component';
 import { CommentsComponent } from './components/comment-components/comments/comments.component';
+import { AncestorProfilesComponent } from './components/genealogy-components/ancestor-profiles/ancestor-profiles.component';
+import { AncestorProfileComponent } from './components/genealogy-components/ancestor-profile/ancestor-profile.component';
+import { AncestorProfileEditComponent } from './components/genealogy-components/ancestor-profile-edit/ancestor-profile-edit.component';
+import { SourcesComponent } from './components/genealogy-components/sources/sources.component';
+import { SourceEditComponent } from './components/genealogy-components/source-edit/source-edit.component';
+import { ResearchNotesComponent } from './components/genealogy-components/research-notes/research-notes.component';
+import { ResearchNoteEditComponent } from './components/genealogy-components/research-note-edit/research-note-edit.component';
+import { NotificationsComponent } from './components/genealogy-components/notifications/notifications.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
@@ -43,6 +51,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { PhotoAlbumComponent } from './components/photo-album/photo-album.component';
 import { RegisterComponent } from './components/register/register.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { LoadingInterceptor } from './interceptors/loading.interceptor';
@@ -60,6 +69,14 @@ import { LoadingInterceptor } from './interceptors/loading.interceptor';
     CommentBoxComponent,
     CommentSystemComponent,
     CommentsComponent,
+    AncestorProfilesComponent,
+    AncestorProfileComponent,
+    AncestorProfileEditComponent,
+    SourcesComponent,
+    SourceEditComponent,
+    ResearchNotesComponent,
+    ResearchNoteEditComponent,
+    NotificationsComponent,
     DashboardComponent,
     HomeComponent,
     LoginComponent,
@@ -67,6 +84,7 @@ import { LoadingInterceptor } from './interceptors/loading.interceptor';
     NotFoundComponent,
     PhotoAlbumComponent,
     RegisterComponent,
+    ResetPasswordComponent,
   ],
 
   //IMPORTS are to import custom modules into the app

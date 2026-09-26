@@ -1,0 +1,16 @@
+/* Keep the eye button aligned with the large password input. */
+.login-password-toggle {
+	min-width: 3.25rem;
+	margin-left: -1px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-left-color: #ced4da;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
+.login-password-toggle i {
+	font-size: 1rem;
+	line-height: 2.1;
+}

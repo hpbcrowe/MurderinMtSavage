@@ -38,16 +38,31 @@
         </div>
 
         <div class="form-group">
-          <input
-            type="password"
-            [ngClass]="{
-              'is-invalid': hasErrors('password') && isTouched('password'),
-              'is-valid': !hasErrors('password') && isTouched('password')
-            }"
-            class="form-control form-control-lg"
-            formControlName="password"
-            placeholder="Password"
-          />
+          <label for="password">Password</label>
+          <div class="input-group input-group-lg w-100">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              [ngClass]="{
+                'is-invalid': hasErrors('password') && isTouched('password'),
+                'is-valid': !hasErrors('password') && isTouched('password')
+              }"
+              class="form-control"
+              formControlName="password"
+              placeholder="Password"
+              id="password"
+            />
+            <div class="input-group-append">
+              <button
+                type="button"
+                class="btn btn-outline-secondary login-password-toggle"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+                [attr.title]="showPassword ? 'Hide password' : 'Show password'"
+              >
+                <i [ngClass]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
+            </div>
+          </div>
 
           <div
             *ngIf="hasError('password', 'required')"
@@ -72,11 +87,15 @@
         </div>
 
         <button
-          class="btn btn-block mb-3 bg-primary text-light"
+          class="btn btn-block mb-3 mt-2 bg-primary text-light"
           [disabled]="!loginForm.valid"
         >
           Login
         </button>
+
+        <div class="text-right mb-3">
+          <a routerLink="/reset-password">Forgot your password?</a>
+        </div>
       </form>
     </div>
   </div>

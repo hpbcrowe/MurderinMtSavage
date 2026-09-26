@@ -12,6 +12,12 @@
       {{ blog.title }}
     </h4>
 
+    <div class="small text-muted mb-2" *ngIf="blog.ancestorName || blog.recordType || blog.location">
+      {{ blog.ancestorName || 'Research Entry' }}
+      <span *ngIf="blog.recordType">| {{ blog.recordType }}</span>
+      <span *ngIf="blog.location">| {{ blog.location }}</span>
+    </div>
+
     <p class="card-text" *ngIf="!!blogPhotoUrl">
       {{ blog.content | summary : 100 }}
     </p>

@@ -1,0 +1,23 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Research Notes</h2>
+    <button class="btn btn-primary" (click)="createNew()">Add Note</button>
+  </div>
+
+  <div *ngIf="researchNotes.length > 0; else noNotes" class="list-group">
+    <div *ngFor="let note of researchNotes" class="list-group-item">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ note.title }}</strong>
+          <div class="text-muted small">{{ note.status || 'Active Research' }} | {{ note.confidenceLevel || 'Unknown' }}</div>
+        </div>
+        <button class="btn btn-sm btn-outline-primary" (click)="edit(note.researchNoteId)">Edit</button>
+      </div>
+      <p class="mb-0 mt-2">{{ note.content | slice:0:250 }}...</p>
+    </div>
+  </div>
+
+  <ng-template #noNotes>
+    <div class="alert alert-info">No research notes found.</div>
+  </ng-template>
+</div>

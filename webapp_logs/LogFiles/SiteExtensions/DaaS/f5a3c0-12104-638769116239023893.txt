@@ -1,0 +1,42 @@
+2025-03-07T02:33:42  PID[12104] Information 3/7/2025 2:33:42 AM [[4.7]] [WEBWK000000] DAAS Application_Start took 218.7567 ms
+2025-03-07T02:33:42  PID[12104] Information Request, Method=GET, Url=https://crowequestwebapi-fyg8a3dhcpfudugv.scm.westus2-01.azurewebsites.net/daas/api/events?api-version=2016-08-01, Message='https://crowequestwebapi-fyg8a3dhcpfudugv.scm.westus2-01.azurewebsites.net/daas/api/events?api-version=2016-08-01'
+2025-03-07T02:33:42  PID[12104] Information Message='Events', Operation=DefaultHttpControllerSelector.SelectController
+2025-03-07T02:33:42  PID[12104] Information Message='DiagnosticsExtension.Controllers.EventsController', Operation=DefaultHttpControllerActivator.Create
+2025-03-07T02:33:42  PID[12104] Information Message='DiagnosticsExtension.Controllers.EventsController', Operation=HttpControllerDescriptor.CreateController
+2025-03-07T02:33:42  PID[12104] Information Message='Selected action 'Get()'', Operation=ApiControllerActionSelector.SelectAction
+2025-03-07T02:33:42  PID[12104] Information Request, Method=GET, Url=https://crowequestwebapi-fyg8a3dhcpfudugv.scm.westus2-01.azurewebsites.net/daas/api/stdoutlogs?api-version=2016-08-01, Message='https://crowequestwebapi-fyg8a3dhcpfudugv.scm.westus2-01.azurewebsites.net/daas/api/stdoutlogs?api-version=2016-08-01'
+2025-03-07T02:33:42  PID[12104] Information Message='StdoutLogs', Operation=DefaultHttpControllerSelector.SelectController
+2025-03-07T02:33:42  PID[12104] Information Message='DiagnosticsExtension.Controllers.StdoutLogsController', Operation=DefaultHttpControllerActivator.Create
+2025-03-07T02:33:42  PID[12104] Information Message='DiagnosticsExtension.Controllers.StdoutLogsController', Operation=HttpControllerDescriptor.CreateController
+2025-03-07T02:33:42  PID[12104] Information Message='Selected action 'Get()'', Operation=ApiControllerActionSelector.SelectAction
+2025-03-07T02:33:43  PID[12104] Information Operation=HttpActionBinding.ExecuteBindingAsync
+2025-03-07T02:33:43  PID[12104] Information Operation=HttpActionBinding.ExecuteBindingAsync
+2025-03-07T02:33:43  PID[12104] Information Message='Selected formatter='JsonMediaTypeFormatter', content-type='application/json; charset=utf-8'', Operation=DefaultContentNegotiator.Negotiate
+2025-03-07T02:33:43  PID[12104] Information Message='Action returned 'StatusCode: 200, ReasonPhrase: 'OK', Version: 1.1, Content: System.Net.Http.ObjectContent`1[[System.Collections.Generic.IEnumerable`1[[DiagnosticsExtension.Parsers.LogFile, DiagnosticsExtension, Version=4.7.15125.1, Culture=neutral, PublicKeyToken=null]], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], Headers:
+{
+  Content-Type: application/json; charset=utf-8
+}'', Operation=ReflectedHttpActionDescriptor.ExecuteAsync
+2025-03-07T02:33:43  PID[12104] Information Operation=ApiControllerActionInvoker.InvokeActionAsync, Status=200 (OK)
+2025-03-07T02:33:43  PID[12104] Information Operation=StdoutLogsController.ExecuteAsync, Status=200 (OK)
+2025-03-07T02:33:43  PID[12104] Information Response, Status=200 (OK), Method=GET, Url=https://crowequestwebapi-fyg8a3dhcpfudugv.scm.westus2-01.azurewebsites.net/daas/api/stdoutlogs?api-version=2016-08-01, Message='Content-type='application/json; charset=utf-8', content-length=unknown'
+2025-03-07T02:33:43  PID[12104] Information Operation=JsonMediaTypeFormatter.WriteToStreamAsync
+2025-03-07T02:33:43  PID[12104] Information Operation=StdoutLogsController.Dispose
+2025-03-07T02:33:43  PID[12104] Information 3/7/2025 2:33:43 AM [[4.7]] [WEBWK000000] Checking DaaS bits and updating if required
+2025-03-07T02:33:43  PID[12104] Information 3/7/2025 2:33:43 AM [[4.7]] [WEBWK000000] [daasrunner.exe] Version in DaaS Installation path (4.7.15125.1) is lower or equal to the existing version 4.7.15125.1. Version Compare result = 0
+2025-03-07T02:33:43  PID[12104] Information 3/7/2025 2:33:43 AM [[4.7]] [WEBWK000000] Binary Comparing files C:\Program Files (x86)\SiteExtensions\DaaS\4.7.15125.1\bin\daasrunner.exe and C:\home\site\Jobs\Continuous\DaaS\DaasRunner.exe
+2025-03-07T02:33:43  PID[12104] Information Message='Selected formatter='JsonMediaTypeFormatter', content-type='application/json; charset=utf-8'', Operation=DefaultContentNegotiator.Negotiate
+2025-03-07T02:33:43  PID[12104] Information Message='Action returned 'StatusCode: 200, ReasonPhrase: 'OK', Version: 1.1, Content: System.Net.Http.ObjectContent`1[[System.Collections.Generic.List`1[[DiagnosticsExtension.ServerSideEvent, DiagnosticsExtension, Version=4.7.15125.1, Culture=neutral, PublicKeyToken=null]], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], Headers:
+{
+  Content-Type: application/json; charset=utf-8
+}'', Operation=ReflectedHttpActionDescriptor.ExecuteAsync
+2025-03-07T02:33:43  PID[12104] Information Operation=ApiControllerActionInvoker.InvokeActionAsync, Status=200 (OK)
+2025-03-07T02:33:43  PID[12104] Information Operation=EventsController.ExecuteAsync, Status=200 (OK)
+2025-03-07T02:33:43  PID[12104] Information Response, Status=200 (OK), Method=GET, Url=https://crowequestwebapi-fyg8a3dhcpfudugv.scm.westus2-01.azurewebsites.net/daas/api/events?api-version=2016-08-01, Message='Content-type='application/json; charset=utf-8', content-length=unknown'
+2025-03-07T02:33:43  PID[12104] Information Operation=JsonMediaTypeFormatter.WriteToStreamAsync
+2025-03-07T02:33:43  PID[12104] Information Operation=EventsController.Dispose
+2025-03-07T02:33:43  PID[12104] Information 3/7/2025 2:33:43 AM [[4.7]] [WEBWK000000] Binary Comparison succeeded: C:\Program Files (x86)\SiteExtensions\DaaS\4.7.15125.1\bin\daasrunner.exe and C:\home\site\Jobs\Continuous\DaaS\DaasRunner.exe
+2025-03-07T02:33:43  PID[12104] Information 3/7/2025 2:33:43 AM [[4.7]] [WEBWK000000] [daasconsole.exe] Version in DaaS Installation path (4.7.15125.1) is lower or equal to the existing version 4.7.15125.1. Version Compare result = 0
+2025-03-07T02:33:43  PID[12104] Information 3/7/2025 2:33:43 AM [[4.7]] [WEBWK000000] Binary Comparing files C:\Program Files (x86)\SiteExtensions\DaaS\4.7.15125.1\bin\daasconsole.exe and C:\home\data\DaaS\bin\DaasConsole.exe
+2025-03-07T02:33:43  PID[12104] Information 3/7/2025 2:33:43 AM [[4.7]] [WEBWK000000] Binary Comparison succeeded: C:\Program Files (x86)\SiteExtensions\DaaS\4.7.15125.1\bin\daasconsole.exe and C:\home\data\DaaS\bin\DaasConsole.exe
+2025-03-07T02:33:44  PID[12104] Information 3/7/2025 2:33:44 AM [[4.7]] [WEBWK000000] Done checking DaaS bits for any new updates
+2025-03-07T02:43:42  PID[12104] Warning     The trace listener is disabled after running too long.

@@ -1,0 +1,65 @@
+<div class="container mt-4" *ngIf="ancestorProfile">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center">
+      <img *ngIf="profilePhoto" [src]="profilePhoto.imageUrl" [alt]="profilePhoto.description" class="rounded-circle mr-3" style="width: 88px; height: 88px; object-fit: cover;" />
+      <h2 class="mb-0">{{ ancestorProfile.firstName }} {{ ancestorProfile.middleName }} {{ ancestorProfile.lastName }}</h2>
+      <div class="text-muted">{{ ancestorProfile.familyBranch || 'No branch' }} | {{ ancestorProfile.researchStatus || 'Researching' }}</div>
+    </div>
+    <button class="btn btn-outline-primary" (click)="edit()">Edit</button>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <p><strong>Birth:</strong> {{ ancestorProfile.birthDate | date : 'mediumDate' }} {{ ancestorProfile.birthLocation }}</p>
+      <p><strong>Death:</strong> {{ ancestorProfile.deathDate | date : 'mediumDate' }} {{ ancestorProfile.deathLocation }}</p>
+      <p><strong>Confidence:</strong> {{ ancestorProfile.confidenceLevel || 'Unknown' }}</p>
+      <p><strong>Tags:</strong> {{ ancestorProfile.tags || 'None' }}</p>
+      <p class="mb-0">{{ ancestorProfile.biography }}</p>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5>Family Relationships</h5>
+
+      <p>
+        <strong>Father:</strong>
+        <a *ngIf="ancestorProfile.father" [routerLink]="['/genealogy/ancestors', ancestorProfile.father.ancestorProfileId]">
+          {{ ancestorProfile.father.displayName }}
+        </a>
+        <span *ngIf="!ancestorProfile.father">Unknown</span>
+      </p>
+
+      <p>
+        <strong>Mother:</strong>
+        <a *ngIf="ancestorProfile.mother" [routerLink]="['/genealogy/ancestors', ancestorProfile.mother.ancestorProfileId]">
+          {{ ancestorProfile.mother.displayName }}
+        </a>
+        <span *ngIf="!ancestorProfile.mother">Unknown</span>
+      </p>
+
+      <p class="mb-1"><strong>Siblings:</strong></p>
+      <ul class="mb-2" *ngIf="ancestorProfile.siblings && ancestorProfile.siblings.length > 0">
+        <li *ngFor="let sibling of ancestorProfile.siblings">
+          <a [routerLink]="['/genealogy/ancestors', sibling.ancestorProfileId]">{{ sibling.displayName }}</a>
+          <span class="text-muted">({{ sibling.relationshipLabel || (sibling.gender === 'Male' ? 'Brother' : sibling.gender === 'Female' ? 'Sister' : 'Sibling') }})</span>
+        </li>
+      </ul>
+      <p *ngIf="!ancestorProfile.siblings || ancestorProfile.siblings.length === 0" class="text-muted">No siblings linked.</p>
+
+      <p class="mb-1"><strong>Children:</strong></p>
+      <ul class="mb-0" *ngIf="ancestorProfile.children && ancestorProfile.children.length > 0">
+        <li *ngFor="let child of ancestorProfile.children">
+          <a [routerLink]="['/genealogy/ancestors', child.ancestorProfileId]">{{ child.displayName }}</a>
+          <span class="text-muted">({{ child.relationshipLabel || 'Child' }})</span>
+        </li>
+      </ul>
+      <p *ngIf="!ancestorProfile.children || ancestorProfile.children.length === 0" class="text-muted mb-0">No children linked.</p>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <button class="btn btn-success mr-2" (click)="follow()">Follow</button>
+    <button class="btn btn-outline-secondary" (click)="unfollow()">Unfollow</button>
+  </div>
+</div>

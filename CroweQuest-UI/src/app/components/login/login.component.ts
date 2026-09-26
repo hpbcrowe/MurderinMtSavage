@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApplicationUserLogin } from 'src/app/models/account/application-user-login.model';
 import { AccountService } from 'src/app/services/account.service';
 import { Meta, Title } from '@angular/platform-browser';
@@ -13,16 +13,21 @@ import { Meta, Title } from '@angular/platform-browser';
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   loginError: string | null = null;
+  showPassword: boolean = false;
+  private returnUrl = '/dashboard';
 
   constructor(
     private accountService: AccountService,
     private router: Router,
+    private route: ActivatedRoute,
     private formBuilder: FormBuilder,
     private meta: Meta,
     private title: Title
   ) {
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/dashboard';
+
     if (this.accountService.isLoggedIn()) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigateByUrl(this.returnUrl);
     }
 
     this.meta.addTags([
@@ -74,6 +79,10 @@ export class LoginComponent implements OnInit {
     return !!this.loginForm.get(field)?.hasError(error);
   }
 
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
   onSubmit() {
     this.loginError = null;
 
@@ -84,22 +93,36 @@ export class LoginComponent implements OnInit {
 
     this.accountService.login(applicationUserLogin).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard']);
+        this.router.navigateByUrl(this.returnUrl);
       },
       error: (error) => {
-        if (error?.status === 401 || error?.status === 400) {
-          this.loginError = 'Invalid username or password.';
-          return;
-        }
-
-        const backendMessage =
-          typeof error?.error === 'string' && error.error
-            ? error.error
-            : 'Unable to log in right now. Please try again.';
-
-        this.loginError = backendMessage;
+        this.loginError = this.getFriendlyErrorMessage(
+          error,
+          'Unable to log in right now. Please try again.',
+          'Invalid username or password.'
+        );
       },
     });
+  }
+
+  private getFriendlyErrorMessage(
+    error: any,
+    fallbackMessage: string,
+    invalidCredentialsMessage: string
+  ): string {
+    if (error?.status === 401 || error?.status === 400) {
+      return invalidCredentialsMessage;
+    }
+
+    if (error?.status === 0) {
+      return 'The server is still starting up. Please try again in a moment.';
+    }
+
+    if (typeof error?.error === 'string' && error.error) {
+      return error.error;
+    }
+
+    return fallbackMessage;
   }
 
   public setTitle(newTitle: string) {

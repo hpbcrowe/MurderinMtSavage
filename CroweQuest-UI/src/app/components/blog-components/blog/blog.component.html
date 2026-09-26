@@ -16,6 +16,18 @@
     </h6>
   </div>
 
+  <div class="d-flex justify-content-center mt-2 text-center text-muted">
+    <small>
+      <span *ngIf="blog.ancestorName">Ancestor: {{ blog.ancestorName }} | </span>
+      <span *ngIf="blog.recordType">Record Type: {{ blog.recordType }} | </span>
+      <span *ngIf="blog.location">Location: {{ blog.location }} | </span>
+      <span *ngIf="blog.familyBranch">Branch: {{ blog.familyBranch }} | </span>
+      <span *ngIf="blog.tags">Tags: {{ blog.tags }} | </span>
+      <span *ngIf="blog.confidenceLevel">Confidence: {{ blog.confidenceLevel }} | </span>
+      <span *ngIf="blog.researchStatus">Status: {{ blog.researchStatus }}</span>
+    </small>
+  </div>
+
   <div class="mt-4 justify-content-center">
     <img
       src="{{ blogPhotoUrl }}"
@@ -25,6 +37,12 @@
     <p class="blog-content">
       {{ blog.content }}
     </p>
+  </div>
+
+  <div class="alert alert-secondary" *ngIf="blog.ancestorProfileId || blog.sourceId">
+    Linked IDs:
+    <span *ngIf="blog.ancestorProfileId">Ancestor Profile #{{ blog.ancestorProfileId }}</span>
+    <span *ngIf="blog.sourceId">Source #{{ blog.sourceId }}</span>
   </div>
 
   <app-comment-system *ngIf="blog" [blogId]="blog.blogId"></app-comment-system>

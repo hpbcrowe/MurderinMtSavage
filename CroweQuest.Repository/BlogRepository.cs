@@ -169,9 +169,31 @@ namespace CroweQuest.Repository
             dataTable.Columns.Add("Title", typeof(string));
             dataTable.Columns.Add("Content", typeof(string));
             dataTable.Columns.Add("PhotoId", typeof(int));
+            dataTable.Columns.Add("AncestorProfileId", typeof(int));
+            dataTable.Columns.Add("SourceId", typeof(int));
+            dataTable.Columns.Add("AncestorName", typeof(string));
+            dataTable.Columns.Add("RecordType", typeof(string));
+            dataTable.Columns.Add("Location", typeof(string));
+            dataTable.Columns.Add("FamilyBranch", typeof(string));
+            dataTable.Columns.Add("Tags", typeof(string));
+            dataTable.Columns.Add("ConfidenceLevel", typeof(string));
+            dataTable.Columns.Add("ResearchStatus", typeof(string));
 
 
-            dataTable.Rows.Add(blogCreate.BlogId, blogCreate.Title, blogCreate.Content, blogCreate.PhotoId);
+            dataTable.Rows.Add(
+                blogCreate.BlogId,
+                blogCreate.Title,
+                blogCreate.Content,
+                blogCreate.PhotoId ?? (object)System.DBNull.Value,
+                blogCreate.AncestorProfileId ?? (object)System.DBNull.Value,
+                blogCreate.SourceId ?? (object)System.DBNull.Value,
+                blogCreate.AncestorName ?? (object)System.DBNull.Value,
+                blogCreate.RecordType ?? (object)System.DBNull.Value,
+                blogCreate.Location ?? (object)System.DBNull.Value,
+                blogCreate.FamilyBranch ?? (object)System.DBNull.Value,
+                blogCreate.Tags ?? (object)System.DBNull.Value,
+                blogCreate.ConfidenceLevel ?? (object)System.DBNull.Value,
+                blogCreate.ResearchStatus ?? (object)System.DBNull.Value);
 
             int? newBlogId;
 

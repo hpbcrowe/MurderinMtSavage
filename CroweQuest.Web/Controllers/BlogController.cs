@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 using CroweQuest.Models.Blog;
+using CroweQuest.Models.Genealogy;
 using CroweQuest.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -17,11 +18,19 @@ namespace CroweQuest.Web.Controllers
     {
         private readonly IBlogRepository _blogRepository;
         private readonly IPhotoRepository _photoRepository;
+        private readonly IAncestorProfileRepository _ancestorProfileRepository;
+        private readonly ISourceRepository _sourceRepository;
 
-        public BlogController(IBlogRepository blogRepository, IPhotoRepository photoRepository)
+        public BlogController(
+            IBlogRepository blogRepository,
+            IPhotoRepository photoRepository,
+            IAncestorProfileRepository ancestorProfileRepository,
+            ISourceRepository sourceRepository)
         {
             _blogRepository = blogRepository;
             _photoRepository = photoRepository;
+            _ancestorProfileRepository = ancestorProfileRepository;
+            _sourceRepository = sourceRepository;
         }
 
         [Authorize]
@@ -37,6 +46,26 @@ namespace CroweQuest.Web.Controllers
                 if (photo.ApplicationUserId != applicationUserId)
                 {
                     return BadRequest("You did not upload the photo.");
+                }
+            }
+
+            if (blogCreate.AncestorProfileId.HasValue)
+            {
+                var ancestorProfile = await _ancestorProfileRepository.GetAsync(blogCreate.AncestorProfileId.Value);
+
+                if (ancestorProfile == null)
+                {
+                    return BadRequest("Ancestor profile does not exist.");
+                }
+            }
+
+            if (blogCreate.SourceId.HasValue)
+            {
+                var source = await _sourceRepository.GetAsync(blogCreate.SourceId.Value);
+
+                if (source == null)
+                {
+                    return BadRequest("Source does not exist.");
                 }
             }
 

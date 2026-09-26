@@ -23,16 +23,16 @@ namespace CroweQuest.Web
 {
     public class Startup
     {
-        public IConfiguration Configuration { get;}
+        public IConfiguration Configuration { get; }
         public Startup(IConfiguration config)
         {
             //Clear defaults
-             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-             Configuration = config;
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+            Configuration = config;
         }
 
 
-       
+
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -50,6 +50,10 @@ namespace CroweQuest.Web
             services.AddScoped<IBlogCommentRepository, BlogCommentRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<IPhotoRepository, PhotoRepository>();
+            services.AddScoped<IAncestorProfileRepository, AncestorProfileRepository>();
+            services.AddScoped<ISourceRepository, SourceRepository>();
+            services.AddScoped<IResearchNoteRepository, ResearchNoteRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
 
             //Hook into Asp.core Identity
             services.AddIdentityCore<ApplicationUserIdentity>(opt =>
@@ -108,28 +112,28 @@ namespace CroweQuest.Web
 
             app.UseRouting();
 
-             
+
             //app.UseAuthorization();
 
-          
-            
-          
+
+
+
 
             app.UseAuthentication();
             app.UseAuthorization();
-            
-              //Security feature, malicious website can't run script on this website
-             //moved this to before UseAuthoriztion() instead of after it. This if else
-             //was after UseAuthorization()
+
+            //Security feature, malicious website can't run script on this website
+            //moved this to before UseAuthoriztion() instead of after it. This if else
+            //was after UseAuthorization()
             if (env.IsDevelopment())
             {
-                 app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
-             }
-             else
-             {
-                 app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
-             }
-            
+                app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+            }
+            else
+            {
+                app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+            }
+
 
             app.UseEndpoints(endpoints =>
             {

@@ -1,0 +1,18 @@
+2026-08-26T04:36:30  PID[9292] Information Unpacking resources...
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Executing Application Insights Profiler agent version 2.6.2201.2106 with arguments: 
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Minimum version enabled on machine: 1.0.0
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Applying logging level: Information
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Instrumentation key: ead52337-bcf9-498c-abb2-774eeb059f16
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Application Insights Profiler endpoint: https://profiler.monitor.azure.com/
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Application Insights endpoint: https://westus2-2.in.applicationinsights.azure.com/v2/track/
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Runtime Environment: Antares
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Support files: C:\local\Temp\jobs\continuous\ApplicationInsightsProfiler3\o1wb3vlr.h2x\spsupport
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Providing usage data (to opt out set the AppSettings ApplicationInsightsProvideUsageTelemetryData with the value "false"): True
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Engine mode: Sampling
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Application Insights AppId: 8bcb9680-3398-42e3-8e90-5a495d93de81
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Press 'Ctrl+C' to exit Application Insights Profiler.
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Set up shutdown handler.
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Shutdown handler set to watch C:\local\Temp\JobsShutdown\continuous\ApplicationInsightsProfiler3\rsxkfit3.fdz.
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Information: Starting main process
+2026-08-26T04:36:30  PID[9292] Information 08-26 04:36:30 Critical: Profiler is not supported on Dynamic, Free or Shared sites. Please upgrade your site to Basic or above.
+2026-08-26T04:36:31  PID[9292] Information 08-26 04:36:31 Information: Agent started to stand by.
