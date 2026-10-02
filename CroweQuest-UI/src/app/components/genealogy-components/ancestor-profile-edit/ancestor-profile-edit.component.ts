@@ -16,14 +16,20 @@ import { PhotoService } from 'src/app/services/photo.service';
 export class AncestorProfileEditComponent implements OnInit {
   ancestorProfileForm!: FormGroup;
   allAncestors: AncestorProfile[] = [];
+  recentlyCreatedWife: AncestorProfile | null = null;
+  recentlyCreatedHusband: AncestorProfile | null = null;
   recentlyCreatedFather: AncestorProfile | null = null;
   recentlyCreatedMother: AncestorProfile | null = null;
   recentlyCreatedSibling: AncestorProfile | null = null;
+  newHusbandName: string = '';
+  newWifeName: string = '';
   newFatherName: string = '';
   newMotherName: string = '';
   newSiblingName: string = '';
   newSiblingGender: 'Male' | 'Female' = 'Male';
   selectedExistingSiblingId: number | null = null;
+  isCreatingHusband: boolean = false;
+  isCreatingWife: boolean = false;
   isCreatingFather: boolean = false;
   isCreatingMother: boolean = false;
   isCreatingSibling: boolean = false;
@@ -76,6 +82,8 @@ export class AncestorProfileEditComponent implements OnInit {
       tags: [''],
       confidenceLevel: ['Possible'],
       profilePhotoId: [null],
+      husbandAncestorProfileId: [null],
+      wifeAncestorProfileId: [null],
       fatherAncestorProfileId: [null],
       motherAncestorProfileId: [null],
       siblingAncestorProfileIds: [[]]
@@ -321,6 +329,8 @@ export class AncestorProfileEditComponent implements OnInit {
       tags: ancestorProfile.tags,
       confidenceLevel: ancestorProfile.confidenceLevel,
       profilePhotoId: ancestorProfile.profilePhotoId,
+      husbandAncestorProfileId: ancestorProfile.husbandAncestorProfileId,
+      wifeAncestorProfileId: ancestorProfile.wifeAncestorProfileId,
       fatherAncestorProfileId: ancestorProfile.fatherAncestorProfileId,
       motherAncestorProfileId: ancestorProfile.motherAncestorProfileId,
       siblingAncestorProfileIds: siblingIds
@@ -328,9 +338,13 @@ export class AncestorProfileEditComponent implements OnInit {
 
     this.selectedSiblingIds = [];
 
+    const husbandId = ancestorProfile.husbandAncestorProfileId;
+    const wifeId = ancestorProfile.wifeAncestorProfileId;
     const fatherId = ancestorProfile.fatherAncestorProfileId;
     const motherId = ancestorProfile.motherAncestorProfileId;
 
+    this.newHusbandName = husbandId ? this.formatAncestorName(this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === husbandId) || ancestorProfile) : '';
+    this.newWifeName = wifeId ? this.formatAncestorName(this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === wifeId) || ancestorProfile) : '';
     this.newFatherName = fatherId ? this.formatAncestorName(this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === fatherId) || ancestorProfile) : '';
     this.newMotherName = motherId ? this.formatAncestorName(this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === motherId) || ancestorProfile) : '';
 
@@ -372,12 +386,42 @@ export class AncestorProfileEditComponent implements OnInit {
     return this.allAncestors.filter((ancestor) => ancestor.ancestorProfileId !== currentAncestorProfileId);
   }
 
+  getEligibleSpouseAncestors(): AncestorProfile[] {
+    const currentGender = this.ancestorProfileForm.get('gender')?.value;
+
+    if (currentGender === 'Male') {
+      return this.getEligibleAncestors().filter((ancestor) => ancestor.gender === 'Female');
+    }
+
+    if (currentGender === 'Female') {
+      return this.getEligibleAncestors().filter((ancestor) => ancestor.gender === 'Male');
+    }
+
+    return this.getEligibleAncestors().filter((ancestor) => ancestor.gender === 'Female' || ancestor.gender === 'Male');
+  }
+
+  getEligibleHusbandAncestors(): AncestorProfile[] {
+    return this.ancestorProfileForm.get('gender')?.value === 'Female'
+      ? this.getEligibleSpouseAncestors()
+      : [];
+  }
+
+  getEligibleWifeAncestors(): AncestorProfile[] {
+    return this.ancestorProfileForm.get('gender')?.value === 'Male'
+      ? this.getEligibleSpouseAncestors()
+      : [];
+  }
+
   getEligibleFatherAncestors(): AncestorProfile[] {
     return this.getEligibleAncestors().filter((ancestor) => ancestor.gender === 'Male');
   }
 
   getEligibleMotherAncestors(): AncestorProfile[] {
     return this.getEligibleAncestors().filter((ancestor) => ancestor.gender === 'Female');
+  }
+
+  getSpouseSelectionField(): 'wifeAncestorProfileId' | 'husbandAncestorProfileId' {
+    return this.ancestorProfileForm.get('gender')?.value === 'Female' ? 'husbandAncestorProfileId' : 'wifeAncestorProfileId';
   }
 
   getSiblingCandidateOptions(): AncestorProfile[] {
@@ -399,6 +443,33 @@ export class AncestorProfileEditComponent implements OnInit {
 
   formatAncestorName(ancestor: AncestorProfile): string {
     return [ancestor.firstName, ancestor.middleName, ancestor.lastName].filter(Boolean).join(' ');
+  }
+
+  clearHusbandSelection(): void {
+    this.ancestorProfileForm.patchValue({ husbandAncestorProfileId: null });
+    this.newHusbandName = '';
+  }
+
+  clearWifeSelection(): void {
+    this.ancestorProfileForm.patchValue({ wifeAncestorProfileId: null });
+    this.newWifeName = '';
+  }
+
+  clearSpouseSelection(): void {
+    const currentGender = this.ancestorProfileForm.get('gender')?.value;
+
+    if (currentGender === 'Male') {
+      this.clearWifeSelection();
+      return;
+    }
+
+    if (currentGender === 'Female') {
+      this.clearHusbandSelection();
+      return;
+    }
+
+    this.clearHusbandSelection();
+    this.clearWifeSelection();
   }
 
   clearFatherSelection(): void {
@@ -564,6 +635,8 @@ export class AncestorProfileEditComponent implements OnInit {
     const currentSiblingIds = this.getNormalizedIdList(siblingAncestorProfileIds ?? this.ancestorProfileForm.get('siblingAncestorProfileIds')?.value ?? []);
     const fatherId = this.ancestorProfileForm.get('fatherAncestorProfileId')?.value;
     const motherId = this.ancestorProfileForm.get('motherAncestorProfileId')?.value;
+    const husbandId = this.ancestorProfileForm.get('husbandAncestorProfileId')?.value;
+    const wifeId = this.ancestorProfileForm.get('wifeAncestorProfileId')?.value;
     const filteredSiblingIds = currentSiblingIds.filter((id: number) => id !== Number(fatherId) && id !== Number(motherId));
 
     return new AncestorProfileCreate(
@@ -583,6 +656,9 @@ export class AncestorProfileEditComponent implements OnInit {
       this.ancestorProfileForm.get('tags')?.value,
       this.ancestorProfileForm.get('confidenceLevel')?.value,
       this.ancestorProfileForm.get('profilePhotoId')?.value,
+      husbandId,
+      wifeId,
+      [],
       fatherId,
       motherId,
       filteredSiblingIds
@@ -754,8 +830,10 @@ export class AncestorProfileEditComponent implements OnInit {
       undefined,
       undefined,
       undefined,
+     
       undefined,
-      []
+      undefined,
+     
     );
   }
 

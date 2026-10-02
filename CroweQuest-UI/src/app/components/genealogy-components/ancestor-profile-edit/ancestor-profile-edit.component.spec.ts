@@ -39,6 +39,27 @@ describe('AncestorProfileEditComponent', () => {
     });
   });
 
+  it('limits spouse options to the opposite gender of the current ancestor', () => {
+    component.ancestorProfileForm = formBuilder.group({
+      ancestorProfileId: [1],
+      gender: ['Male']
+    });
+
+    component.allAncestors = [
+      { ancestorProfileId: 1, gender: 'Male', firstName: 'A', lastName: 'One' },
+      { ancestorProfileId: 2, gender: 'Male', firstName: 'B', lastName: 'Two' },
+      { ancestorProfileId: 3, gender: 'Female', firstName: 'C', lastName: 'Three' },
+      { ancestorProfileId: 4, gender: 'Female', firstName: 'D', lastName: 'Four' },
+      { ancestorProfileId: 5, gender: 'Unknown', firstName: 'E', lastName: 'Five' }
+    ] as any;
+
+    expect(component.getEligibleSpouseAncestors().map((ancestor) => ancestor.ancestorProfileId)).toEqual([3, 4]);
+
+    component.ancestorProfileForm.patchValue({ gender: 'Female' });
+
+    expect(component.getEligibleSpouseAncestors().map((ancestor) => ancestor.ancestorProfileId)).toEqual([2]);
+  });
+
   it('removes only the selected sibling ids while preserving the rest', () => {
     spyOn(window, 'confirm').and.returnValue(true);
     component.ancestorProfileForm.patchValue({ siblingAncestorProfileIds: [10, 20, 30] });
