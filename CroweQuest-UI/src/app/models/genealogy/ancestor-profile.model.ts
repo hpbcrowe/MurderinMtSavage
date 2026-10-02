@@ -19,9 +19,14 @@ export class AncestorProfile extends AncestorProfileCreate {
     tags?: string,
     confidenceLevel?: string,
     profilePhotoId?: number,
+    husbandAncestorProfileId?: number,
+    wifeAncestorProfileId?: number,
+    childrenAncestorProfileIds: number[] = [],
     fatherAncestorProfileId?: number,
     motherAncestorProfileId?: number,
-    siblingAncestorProfileIds: number[] = [],
+    siblingAncestorProfileIds: number[] = [],   
+    public husband?: AncestorRelativeSummary, 
+    public wife?: AncestorRelativeSummary,
     public father?: AncestorRelativeSummary,
     public mother?: AncestorRelativeSummary,
     public siblings: AncestorRelativeSummary[] = [],
@@ -48,9 +53,12 @@ export class AncestorProfile extends AncestorProfileCreate {
       tags,
       confidenceLevel,
       profilePhotoId,
+      husbandAncestorProfileId,
+      wifeAncestorProfileId,
+      childrenAncestorProfileIds,
       fatherAncestorProfileId,
       motherAncestorProfileId,
-      siblingAncestorProfileIds
+      siblingAncestorProfileIds,
     );
   }
 }
