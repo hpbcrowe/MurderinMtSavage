@@ -31,10 +31,21 @@ export class AncestorProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const ancestorProfileId = parseInt(this.route.snapshot.paramMap.get('id')!);
+    this.route.paramMap.subscribe((params) => {
+      const ancestorProfileId = parseInt(params.get('id') ?? '', 10);
 
+      if (Number.isNaN(ancestorProfileId)) {
+        return;
+      }
+
+      this.loadAncestorProfile(ancestorProfileId);
+    });
+  }
+
+  private loadAncestorProfile(ancestorProfileId: number): void {
     this.ancestorProfileService.get(ancestorProfileId).subscribe((ancestorProfile) => {
       this.ancestorProfile = ancestorProfile;
+      this.profilePhoto = null;
 
       if (ancestorProfile.profilePhotoId) {
         this.photoService.get(ancestorProfile.profilePhotoId).subscribe((photo) => {

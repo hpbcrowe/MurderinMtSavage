@@ -168,6 +168,8 @@ namespace CroweQuest.Repository
                     ancestorProfileCreate.Tags,
                     ancestorProfileCreate.ConfidenceLevel,
                     ancestorProfileCreate.ProfilePhotoId,
+                    ancestorProfileCreate.HusbandAncestorProfileId,
+                    ancestorProfileCreate.WifeAncestorProfileId,
                     ancestorProfileCreate.FatherAncestorProfileId,
                     ancestorProfileCreate.MotherAncestorProfileId,
                     SiblingAncestorProfileIds = ancestorProfileCreate.SiblingAncestorProfileIds != null
@@ -223,6 +225,16 @@ namespace CroweQuest.Repository
 
             ancestorProfile.Mother = relationshipRows
                 .Where(i => i.RelationshipGroup == "Mother")
+                .Select(MapToRelativeSummary)
+                .FirstOrDefault();
+
+            ancestorProfile.Husband = relationshipRows
+                .Where(i => i.RelationshipGroup == "Spouse" && i.Gender == "Male")
+                .Select(MapToRelativeSummary)
+                .FirstOrDefault();
+
+            ancestorProfile.Wife = relationshipRows
+                .Where(i => i.RelationshipGroup == "Spouse" && i.Gender == "Female")
                 .Select(MapToRelativeSummary)
                 .FirstOrDefault();
 
