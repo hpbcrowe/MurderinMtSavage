@@ -52,6 +52,10 @@ namespace CroweQuest.Models.Genealogy
 
         public int? ProfilePhotoId { get; set; }
 
+        public int? HusbandAncestorProfileId { get; set; }
+
+        public int? WifeAncestorProfileId { get; set; }
+
         public int? FatherAncestorProfileId { get; set; }
 
         public int? MotherAncestorProfileId { get; set; }

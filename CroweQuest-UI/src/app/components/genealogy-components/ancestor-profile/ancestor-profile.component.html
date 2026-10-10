@@ -1,9 +1,9 @@
 <div class="container mt-4" *ngIf="ancestorProfile">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div class="d-flex align-items-center">
-      <img *ngIf="profilePhoto" [src]="profilePhoto.imageUrl" [alt]="profilePhoto.description" class="rounded-circle mr-3" style="width: 88px; height: 88px; object-fit: cover;" />
+      <img *ngIf="profilePhoto" [src]="profilePhoto.imageUrl" [alt]="profilePhoto.description" class="rounded-circle mr-3 m-3" style="width: 88px; height: 88px; object-fit: cover;" />
       <h2 class="mb-0">{{ ancestorProfile.firstName }} {{ ancestorProfile.middleName }} {{ ancestorProfile.lastName }}</h2>
-      <div class="text-muted">{{ ancestorProfile.familyBranch || 'No branch' }} | {{ ancestorProfile.researchStatus || 'Researching' }}</div>
+      <div class="text-muted m-4 mb-3">{{ ancestorProfile.familyBranch || 'No branch' }} | {{ ancestorProfile.researchStatus || 'Researching' }}</div>
     </div>
     <button class="btn btn-outline-primary" (click)="edit()">Edit</button>
   </div>
@@ -36,6 +36,14 @@
           {{ ancestorProfile.mother.displayName }}
         </a>
         <span *ngIf="!ancestorProfile.mother">Unknown</span>
+      </p>
+
+      <p>
+        <strong>{{ ancestorProfile.gender === 'Female' ? 'Husband' : ancestorProfile.gender === 'Male' ? 'Wife' : 'Spouse' }}:</strong>
+        <a *ngIf="ancestorProfile.husband || ancestorProfile.wife" [routerLink]="['/genealogy/ancestors', (ancestorProfile.husband || ancestorProfile.wife)?.ancestorProfileId]">
+          {{ (ancestorProfile.husband || ancestorProfile.wife)?.displayName }}
+        </a>
+        <span *ngIf="!ancestorProfile.husband && !ancestorProfile.wife">Unknown</span>
       </p>
 
       <p class="mb-1"><strong>Siblings:</strong></p>

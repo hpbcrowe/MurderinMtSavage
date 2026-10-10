@@ -4,14 +4,15 @@ Build the genealogy features in phases, starting with a narrowly scoped data mod
 
 ## Steps
 
-1. Define the genealogy domain model and persistence shape, reusing the existing repository pattern and current SQL/Dapper style (depends on current backend conventions).
-2. Add backend repositories and controllers for ancestor profiles, relationships, sources, research notes, and follower/notification records (depends on step 1).
-3. Extend the existing blog flow so a blog can optionally link to an ancestor profile and a source, preserving the current photo attachment behavior (parallel with step 2 once the new IDs exist).
-4. Add search and filtering endpoints for ancestor name, surname, location, date range, tag, and evidence level so the new records are discoverable (depends on step 2).
-5. Build Angular list/detail/edit screens for ancestor profiles, sources, and research notes by copying the current blog-edit and blog-list interaction patterns (depends on step 2 and 4).
-6. Add genealogy-specific UI affordances: confidence status, tags, linked sources, linked photos, and related ancestors, keeping forms simple and validation local to the component (parallel with step 5 where possible).
-7. Add collaboration features in a second wave: threaded discussions or research comments, ancestor follow/unfollow, and notifications for comments, uploads, and mentions (depends on steps 2 and 5).
-8. Reserve family-tree visualization, OCR/extraction, DNA match tracking, and rich digest notifications for a later phase after the MVP schema and search are stable.
+1. Normalize person-to-person links so parent, spouse, and sibling all use one canonical relationship table pattern (depends on current DB conventions). See [Genealogy-Relationship-Model-Proposal.md](Genealogy-Relationship-Model-Proposal.md).
+2. Define/update the genealogy domain model and persistence shape to match that normalized relationship pattern, reusing repository and SQL/Dapper style (depends on step 1).
+3. Add backend repositories and controllers for ancestor profiles, relationships, sources, research notes, and follower/notification records (depends on step 2).
+4. Extend the existing blog flow so a blog can optionally link to an ancestor profile and a source, preserving the current photo attachment behavior (parallel with step 3 once the new IDs exist).
+5. Add search and filtering endpoints for ancestor name, surname, location, date range, tag, and evidence level so the new records are discoverable (depends on step 3).
+6. Build Angular list/detail/edit screens for ancestor profiles, sources, and research notes by copying the current blog-edit and blog-list interaction patterns (depends on step 3 and 5).
+7. Add genealogy-specific UI affordances: confidence status, tags, linked sources, linked photos, and related ancestors, keeping forms simple and validation local to the component (parallel with step 6 where possible).
+8. Add collaboration features in a second wave: threaded discussions or research comments, ancestor follow/unfollow, and notifications for comments, uploads, and mentions (depends on steps 3 and 6).
+9. Reserve family-tree visualization, OCR/extraction, DNA match tracking, and rich digest notifications for a later phase after the MVP schema and search are stable.
 
 ## Relevant Files
 
@@ -39,6 +40,7 @@ Build the genealogy features in phases, starting with a narrowly scoped data mod
 
 - Treat blogs as the initial research-entry surface rather than replacing them entirely.
 - Make ancestor profiles, sources, and research notes the core MVP objects.
+- Store relationship facts uniformly in `AncestorRelationships` (canonical types: Parent, Spouse, Sibling), and derive UI labels like Father/Mother/Husband/Wife/Brother/Sister/Son/Daughter from gender + direction.
 - Defer full tree visualization, OCR, and DNA integration until the structured data model is stable.
 - Preserve the existing blog/photo/comment architecture instead of introducing a new application layer.
 

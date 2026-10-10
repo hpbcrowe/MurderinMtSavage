@@ -17,6 +17,10 @@ namespace CroweQuest.Models.Genealogy
 
         public AncestorRelativeSummary Mother { get; set; }
 
+        public AncestorRelativeSummary Husband { get; set; }
+
+        public AncestorRelativeSummary Wife { get; set; }
+
         public List<AncestorRelativeSummary> Siblings { get; set; } = new List<AncestorRelativeSummary>();
 
         public List<AncestorRelativeSummary> Children { get; set; } = new List<AncestorRelativeSummary>();
