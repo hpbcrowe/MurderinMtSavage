@@ -365,3 +365,119 @@ IF NOT EXISTS (SELECT 1
         CREATE INDEX IX_Notifications_ApplicationUserId_IsRead
             ON dbo.Notifications(ApplicationUserId, IsRead, CreatedDate DESC);
     END
+
+
+GO
+IF OBJECT_ID('dbo.AncestorRelationships', 'U') IS NOT NULL
+   AND COL_LENGTH('dbo.AncestorRelationships', 'RelationshipType') IS NOT NULL
+   AND NOT EXISTS (SELECT 1
+                   FROM   sys.check_constraints
+                   WHERE  name = 'CK_AncestorRelationships_RelationshipType'
+                          AND parent_object_id = OBJECT_ID('dbo.AncestorRelationships'))
+    BEGIN
+        ALTER TABLE dbo.AncestorRelationships
+            ADD CONSTRAINT CK_AncestorRelationships_RelationshipType CHECK (RelationshipType IN (N'Parent', N'Spouse', N'Sibling'));
+    END
+
+
+GO
+IF COL_LENGTH('dbo.AncestorRelationships', 'NormalizedAncestorProfileId') IS NULL
+    BEGIN
+        ALTER TABLE dbo.AncestorRelationships
+            ADD NormalizedAncestorProfileId AS (CASE WHEN [AncestorProfileId] < [RelatedAncestorProfileId] THEN [AncestorProfileId] ELSE [RelatedAncestorProfileId] END);
+    END
+
+
+GO
+IF COL_LENGTH('dbo.AncestorRelationships', 'NormalizedRelatedAncestorProfileId') IS NULL
+    BEGIN
+        ALTER TABLE dbo.AncestorRelationships
+            ADD NormalizedRelatedAncestorProfileId AS (CASE WHEN [AncestorProfileId] < [RelatedAncestorProfileId] THEN [RelatedAncestorProfileId] ELSE [AncestorProfileId] END);
+    END
+
+
+GO
+IF NOT EXISTS (SELECT 1
+               FROM   sys.indexes
+               WHERE  name = 'UX_AncestorRelationships_SpousePair'
+                      AND object_id = OBJECT_ID('dbo.AncestorRelationships'))
+    BEGIN
+        CREATE UNIQUE INDEX UX_AncestorRelationships_SpousePair
+            ON dbo.AncestorRelationships(NormalizedAncestorProfileId, NormalizedRelatedAncestorProfileId) WHERE RelationshipType = N'Spouse';
+    END
+
+
+GO
+IF NOT EXISTS (SELECT 1
+               FROM   sys.indexes
+               WHERE  name = 'UX_AncestorRelationships_ParentEdge'
+                      AND object_id = OBJECT_ID('dbo.AncestorRelationships'))
+    BEGIN
+        CREATE UNIQUE INDEX UX_AncestorRelationships_ParentEdge
+            ON dbo.AncestorRelationships(AncestorProfileId, RelatedAncestorProfileId, RelationshipType) WHERE RelationshipType = N'Parent';
+    END
+
+
+GO
+IF NOT EXISTS (SELECT 1
+               FROM   sys.indexes
+               WHERE  name = 'IX_AncestorRelationships_Ancestor_RelationshipType'
+                      AND object_id = OBJECT_ID('dbo.AncestorRelationships'))
+    BEGIN
+        CREATE INDEX IX_AncestorRelationships_Ancestor_RelationshipType
+            ON dbo.AncestorRelationships(AncestorProfileId, RelationshipType, RelatedAncestorProfileId);
+    END
+
+
+GO
+IF NOT EXISTS (SELECT 1
+               FROM   sys.indexes
+               WHERE  name = 'IX_AncestorRelationships_Related_RelationshipType'
+                      AND object_id = OBJECT_ID('dbo.AncestorRelationships'))
+    BEGIN
+        CREATE INDEX IX_AncestorRelationships_Related_RelationshipType
+            ON dbo.AncestorRelationships(RelatedAncestorProfileId, RelationshipType, AncestorProfileId);
+    END
+
+
+GO
+IF OBJECT_ID('dbo.AncestorProfiles', 'U') IS NOT NULL
+   AND OBJECT_ID('dbo.AncestorRelationships', 'U') IS NOT NULL
+    BEGIN
+        INSERT INTO dbo.AncestorRelationships (
+            AncestorProfileId,
+            RelatedAncestorProfileId,
+            RelationshipType,
+            CreatedDate
+        )
+        SELECT DISTINCT ap.FatherAncestorProfileId,
+                        ap.AncestorProfileId,
+                        N'Parent',
+                        GETDATE()
+        FROM   dbo.AncestorProfiles AS ap
+        WHERE  ap.FatherAncestorProfileId IS NOT NULL
+               AND ap.FatherAncestorProfileId <> ap.AncestorProfileId
+               AND NOT EXISTS (SELECT 1
+                               FROM   dbo.AncestorRelationships AS ar
+                               WHERE  ar.AncestorProfileId = ap.FatherAncestorProfileId
+                                      AND ar.RelatedAncestorProfileId = ap.AncestorProfileId
+                                      AND ar.RelationshipType = N'Parent');
+        INSERT INTO dbo.AncestorRelationships (
+            AncestorProfileId,
+            RelatedAncestorProfileId,
+            RelationshipType,
+            CreatedDate
+        )
+        SELECT DISTINCT ap.MotherAncestorProfileId,
+                        ap.AncestorProfileId,
+                        N'Parent',
+                        GETDATE()
+        FROM   dbo.AncestorProfiles AS ap
+        WHERE  ap.MotherAncestorProfileId IS NOT NULL
+               AND ap.MotherAncestorProfileId <> ap.AncestorProfileId
+               AND NOT EXISTS (SELECT 1
+                               FROM   dbo.AncestorRelationships AS ar
+                               WHERE  ar.AncestorProfileId = ap.MotherAncestorProfileId
+                                      AND ar.RelatedAncestorProfileId = ap.AncestorProfileId
+                                      AND ar.RelationshipType = N'Parent');
+    END

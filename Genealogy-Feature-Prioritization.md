@@ -51,6 +51,8 @@ Reason: these are high complexity and/or policy-heavy features that should come 
 
 - Identity and permissions model for public/private profiles, branch-level collaboration, and moderation actions.
 - Genealogy data model baseline: `AncestorProfile`, `AncestorRelationship`, `Source`, `AncestorSource`, `ResearchNote`, `FollowSubscription`, `Notification`.
+- Relationship model normalization: use `AncestorRelationships` as the single source of truth for `Parent`, `Spouse`, and `Sibling` links, and derive labels (`Father`, `Mother`, `Husband`, `Wife`, `Brother`, `Sister`, `Son`, `Daughter`) from gender plus relationship direction.
+- Migration sequence requirement: backfill parent relationships from existing profile columns, switch all writes/reads to relationship edges, then retire legacy parent columns after stabilization. Reference: [Genealogy-Relationship-Model-Proposal.md](Genealogy-Relationship-Model-Proposal.md).
 - Background processing for digest notifications and indexing jobs.
 - Blob storage standards for document uploads and stable URLs.
 - Audit/logging strategy for edits to relationships and evidence links.
