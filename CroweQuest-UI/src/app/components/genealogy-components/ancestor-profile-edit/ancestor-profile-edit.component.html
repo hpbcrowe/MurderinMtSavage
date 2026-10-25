@@ -67,265 +67,60 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label>{{ ancestorProfileForm.get('gender')?.value === 'Male' ? 'Wife' : ancestorProfileForm.get('gender')?.value === 'Female' ? 'Husband' : 'Spouse' }}</label>
-          <div class="d-flex align-items-center">
-            <select
-              class="form-control"
-              [formControlName]="ancestorProfileForm.get('gender')?.value === 'Female' ? 'husbandAncestorProfileId' : 'wifeAncestorProfileId'"
-            >
-              <option [ngValue]="null">Unknown</option>
-              <option *ngFor="let ancestor of getEligibleSpouseAncestors()" [ngValue]="ancestor.ancestorProfileId">
-                {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
-              </option>
-            </select>
-            <button
-              type="button"
-              class="btn btn-outline-danger ml-2"
-              [disabled]="!(ancestorProfileForm.get(ancestorProfileForm.get('gender')?.value === 'Female' ? 'husbandAncestorProfileId' : 'wifeAncestorProfileId')?.value)"
-              (click)="clearSpouseSelection()"
-            >
-              Remove
-            </button>
-          </div>
-          <small class="form-text text-muted">Spouse must be the opposite gender of the current ancestor.</small>
+        <app-spouse-edit-section
+          [ancestorProfileForm]="ancestorProfileForm"
+          [eligibleSpouseAncestors]="getEligibleSpouseAncestors()"
+          [newWifeName]="newWifeName"
+          [newHusbandName]="newHusbandName"
+          [isCreatingWife]="isCreatingWife"
+          [isCreatingHusband]="isCreatingHusband"
+          [recentlyCreatedWife]="recentlyCreatedWife"
+          [recentlyCreatedHusband]="recentlyCreatedHusband"
+          (newWifeNameChange)="newWifeName = $event"
+          (newHusbandNameChange)="newHusbandName = $event"
+          (clearSpouseSelection)="clearSpouseSelection()"
+          (createAndAssignWife)="createAndAssignWife()"
+          (createAndAssignHusband)="createAndAssignHusband()"
+          (openAncestorProfile)="openAncestorProfile($event)"
+        ></app-spouse-edit-section>
 
-          <div class="input-group mt-2" *ngIf="!hasSelectedSpouse()">
-            <input
-              *ngIf="ancestorProfileForm.get('gender')?.value === 'Male'"
-              class="form-control"
-              [(ngModel)]="newWifeName"
-              [ngModelOptions]="{ standalone: true }"
-              placeholder="Enter wife full name"
-            />
-            <input
-              *ngIf="ancestorProfileForm.get('gender')?.value === 'Female'"
-              class="form-control"
-              [(ngModel)]="newHusbandName"
-              [ngModelOptions]="{ standalone: true }"
-              placeholder="Enter husband full name"
-            />
-            <input
-              *ngIf="ancestorProfileForm.get('gender')?.value !== 'Male' && ancestorProfileForm.get('gender')?.value !== 'Female'"
-              class="form-control"
-              [ngModel]="''"
-              [ngModelOptions]="{ standalone: true }"
-              placeholder="Select gender to create spouse"
-              readonly
-            />
-            <div class="input-group-append">
-              <button
-                *ngIf="ancestorProfileForm.get('gender')?.value === 'Male'"
-                type="button"
-                class="btn btn-outline-primary"
-                [disabled]="isCreatingWife"
-                (click)="createAndAssignWife()"
-              >
-                {{ isCreatingWife ? 'Creating...' : 'Create Wife' }}
-              </button>
-              <button
-                *ngIf="ancestorProfileForm.get('gender')?.value === 'Female'"
-                type="button"
-                class="btn btn-outline-primary"
-                [disabled]="isCreatingHusband"
-                (click)="createAndAssignHusband()"
-              >
-                {{ isCreatingHusband ? 'Creating...' : 'Create Husband' }}
-              </button>
-              <button
-                *ngIf="ancestorProfileForm.get('gender')?.value !== 'Male' && ancestorProfileForm.get('gender')?.value !== 'Female'"
-                type="button"
-                class="btn btn-outline-secondary"
-                disabled
-              >
-                Set Gender First
-              </button>
-            </div>
-          </div>
+        <app-parent-edit-section
+          [ancestorProfileForm]="ancestorProfileForm"
+          [eligibleFatherAncestors]="getEligibleFatherAncestors()"
+          [eligibleMotherAncestors]="getEligibleMotherAncestors()"
+          [newFatherName]="newFatherName"
+          [newMotherName]="newMotherName"
+          [isCreatingFather]="isCreatingFather"
+          [isCreatingMother]="isCreatingMother"
+          [recentlyCreatedFather]="recentlyCreatedFather"
+          [recentlyCreatedMother]="recentlyCreatedMother"
+          (newFatherNameChange)="newFatherName = $event"
+          (newMotherNameChange)="newMotherName = $event"
+          (clearFatherSelection)="clearFatherSelection()"
+          (clearMotherSelection)="clearMotherSelection()"
+          (createAndAssignFather)="createAndAssignFather()"
+          (createAndAssignMother)="createAndAssignMother()"
+          (openAncestorProfile)="openAncestorProfile($event)"
+        ></app-parent-edit-section>
 
-          <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedWife as wife">
-            Wife ancestor created with partial details: <strong>{{ wife.firstName }} {{ wife.middleName }} {{ wife.lastName }}</strong>.
-            <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile(wife.ancestorProfileId)">Open profile in new tab</button>
-          </div>
-
-          <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedHusband as husband">
-            Husband ancestor created with partial details: <strong>{{ husband.firstName }} {{ husband.middleName }} {{ husband.lastName }}</strong>.
-            <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile(husband.ancestorProfileId)">Open profile in new tab</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Father</label>
-          <div class="d-flex align-items-center">
-            <select class="form-control" formControlName="fatherAncestorProfileId">
-              <option [ngValue]="null">Unknown</option>
-              <option *ngFor="let ancestor of getEligibleFatherAncestors()" [ngValue]="ancestor.ancestorProfileId">
-                {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
-              </option>
-            </select>
-            <button
-              type="button"
-              class="btn btn-outline-danger ml-2"
-              [disabled]="!ancestorProfileForm.get('fatherAncestorProfileId')?.value"
-              (click)="clearFatherSelection()"
-            >
-              Remove
-            </button>
-          </div>
-          <small class="form-text text-muted">Father must be a male ancestor.</small>
-
-          <div class="input-group mt-2" *ngIf="!hasSelectedFather()">
-            <input
-              class="form-control"
-              [(ngModel)]="newFatherName"
-              [ngModelOptions]="{ standalone: true }"
-              placeholder="Enter father full name"
-            />
-            <div class="input-group-append">
-              <button
-                type="button"
-                class="btn"
-                [ngClass]="getFatherCreateButtonHighlighted() ? 'btn-warning text-dark' : 'btn-outline-primary'"
-                [disabled]="isCreatingFather"
-                (click)="createAndAssignFather()"
-              >
-                {{ isCreatingFather ? 'Creating...' : 'Create father ancestor' }}
-              </button>
-            </div>
-          </div>
-
-          <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedFather as father">
-            Father ancestor created with partial details: <strong>{{ father.firstName }} {{ father.middleName }} {{ father.lastName }}</strong>.
-            <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile(father.ancestorProfileId)">Open profile in new tab</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Mother</label>
-          <div class="d-flex align-items-center">
-            <select class="form-control" formControlName="motherAncestorProfileId">
-              <option [ngValue]="null">Unknown</option>
-              <option *ngFor="let ancestor of getEligibleMotherAncestors()" [ngValue]="ancestor.ancestorProfileId">
-                {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
-              </option>
-            </select>
-            <button
-              type="button"
-              class="btn btn-outline-danger ml-2"
-              [disabled]="!ancestorProfileForm.get('motherAncestorProfileId')?.value"
-              (click)="clearMotherSelection()"
-            >
-              Remove
-            </button>
-          </div>
-          <small class="form-text text-muted">Mother must be a female ancestor.</small>
-
-          <div class="input-group mt-2" *ngIf="!hasSelectedMother()">
-            <input
-              class="form-control"
-              [(ngModel)]="newMotherName"
-              [ngModelOptions]="{ standalone: true }"
-              placeholder="Enter mother full name"
-            />
-            <div class="input-group-append">
-              <button
-                type="button"
-                class="btn"
-                [ngClass]="getMotherCreateButtonHighlighted() ? 'btn-warning text-dark' : 'btn-outline-primary'"
-                [disabled]="isCreatingMother"
-                (click)="createAndAssignMother()"
-              >
-                {{ isCreatingMother ? 'Creating...' : 'Create mother ancestor' }}
-              </button>
-            </div>
-          </div>
-
-          <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedMother as mother">
-            Mother ancestor created with partial details: <strong>{{ mother.firstName }} {{ mother.middleName }} {{ mother.lastName }}</strong>.
-            <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile(mother.ancestorProfileId)">Open profile in new tab</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Siblings</label>
-          <div class="d-flex align-items-start">
-            <select
-              class="form-control"
-              multiple
-              size="8"
-              (change)="onSiblingSelectionChange($event)"
-              (blur)="onSiblingSelectionBlur($event)"
-            >
-              <option *ngFor="let ancestor of getCurrentSiblingAncestors()" [value]="ancestor.ancestorProfileId">
-                {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
-                {{ ancestor.gender ? ' (' + (ancestor.gender === 'Male' ? 'Brother' : ancestor.gender === 'Female' ? 'Sister' : 'Sibling') + ')' : '' }}
-              </option>
-            </select>
-            <button
-              type="button"
-              class="btn ml-2 align-self-start remove-sibling-button"
-              [ngClass]="selectedSiblingIds.length ? 'btn-danger text-white' : 'btn-outline-danger'"
-              (mousedown)="beginSiblingRemovalClick()"
-              (click)="clearSelectedSiblings()"
-            >
-              Remove selected
-            </button>
-          </div>
-          <small class="form-text text-muted">
-            Hold Ctrl (or Cmd) to select multiple siblings. Saving will sync sibling links in both directions.
-          </small>
-
-          <div class="mt-2">
-            <label class="small text-muted">Add existing sibling</label>
-            <div class="input-group">
-              <select
-                class="form-control"
-                [(ngModel)]="selectedExistingSiblingId"
-                [ngModelOptions]="{ standalone: true }"
-                aria-label="Select an existing sibling"
-              >
-                <option [ngValue]="null">Select an existing ancestor as a sibling</option>
-                <option *ngFor="let ancestor of getSiblingCandidateOptions()" [ngValue]="ancestor.ancestorProfileId">
-                  {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
-                  {{ ancestor.gender ? ' (' + (ancestor.gender === 'Male' ? 'Brother' : ancestor.gender === 'Female' ? 'Sister' : 'Sibling') + ')' : '' }}
-                </option>
-              </select>
-              <div class="input-group-append">
-                <button type="button" class="btn btn-outline-primary" [disabled]="!selectedExistingSiblingId" (click)="addExistingSibling()">
-                  Add existing sibling
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="input-group mt-3">
-            <input
-              class="form-control"
-              [(ngModel)]="newSiblingName"
-              [ngModelOptions]="{ standalone: true }"
-              placeholder="Or enter sibling full name"
-            />
-            <select
-              class="form-control ml-2 w-auto"
-              [(ngModel)]="newSiblingGender"
-              [ngModelOptions]="{ standalone: true }"
-              aria-label="Sibling gender"
-            >
-              <option value="Male">Brother</option>
-              <option value="Female">Sister</option>
-            </select>
-            <div class="input-group-append">
-              <button type="button" class="btn btn-outline-primary" [disabled]="isCreatingSibling" (click)="createAndAddSibling()">
-                {{ isCreatingSibling ? 'Creating...' : 'Create sibling ancestor' }}
-              </button>
-            </div>
-          </div>
-
-          <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedSibling as sibling">
-            {{ sibling.gender === 'Male' ? 'Brother' : sibling.gender === 'Female' ? 'Sister' : 'Sibling' }} ancestor created with partial details: <strong>{{ sibling.firstName }} {{ sibling.middleName }} {{ sibling.lastName }}</strong>.
-            <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile(sibling.ancestorProfileId)">Open profile in new tab</button>
-          </div>
-        </div>
+        <app-sibling-edit-section
+          [currentSiblingAncestors]="getCurrentSiblingAncestors()"
+          [siblingCandidateOptions]="getSiblingCandidateOptions()"
+          [selectedSiblingIds]="selectedSiblingIds"
+          [selectedExistingSiblingId]="selectedExistingSiblingId"
+          [newSiblingName]="newSiblingName"
+          [newSiblingGender]="newSiblingGender"
+          [isCreatingSibling]="isCreatingSibling"
+          [recentlyCreatedSibling]="recentlyCreatedSibling"
+          (selectedSiblingIdsChange)="selectedSiblingIds = $event"
+          (clearSelectedSiblings)="clearSelectedSiblings($event)"
+          (selectedExistingSiblingIdChange)="selectedExistingSiblingId = $event"
+          (addExistingSibling)="addExistingSibling()"
+          (newSiblingNameChange)="newSiblingName = $event"
+          (newSiblingGenderChange)="newSiblingGender = $event"
+          (createAndAddSibling)="createAndAddSibling()"
+          (openAncestorProfile)="openAncestorProfile($event)"
+        ></app-sibling-edit-section>
 
         <div class="form-group">
           <label>Biography</label>
@@ -432,6 +227,7 @@
     </div>
 
     <button class="btn bg-primary text-light" [disabled]="!ancestorProfileForm.valid && ancestorProfileForm.pristine">Save</button>
+    <button class="btn btn-outline-primary" [routerLink]="'/genealogy/ancestors'" routerLinkActive="active">Main Ancestors Page</button>
   </form>
 </div>
 

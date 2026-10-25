@@ -6,14 +6,16 @@ import { ToastrService } from 'ngx-toastr';
 import { Source } from 'src/app/models/genealogy/source.model';
 import { SourceCreate } from 'src/app/models/genealogy/source-create.model';
 import { SourceService } from 'src/app/services/genealogy/source.service';
+import { CanComponentDeactivate } from 'src/app/guards/pending-changes.guard';
 
 @Component({
   selector: 'app-source-edit',
   templateUrl: './source-edit.component.html'
 })
-export class SourceEditComponent implements OnInit {
+export class SourceEditComponent implements OnInit, CanComponentDeactivate {
   sourceForm!: FormGroup;
   uploadedFileName = '';
+  private isNavigatingAfterSave = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -70,6 +72,25 @@ export class SourceEditComponent implements OnInit {
       attachedFileUrl: source.attachedFileUrl,
       fileId: source.fileId
     });
+
+    this.markSavedState();
+  }
+
+  canDeactivate(): boolean {
+    if (this.isNavigatingAfterSave) {
+      return true;
+    }
+
+    if (!this.sourceForm?.dirty) {
+      return true;
+    }
+
+    return window.confirm('You have unsaved changes. Leave this page without saving?');
+  }
+
+  private markSavedState(): void {
+    this.sourceForm.markAsPristine();
+    this.sourceForm.markAsUntouched();
   }
 
   onFileDropped(event: DragEvent): void {
@@ -117,6 +138,7 @@ export class SourceEditComponent implements OnInit {
     this.sourceService.create(sourceCreate).subscribe((createdSource) => {
       this.updateForm(createdSource);
       this.toastr.info('Source saved.');
+      this.isNavigatingAfterSave = true;
       this.router.navigate(['/genealogy/sources']);
     });
   }

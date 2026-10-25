@@ -14,19 +14,21 @@ import { AncestorProfile } from 'src/app/models/genealogy/ancestor-profile.model
 import { Source } from 'src/app/models/genealogy/source.model';
 import { AncestorProfileService } from 'src/app/services/genealogy/ancestor-profile.service';
 import { SourceService } from 'src/app/services/genealogy/source.service';
+import { CanComponentDeactivate } from 'src/app/guards/pending-changes.guard';
 
 @Component({
   selector: 'app-blog-edit',
   templateUrl: './blog-edit.component.html',
   styleUrls: ['./blog-edit.component.css'],
 })
-export class BlogEditComponent implements OnInit {
+export class BlogEditComponent implements OnInit, CanComponentDeactivate {
   //Added definate assignment operator !
   blogForm!: FormGroup;
   confirmImageDelete: boolean = false;
   userPhotos: Photo[] = [];
   ancestorProfiles: AncestorProfile[] = [];
   sources: Source[] = [];
+  private isNavigatingAfterSave = false;
   constructor(
     //dependencies
     private route: ActivatedRoute,
@@ -170,6 +172,25 @@ export class BlogEditComponent implements OnInit {
       confidenceLevel: blog.confidenceLevel,
       researchStatus: blog.researchStatus,
     });
+
+    this.markSavedState();
+  }
+
+  canDeactivate(): boolean {
+    if (this.isNavigatingAfterSave) {
+      return true;
+    }
+
+    if (!this.blogForm?.dirty) {
+      return true;
+    }
+
+    return window.confirm('You have unsaved changes. Leave this page without saving?');
+  }
+
+  private markSavedState(): void {
+    this.blogForm.markAsPristine();
+    this.blogForm.markAsUntouched();
   }
 
 
@@ -206,6 +227,7 @@ export class BlogEditComponent implements OnInit {
     this.blogService.create(blogCreate).subscribe((createdBlog) => {
       this.updateForm(createdBlog);
       this.toastr.info(`Blog "${createdBlog.title}" saved.`);
+      this.isNavigatingAfterSave = true;
       this.router.navigate(['/dashboard']);
     });
   }

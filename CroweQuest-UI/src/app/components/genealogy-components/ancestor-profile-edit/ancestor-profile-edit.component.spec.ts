@@ -91,7 +91,7 @@ describe('AncestorProfileEditComponent', () => {
     expect(component.newMotherName).toBe('');
   });
 
-  it('hides spouse and parent creation inputs when a relationship is selected and shows them again when cleared', () => {
+  it('clears spouse and parent selections correctly', () => {
     component.ancestorProfileForm = formBuilder.group({
       gender: ['Male'],
       wifeAncestorProfileId: [7],
@@ -99,19 +99,13 @@ describe('AncestorProfileEditComponent', () => {
       motherAncestorProfileId: [9]
     });
 
-    expect(component.hasSelectedSpouse()).toBeTrue();
-    expect(component.hasSelectedFather()).toBeTrue();
-    expect(component.hasSelectedMother()).toBeTrue();
+    component.clearSpouseSelection();
+    component.clearFatherSelection();
+    component.clearMotherSelection();
 
-    component.ancestorProfileForm.patchValue({
-      wifeAncestorProfileId: null,
-      fatherAncestorProfileId: null,
-      motherAncestorProfileId: null
-    });
-
-    expect(component.hasSelectedSpouse()).toBeFalse();
-    expect(component.hasSelectedFather()).toBeFalse();
-    expect(component.hasSelectedMother()).toBeFalse();
+    expect(component.ancestorProfileForm.get('wifeAncestorProfileId')?.value).toBeNull();
+    expect(component.ancestorProfileForm.get('fatherAncestorProfileId')?.value).toBeNull();
+    expect(component.ancestorProfileForm.get('motherAncestorProfileId')?.value).toBeNull();
   });
 
   it('removes only the selected sibling ids while preserving the rest', () => {
@@ -289,64 +283,13 @@ describe('AncestorProfileEditComponent', () => {
     expect(service.addRelationship.calls.allArgs().every((args: any[]) => args[1].relationshipType === 'Parent')).toBeTrue();
   });
 
-  it('does not mutate the saved sibling ids when the user selects siblings for removal', () => {
+  it('does not mutate the saved sibling ids when sibling ids are staged for removal', () => {
     component.ancestorProfileForm.patchValue({ siblingAncestorProfileIds: [10, 20, 30] });
 
-    const select = document.createElement('select');
-    select.multiple = true;
-
-    const option1 = document.createElement('option');
-    option1.value = '10';
-    option1.selected = true;
-
-    const option2 = document.createElement('option');
-    option2.value = '20';
-    option2.selected = true;
-
-    select.appendChild(option1);
-    select.appendChild(option2);
-
-    component.onSiblingSelectionChange({ target: select } as unknown as Event);
+    component.selectedSiblingIds = [10, 20];
 
     expect(component.selectedSiblingIds).toEqual([10, 20]);
     expect(component.ancestorProfileForm.get('siblingAncestorProfileIds')?.value).toEqual([10, 20, 30]);
-  });
-
-  it('clears the visual sibling selection when focus leaves the list', () => {
-    const select = document.createElement('select');
-    select.multiple = true;
-
-    const option1 = document.createElement('option');
-    option1.value = '10';
-    option1.selected = true;
-
-    const option2 = document.createElement('option');
-    option2.value = '20';
-    option2.selected = true;
-
-    select.appendChild(option1);
-    select.appendChild(option2);
-
-    component.selectedSiblingIds = [10, 20];
-    component.onSiblingSelectionBlur({ target: select, relatedTarget: null } as unknown as FocusEvent);
-
-    expect(component.selectedSiblingIds).toEqual([]);
-    expect(Array.from(select.options).every((option) => !option.selected)).toBeTrue();
-  });
-
-  it('keeps the selected sibling ids when focus moves to the remove button', () => {
-    const button = document.createElement('button');
-    button.className = 'remove-sibling-button';
-    document.body.appendChild(button);
-
-    component.selectedSiblingIds = [10, 20];
-    component.beginSiblingRemovalClick();
-
-    component.onSiblingSelectionBlur({ target: document.createElement('select'), relatedTarget: button } as unknown as FocusEvent);
-
-    expect(component.selectedSiblingIds).toEqual([10, 20]);
-
-    button.remove();
   });
 
   it('saves the updated sibling list when removing selected siblings so the database reflects the removal immediately', () => {

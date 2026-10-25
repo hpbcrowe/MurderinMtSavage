@@ -39,6 +39,9 @@ import { CommentsComponent } from './components/comment-components/comments/comm
 import { AncestorProfilesComponent } from './components/genealogy-components/ancestor-profiles/ancestor-profiles.component';
 import { AncestorProfileComponent } from './components/genealogy-components/ancestor-profile/ancestor-profile.component';
 import { AncestorProfileEditComponent } from './components/genealogy-components/ancestor-profile-edit/ancestor-profile-edit.component';
+import { SpouseEditSectionComponent } from './components/genealogy-components/ancestor-profile-edit/sections/spouse-edit-section/spouse-edit-section.component';
+import { ParentEditSectionComponent } from './components/genealogy-components/ancestor-profile-edit/sections/parent-edit-section/parent-edit-section.component';
+import { SiblingEditSectionComponent } from './components/genealogy-components/ancestor-profile-edit/sections/sibling-edit-section/sibling-edit-section.component';
 import { SourcesComponent } from './components/genealogy-components/sources/sources.component';
 import { SourceEditComponent } from './components/genealogy-components/source-edit/source-edit.component';
 import { ResearchNotesComponent } from './components/genealogy-components/research-notes/research-notes.component';
@@ -72,6 +75,9 @@ import { LoadingInterceptor } from './interceptors/loading.interceptor';
     AncestorProfilesComponent,
     AncestorProfileComponent,
     AncestorProfileEditComponent,
+    SpouseEditSectionComponent,
+    ParentEditSectionComponent,
+    SiblingEditSectionComponent,
     SourcesComponent,
     SourceEditComponent,
     ResearchNotesComponent,
