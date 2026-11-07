@@ -5,17 +5,58 @@
 
   <form [formGroup]="ancestorProfileForm" (ngSubmit)="onSubmit()">
     <div class="row align-items-start">
-      <div class="col-12 col-md-4 order-1 order-md-2">
+      <div class="col-12 col-md-6 order-1 order-md-2">
         <div class="mb-4 mb-md-0" *ngIf="getSelectedPhoto() as selectedPhoto">
           <div class="mb-2"><strong>Selected profile photo:</strong> {{ selectedPhoto.description }}</div>
           <img [src]="selectedPhoto.imageUrl" [alt]="selectedPhoto.description" class="img-fluid rounded mb-2" style="max-height: 280px;" />
           <div>
-            <button type="button" class="btn btn-outline-danger" (click)="clearProfilePhotoSelection()">Clear profile picture</button>
+            <button type="button" class="btn btn-outline-danger mb-2" (click)="clearProfilePhotoSelection()">Clear profile picture</button>
           </div>
+          
+        <app-parent-edit-section
+          [ancestorProfileForm]="ancestorProfileForm"
+          [currentAncestorProfile]="currentAncestorProfile"
+          [eligibleFatherAncestors]="getDisplayedFatherAncestors()"
+          [eligibleMotherAncestors]="getDisplayedMotherAncestors()"
+          [newFatherName]="newFatherName"
+          [newMotherName]="newMotherName"
+          [isCreatingFather]="isCreatingFather"
+          [isCreatingMother]="isCreatingMother"
+          [recentlyCreatedFather]="recentlyCreatedFather"
+          [recentlyCreatedMother]="recentlyCreatedMother"
+          (newFatherNameChange)="newFatherName = $event"
+          (newMotherNameChange)="newMotherName = $event"
+          (clearFatherSelection)="clearFatherSelection()"
+          (clearMotherSelection)="clearMotherSelection()"
+          (createAndAssignFather)="createAndAssignFather()"
+          (createAndAssignMother)="createAndAssignMother()"
+          (openAncestorProfile)="openAncestorProfile($event)"
+        ></app-parent-edit-section>
+
+        
+        <app-sibling-edit-section
+          [currentSiblingAncestors]="getCurrentSiblingAncestors()"
+          [siblingCandidateOptions]="getSiblingCandidateOptions()"
+          [selectedSiblingIds]="selectedSiblingIds"
+          [selectedExistingSiblingId]="selectedExistingSiblingId"
+          [newSiblingName]="newSiblingName"
+          [newSiblingGender]="newSiblingGender"
+          [isCreatingSibling]="isCreatingSibling"
+          [recentlyCreatedSibling]="recentlyCreatedSibling"
+          (selectedSiblingIdsChange)="selectedSiblingIds = $event"
+          (clearSelectedSiblings)="clearSelectedSiblings($event)"
+          (selectedExistingSiblingIdChange)="selectedExistingSiblingId = $event"
+          (addExistingSibling)="addExistingSibling()"
+          (newSiblingNameChange)="newSiblingName = $event"
+          (newSiblingGenderChange)="newSiblingGender = $event"
+          (createAndAddSibling)="createAndAddSibling()"
+          (openAncestorProfile)="openAncestorProfile($event)"
+        ></app-sibling-edit-section>
+
         </div>
       </div>
 
-      <div class="col-12 col-md-8 order-2 order-md-1">
+      <div class="col-12 col-md-6 order-2 order-md-1">
         <div class="form-group">
           <label>First Name</label>
           <input class="form-control" formControlName="firstName" />
@@ -69,7 +110,7 @@
 
         <app-spouse-edit-section
           [ancestorProfileForm]="ancestorProfileForm"
-          [eligibleSpouseAncestors]="getEligibleSpouseAncestors()"
+          [eligibleSpouseAncestors]="getDisplayedSpouseAncestors()"
           [newWifeName]="newWifeName"
           [newHusbandName]="newHusbandName"
           [isCreatingWife]="isCreatingWife"
@@ -84,43 +125,6 @@
           (openAncestorProfile)="openAncestorProfile($event)"
         ></app-spouse-edit-section>
 
-        <app-parent-edit-section
-          [ancestorProfileForm]="ancestorProfileForm"
-          [eligibleFatherAncestors]="getEligibleFatherAncestors()"
-          [eligibleMotherAncestors]="getEligibleMotherAncestors()"
-          [newFatherName]="newFatherName"
-          [newMotherName]="newMotherName"
-          [isCreatingFather]="isCreatingFather"
-          [isCreatingMother]="isCreatingMother"
-          [recentlyCreatedFather]="recentlyCreatedFather"
-          [recentlyCreatedMother]="recentlyCreatedMother"
-          (newFatherNameChange)="newFatherName = $event"
-          (newMotherNameChange)="newMotherName = $event"
-          (clearFatherSelection)="clearFatherSelection()"
-          (clearMotherSelection)="clearMotherSelection()"
-          (createAndAssignFather)="createAndAssignFather()"
-          (createAndAssignMother)="createAndAssignMother()"
-          (openAncestorProfile)="openAncestorProfile($event)"
-        ></app-parent-edit-section>
-
-        <app-sibling-edit-section
-          [currentSiblingAncestors]="getCurrentSiblingAncestors()"
-          [siblingCandidateOptions]="getSiblingCandidateOptions()"
-          [selectedSiblingIds]="selectedSiblingIds"
-          [selectedExistingSiblingId]="selectedExistingSiblingId"
-          [newSiblingName]="newSiblingName"
-          [newSiblingGender]="newSiblingGender"
-          [isCreatingSibling]="isCreatingSibling"
-          [recentlyCreatedSibling]="recentlyCreatedSibling"
-          (selectedSiblingIdsChange)="selectedSiblingIds = $event"
-          (clearSelectedSiblings)="clearSelectedSiblings($event)"
-          (selectedExistingSiblingIdChange)="selectedExistingSiblingId = $event"
-          (addExistingSibling)="addExistingSibling()"
-          (newSiblingNameChange)="newSiblingName = $event"
-          (newSiblingGenderChange)="newSiblingGender = $event"
-          (createAndAddSibling)="createAndAddSibling()"
-          (openAncestorProfile)="openAncestorProfile($event)"
-        ></app-sibling-edit-section>
 
         <div class="form-group">
           <label>Biography</label>

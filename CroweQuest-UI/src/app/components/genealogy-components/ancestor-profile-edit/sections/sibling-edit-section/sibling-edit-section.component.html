@@ -32,6 +32,7 @@
     <div class="input-group">
       <select
         class="form-control"
+        style="flex: 1 1 0; min-width: 0"
         [ngModel]="selectedExistingSiblingId"
         (ngModelChange)="selectedExistingSiblingIdChange.emit($event)"
         [ngModelOptions]="{ standalone: true }"
@@ -51,7 +52,7 @@
     </div>
   </div>
 
-  <div class="input-group mt-3">
+  <div class="input-group mt-6">
     <input
       class="form-control"
       [ngModel]="newSiblingName"
@@ -60,7 +61,8 @@
       placeholder="Or enter sibling full name"
     />
     <select
-      class="form-control ml-2 w-auto"
+      class="form-control ml-1 w-auto"
+      style="flex: 0 0 120px"
       [ngModel]="newSiblingGender"
       (ngModelChange)="newSiblingGenderChange.emit($event)"
       [ngModelOptions]="{ standalone: true }"

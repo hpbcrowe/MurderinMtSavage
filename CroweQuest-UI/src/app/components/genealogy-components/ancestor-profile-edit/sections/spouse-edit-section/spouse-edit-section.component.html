@@ -1,5 +1,5 @@
-<div class="form-group">
-  <label>{{ ancestorProfileForm.get('gender')?.value === 'Male' ? 'Wife' : ancestorProfileForm.get('gender')?.value === 'Female' ? 'Husband' : 'Spouse' }}</label>
+<div class="form-group" [formGroup]="ancestorProfileForm">
+  <label>{{ getSpouseLabel() }}</label>
   <div class="d-flex align-items-center">
     <select
       class="form-control"
@@ -50,20 +50,22 @@
       <button
         *ngIf="ancestorProfileForm.get('gender')?.value === 'Male'"
         type="button"
-        class="btn btn-outline-primary"
+        class="btn"
+        [ngClass]="getWifeCreateButtonHighlighted() ? 'btn-warning text-dark' : 'btn-outline-primary'"
         [disabled]="isCreatingWife"
         (click)="createAndAssignWife.emit()"
       >
-        {{ isCreatingWife ? 'Creating...' : 'Create Wife' }}
+        {{ isCreatingWife ? 'Creating...' : 'Create wife ancestor' }}
       </button>
       <button
         *ngIf="ancestorProfileForm.get('gender')?.value === 'Female'"
         type="button"
-        class="btn btn-outline-primary"
+        class="btn"
+        [ngClass]="getHusbandCreateButtonHighlighted() ? 'btn-warning text-dark' : 'btn-outline-primary'"
         [disabled]="isCreatingHusband"
         (click)="createAndAssignHusband.emit()"
       >
-        {{ isCreatingHusband ? 'Creating...' : 'Create Husband' }}
+        {{ isCreatingHusband ? 'Creating...' : 'Create husband ancestor' }}
       </button>
       <button
         *ngIf="ancestorProfileForm.get('gender')?.value !== 'Male' && ancestorProfileForm.get('gender')?.value !== 'Female'"

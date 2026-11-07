@@ -18,6 +18,7 @@ import { CanComponentDeactivate } from 'src/app/guards/pending-changes.guard';
 export class AncestorProfileEditComponent implements OnInit, CanComponentDeactivate {
   ancestorProfileForm!: FormGroup;
   allAncestors: AncestorProfile[] = [];
+  currentAncestorProfile: AncestorProfile | null = null;
   recentlyCreatedWife: AncestorProfile | null = null;
   recentlyCreatedHusband: AncestorProfile | null = null;
   recentlyCreatedFather: AncestorProfile | null = null;
@@ -426,11 +427,22 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
  *  Updates the ancestor profile form with the provided ancestor profile data.
  * @param ancestorProfile    *  
  * The AncestorProfile object containing the data to populate the form.
+ *  
  */
   updateForm(ancestorProfile: AncestorProfile) {
+    this.currentAncestorProfile = ancestorProfile;
+
     const siblingIds = (ancestorProfile.siblingAncestorProfileIds || [])
       .filter((id) => id !== ancestorProfile.fatherAncestorProfileId)
       .filter((id) => id !== ancestorProfile.motherAncestorProfileId);
+
+    this.upsertAncestorOption(ancestorProfile);
+    this.upsertAncestorOptionFromRelativeSummary(ancestorProfile.father);
+    this.upsertAncestorOptionFromRelativeSummary(ancestorProfile.mother);
+    this.selectedSiblingIds = siblingIds;
+
+    const fatherId = this.normalizeRelationshipId(ancestorProfile.fatherAncestorProfileId ?? this.getPersistedRelativeId('father'));
+    const motherId = this.normalizeRelationshipId(ancestorProfile.motherAncestorProfileId ?? this.getPersistedRelativeId('mother'));
 
     this.ancestorProfileForm.patchValue({
       ancestorProfileId: ancestorProfile.ancestorProfileId,
@@ -439,9 +451,9 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
       lastName: ancestorProfile.lastName,
       suffix: ancestorProfile.suffix,
       gender: ancestorProfile.gender,
-      birthDate: ancestorProfile.birthDate,
+      birthDate: this.normalizeDateForDateInput(ancestorProfile.birthDate),
       birthLocation: ancestorProfile.birthLocation,
-      deathDate: ancestorProfile.deathDate,
+      deathDate: this.normalizeDateForDateInput(ancestorProfile.deathDate),
       deathLocation: ancestorProfile.deathLocation,
       biography: ancestorProfile.biography,
       researchStatus: ancestorProfile.researchStatus,
@@ -449,10 +461,10 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
       tags: ancestorProfile.tags,
       confidenceLevel: ancestorProfile.confidenceLevel,
       profilePhotoId: ancestorProfile.profilePhotoId,
-      husbandAncestorProfileId: ancestorProfile.husbandAncestorProfileId,
-      wifeAncestorProfileId: ancestorProfile.wifeAncestorProfileId,
-      fatherAncestorProfileId: ancestorProfile.fatherAncestorProfileId,
-      motherAncestorProfileId: ancestorProfile.motherAncestorProfileId,
+      husbandAncestorProfileId: this.normalizeRelationshipId(ancestorProfile.husbandAncestorProfileId),
+      wifeAncestorProfileId: this.normalizeRelationshipId(ancestorProfile.wifeAncestorProfileId),
+      fatherAncestorProfileId: fatherId,
+      motherAncestorProfileId: motherId,
       siblingAncestorProfileIds: siblingIds
     });
 /**
@@ -460,8 +472,6 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
  * This is done to ensure that the form starts with no siblings selected, 
  * and any existing sibling relationships will be managed through the form controls. 
  */
-    this.selectedSiblingIds = [];
-
     this.refreshRelationshipDisplayNames();
 
     if (ancestorProfile.profilePhotoId) {
@@ -469,6 +479,37 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
     }
 
     this.markSavedState();
+  }
+
+  private normalizeDateForDateInput(dateValue: unknown): string | null {
+    if (!dateValue) {
+      return null;
+    }
+
+    if (typeof dateValue === 'string') {
+      const trimmedDateValue = dateValue.trim();
+      if (!trimmedDateValue) {
+        return null;
+      }
+
+      const isoDateMatch = trimmedDateValue.match(/^(\d{4}-\d{2}-\d{2})/);
+      if (isoDateMatch) {
+        return isoDateMatch[1];
+      }
+
+      const parsedFromString = new Date(trimmedDateValue);
+      if (!Number.isNaN(parsedFromString.getTime())) {
+        return parsedFromString.toISOString().slice(0, 10);
+      }
+
+      return null;
+    }
+
+    if (dateValue instanceof Date && !Number.isNaN(dateValue.getTime())) {
+      return dateValue.toISOString().slice(0, 10);
+    }
+
+    return null;
   }
 
   canDeactivate(): boolean {
@@ -505,19 +546,60 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
   }
 
   private refreshRelationshipDisplayNames(): void {
-    this.newHusbandName = this.resolveRelationshipDisplayName(this.ancestorProfileForm.get('husbandAncestorProfileId')?.value);
-    this.newWifeName = this.resolveRelationshipDisplayName(this.ancestorProfileForm.get('wifeAncestorProfileId')?.value);
-    this.newFatherName = this.resolveRelationshipDisplayName(this.ancestorProfileForm.get('fatherAncestorProfileId')?.value);
-    this.newMotherName = this.resolveRelationshipDisplayName(this.ancestorProfileForm.get('motherAncestorProfileId')?.value);
+    this.newHusbandName = this.resolveRelationshipDisplayName(this.getPersistedRelativeId('husband'));
+    this.newWifeName = this.resolveRelationshipDisplayName(this.getPersistedRelativeId('wife'));
+    this.newFatherName = this.resolveRelationshipDisplayName(this.getPersistedRelativeId('father'));
+    this.newMotherName = this.resolveRelationshipDisplayName(this.getPersistedRelativeId('mother'));
   }
 
-  private resolveRelationshipDisplayName(ancestorProfileId: number | null | undefined): string {
-    if (ancestorProfileId == null || Number.isNaN(Number(ancestorProfileId))) {
+  private normalizeRelationshipId(value: number | string | null | undefined): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    const normalized = Number(value);
+    return Number.isNaN(normalized) || normalized <= 0 ? null : normalized;
+  }
+
+  private getPersistedRelativeId(relativeType: 'father' | 'mother' | 'husband' | 'wife'): number | null {
+    const fieldName = relativeType === 'father'
+      ? 'fatherAncestorProfileId'
+      : relativeType === 'mother'
+        ? 'motherAncestorProfileId'
+        : relativeType === 'husband'
+          ? 'husbandAncestorProfileId'
+          : 'wifeAncestorProfileId';
+
+    const formValue = this.ancestorProfileForm.get(fieldName)?.value;
+    const normalizedFormValue = this.normalizeRelationshipId(formValue);
+    if (normalizedFormValue) {
+      return normalizedFormValue;
+    }
+
+    const savedRelative = this.currentAncestorProfile?.[relativeType as keyof AncestorProfile] as { ancestorProfileId?: number | string } | undefined;
+    const savedId = savedRelative?.ancestorProfileId ?? this.currentAncestorProfile?.[`${relativeType}AncestorProfileId` as keyof AncestorProfile] as number | string | undefined;
+    const normalizedSavedId = this.normalizeRelationshipId(savedId);
+
+    return normalizedSavedId ?? null;
+  }
+
+  private resolveRelationshipDisplayName(ancestorProfileId: number | string | null | undefined): string {
+    const normalizedId = this.normalizeRelationshipId(ancestorProfileId);
+    if (normalizedId == null) {
       return '';
     }
 
-    const matchedAncestor = this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === Number(ancestorProfileId));
-    return matchedAncestor ? this.formatAncestorName(matchedAncestor) : '';
+    const matchedAncestor = this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === normalizedId);
+    if (matchedAncestor) {
+      return this.formatAncestorName(matchedAncestor);
+    }
+
+    const persistedRelative = this.currentAncestorProfile?.father ?? this.currentAncestorProfile?.mother ?? this.currentAncestorProfile?.husband ?? this.currentAncestorProfile?.wife;
+    if (persistedRelative && Number(persistedRelative.ancestorProfileId) === normalizedId) {
+      return [persistedRelative.firstName, persistedRelative.middleName, persistedRelative.lastName].filter(Boolean).join(' ');
+    }
+
+    return '';
   }
 
 /**
@@ -601,6 +683,14 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
     return this.getEligibleAncestors().filter((ancestor) => ancestor.gender === 'Female' || ancestor.gender === 'Male');
   }
 
+  getDisplayedSpouseAncestors(): AncestorProfile[] {
+    return this.withSelectedAncestorsInOptions(
+      this.getEligibleSpouseAncestors(),
+      this.ancestorProfileForm.get('wifeAncestorProfileId')?.value,
+      this.ancestorProfileForm.get('husbandAncestorProfileId')?.value
+    );
+  }
+
 /**
  *  Retrieves a list of eligible ancestor profiles that can be selected as husbands.
  * @returns A list of eligible ancestor profiles that can be selected as husbands.
@@ -633,6 +723,13 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
     return this.getEligibleAncestors().filter((ancestor) => ancestor.gender === 'Male');
   }
 
+  getDisplayedFatherAncestors(): AncestorProfile[] {
+    return this.withSelectedAncestorsInOptions(
+      this.getEligibleFatherAncestors(),
+      this.getPersistedRelativeId('father')
+    );
+  }
+
   /**
    *  Retrieves a list of eligible ancestor profiles that can be selected as mothers.
    * @returns 
@@ -640,6 +737,41 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
    */
   getEligibleMotherAncestors(): AncestorProfile[] {
     return this.getEligibleAncestors().filter((ancestor) => ancestor.gender === 'Female');
+  }
+
+  getDisplayedMotherAncestors(): AncestorProfile[] {
+    return this.withSelectedAncestorsInOptions(
+      this.getEligibleMotherAncestors(),
+      this.getPersistedRelativeId('mother')
+    );
+  }
+
+  private withSelectedAncestorsInOptions(baseOptions: AncestorProfile[], ...selectedIds: Array<number | string | null | undefined>): AncestorProfile[] {
+    const selectedIdSet = new Set(
+      selectedIds
+        .map((id) => Number(id))
+        .filter((id) => !Number.isNaN(id) && id > 0)
+    );
+
+    if (!selectedIdSet.size) {
+      return baseOptions;
+    }
+
+    const mergedOptions = [...baseOptions];
+    const existingOptionIds = new Set(baseOptions.map((ancestor) => ancestor.ancestorProfileId));
+
+    for (const selectedId of selectedIdSet) {
+      if (existingOptionIds.has(selectedId)) {
+        continue;
+      }
+
+      const selectedAncestor = this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === selectedId);
+      if (selectedAncestor) {
+        mergedOptions.push(selectedAncestor);
+      }
+    }
+
+    return mergedOptions;
   }
 
 
@@ -1116,6 +1248,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
         this.ancestorProfileForm.patchValue({
           fatherAncestorProfileId: createdAncestor.ancestorProfileId
         });
+        this.saveCurrentAncestorProfile();
 
 // Reset the new father name field and display a success message.
         this.newFatherName = '';
@@ -1161,6 +1294,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
         this.ancestorProfileForm.patchValue({
           motherAncestorProfileId: createdAncestor.ancestorProfileId
         });
+        this.saveCurrentAncestorProfile();
 
 // Reset the new mother name field and display a success message.
         this.newMotherName = '';
@@ -1388,6 +1522,30 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
     }
 // If the ancestor profile does not exist, add it to the array.
     this.allAncestors = [...this.allAncestors, ancestorProfile];
+  }
+
+  private upsertAncestorOptionFromRelativeSummary(relative?: { ancestorProfileId?: number | string; firstName?: string; middleName?: string; lastName?: string; gender?: string }): void {
+    const normalizedId = this.normalizeRelationshipId(relative?.ancestorProfileId);
+    if (!relative || normalizedId == null) {
+      return;
+    }
+
+    const existingAncestor = this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === normalizedId);
+    if (existingAncestor) {
+      return;
+    }
+
+    this.allAncestors = [...this.allAncestors, {
+      ancestorProfileId: normalizedId,
+      firstName: relative.firstName ?? 'Unknown',
+      middleName: relative.middleName,
+      lastName: relative.lastName ?? '',
+      gender: relative.gender,
+      siblingAncestorProfileIds: [],
+      childrenAncestorProfileIds: [],
+      siblings: [],
+      children: []
+    } as unknown as AncestorProfile];
   }
 
 /**
