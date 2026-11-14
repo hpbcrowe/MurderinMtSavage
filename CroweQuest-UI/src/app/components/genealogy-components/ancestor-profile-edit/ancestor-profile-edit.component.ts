@@ -9,14 +9,16 @@ import { AncestorRelationship } from 'src/app/models/genealogy/ancestor-relation
 import { Photo } from 'src/app/models/photo/photo.model';
 import { AncestorProfileService } from 'src/app/services/genealogy/ancestor-profile.service';
 import { PhotoService } from 'src/app/services/photo.service';
+import { CanComponentDeactivate } from 'src/app/guards/pending-changes.guard';
 
 @Component({
   selector: 'app-ancestor-profile-edit',
   templateUrl: './ancestor-profile-edit.component.html'
 })
-export class AncestorProfileEditComponent implements OnInit {
+export class AncestorProfileEditComponent implements OnInit, CanComponentDeactivate {
   ancestorProfileForm!: FormGroup;
   allAncestors: AncestorProfile[] = [];
+  currentAncestorProfile: AncestorProfile | null = null;
   recentlyCreatedWife: AncestorProfile | null = null;
   recentlyCreatedHusband: AncestorProfile | null = null;
   recentlyCreatedFather: AncestorProfile | null = null;
@@ -38,12 +40,12 @@ export class AncestorProfileEditComponent implements OnInit {
   ancestorPhotos: Photo[] = [];
   selectedUserPhotoId: number | null = null;
   selectedSiblingIds: number[] = [];
-  private isSiblingRemovalClickInProgress = false;
   photoFile: File | null = null;
   photoPreviewUrl: string | null = null;
   isPhotoDragActive: boolean = false;
   isPhotoUploading: boolean = false;
   readonly maxPhotoBytes: number = 10 * 1024 * 1024;
+  private isNavigatingAfterSave: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -425,11 +427,22 @@ export class AncestorProfileEditComponent implements OnInit {
  *  Updates the ancestor profile form with the provided ancestor profile data.
  * @param ancestorProfile    *  
  * The AncestorProfile object containing the data to populate the form.
+ *  
  */
   updateForm(ancestorProfile: AncestorProfile) {
+    this.currentAncestorProfile = ancestorProfile;
+
     const siblingIds = (ancestorProfile.siblingAncestorProfileIds || [])
       .filter((id) => id !== ancestorProfile.fatherAncestorProfileId)
       .filter((id) => id !== ancestorProfile.motherAncestorProfileId);
+
+    this.upsertAncestorOption(ancestorProfile);
+    this.upsertAncestorOptionFromRelativeSummary(ancestorProfile.father);
+    this.upsertAncestorOptionFromRelativeSummary(ancestorProfile.mother);
+    this.selectedSiblingIds = siblingIds;
+
+    const fatherId = this.normalizeRelationshipId(ancestorProfile.fatherAncestorProfileId ?? this.getPersistedRelativeId('father'));
+    const motherId = this.normalizeRelationshipId(ancestorProfile.motherAncestorProfileId ?? this.getPersistedRelativeId('mother'));
 
     this.ancestorProfileForm.patchValue({
       ancestorProfileId: ancestorProfile.ancestorProfileId,
@@ -438,9 +451,9 @@ export class AncestorProfileEditComponent implements OnInit {
       lastName: ancestorProfile.lastName,
       suffix: ancestorProfile.suffix,
       gender: ancestorProfile.gender,
-      birthDate: ancestorProfile.birthDate,
+      birthDate: this.normalizeDateForDateInput(ancestorProfile.birthDate),
       birthLocation: ancestorProfile.birthLocation,
-      deathDate: ancestorProfile.deathDate,
+      deathDate: this.normalizeDateForDateInput(ancestorProfile.deathDate),
       deathLocation: ancestorProfile.deathLocation,
       biography: ancestorProfile.biography,
       researchStatus: ancestorProfile.researchStatus,
@@ -448,10 +461,10 @@ export class AncestorProfileEditComponent implements OnInit {
       tags: ancestorProfile.tags,
       confidenceLevel: ancestorProfile.confidenceLevel,
       profilePhotoId: ancestorProfile.profilePhotoId,
-      husbandAncestorProfileId: ancestorProfile.husbandAncestorProfileId,
-      wifeAncestorProfileId: ancestorProfile.wifeAncestorProfileId,
-      fatherAncestorProfileId: ancestorProfile.fatherAncestorProfileId,
-      motherAncestorProfileId: ancestorProfile.motherAncestorProfileId,
+      husbandAncestorProfileId: this.normalizeRelationshipId(ancestorProfile.husbandAncestorProfileId),
+      wifeAncestorProfileId: this.normalizeRelationshipId(ancestorProfile.wifeAncestorProfileId),
+      fatherAncestorProfileId: fatherId,
+      motherAncestorProfileId: motherId,
       siblingAncestorProfileIds: siblingIds
     });
 /**
@@ -459,29 +472,134 @@ export class AncestorProfileEditComponent implements OnInit {
  * This is done to ensure that the form starts with no siblings selected, 
  * and any existing sibling relationships will be managed through the form controls. 
  */
-    this.selectedSiblingIds = [];
-
     this.refreshRelationshipDisplayNames();
 
     if (ancestorProfile.profilePhotoId) {
       this.ensureProfilePhotoVisible(ancestorProfile.profilePhotoId);
     }
+
+    this.markSavedState();
+  }
+
+  private normalizeDateForDateInput(dateValue: unknown): string | null {
+    if (!dateValue) {
+      return null;
+    }
+
+    if (typeof dateValue === 'string') {
+      const trimmedDateValue = dateValue.trim();
+      if (!trimmedDateValue) {
+        return null;
+      }
+
+      const isoDateMatch = trimmedDateValue.match(/^(\d{4}-\d{2}-\d{2})/);
+      if (isoDateMatch) {
+        return isoDateMatch[1];
+      }
+
+      const parsedFromString = new Date(trimmedDateValue);
+      if (!Number.isNaN(parsedFromString.getTime())) {
+        return parsedFromString.toISOString().slice(0, 10);
+      }
+
+      return null;
+    }
+
+    if (dateValue instanceof Date && !Number.isNaN(dateValue.getTime())) {
+      return dateValue.toISOString().slice(0, 10);
+    }
+
+    return null;
+  }
+
+  canDeactivate(): boolean {
+    if (this.isNavigatingAfterSave) {
+      return true;
+    }
+
+    if (!this.hasUnsavedChanges()) {
+      return true;
+    }
+
+    return window.confirm('You have unsaved changes. Leave this page without saving?');
+  }
+
+  private hasUnsavedChanges(): boolean {
+    return !!this.ancestorProfileForm?.dirty || this.hasPendingStandaloneInputs();
+  }
+
+  private hasPendingStandaloneInputs(): boolean {
+    return !!(
+      this.newHusbandName.trim() ||
+      this.newWifeName.trim() ||
+      this.newFatherName.trim() ||
+      this.newMotherName.trim() ||
+      this.newSiblingName.trim() ||
+      this.selectedExistingSiblingId ||
+      this.photoFile
+    );
+  }
+
+  private markSavedState(): void {
+    this.ancestorProfileForm.markAsPristine();
+    this.ancestorProfileForm.markAsUntouched();
   }
 
   private refreshRelationshipDisplayNames(): void {
-    this.newHusbandName = this.resolveRelationshipDisplayName(this.ancestorProfileForm.get('husbandAncestorProfileId')?.value);
-    this.newWifeName = this.resolveRelationshipDisplayName(this.ancestorProfileForm.get('wifeAncestorProfileId')?.value);
-    this.newFatherName = this.resolveRelationshipDisplayName(this.ancestorProfileForm.get('fatherAncestorProfileId')?.value);
-    this.newMotherName = this.resolveRelationshipDisplayName(this.ancestorProfileForm.get('motherAncestorProfileId')?.value);
+    this.newHusbandName = this.resolveRelationshipDisplayName(this.getPersistedRelativeId('husband'));
+    this.newWifeName = this.resolveRelationshipDisplayName(this.getPersistedRelativeId('wife'));
+    this.newFatherName = this.resolveRelationshipDisplayName(this.getPersistedRelativeId('father'));
+    this.newMotherName = this.resolveRelationshipDisplayName(this.getPersistedRelativeId('mother'));
   }
 
-  private resolveRelationshipDisplayName(ancestorProfileId: number | null | undefined): string {
-    if (ancestorProfileId == null || Number.isNaN(Number(ancestorProfileId))) {
+  private normalizeRelationshipId(value: number | string | null | undefined): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    const normalized = Number(value);
+    return Number.isNaN(normalized) || normalized <= 0 ? null : normalized;
+  }
+
+  private getPersistedRelativeId(relativeType: 'father' | 'mother' | 'husband' | 'wife'): number | null {
+    const fieldName = relativeType === 'father'
+      ? 'fatherAncestorProfileId'
+      : relativeType === 'mother'
+        ? 'motherAncestorProfileId'
+        : relativeType === 'husband'
+          ? 'husbandAncestorProfileId'
+          : 'wifeAncestorProfileId';
+
+    const formValue = this.ancestorProfileForm.get(fieldName)?.value;
+    const normalizedFormValue = this.normalizeRelationshipId(formValue);
+    if (normalizedFormValue) {
+      return normalizedFormValue;
+    }
+
+    const savedRelative = this.currentAncestorProfile?.[relativeType as keyof AncestorProfile] as { ancestorProfileId?: number | string } | undefined;
+    const savedId = savedRelative?.ancestorProfileId ?? this.currentAncestorProfile?.[`${relativeType}AncestorProfileId` as keyof AncestorProfile] as number | string | undefined;
+    const normalizedSavedId = this.normalizeRelationshipId(savedId);
+
+    return normalizedSavedId ?? null;
+  }
+
+  private resolveRelationshipDisplayName(ancestorProfileId: number | string | null | undefined): string {
+    const normalizedId = this.normalizeRelationshipId(ancestorProfileId);
+    if (normalizedId == null) {
       return '';
     }
 
-    const matchedAncestor = this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === Number(ancestorProfileId));
-    return matchedAncestor ? this.formatAncestorName(matchedAncestor) : '';
+    const matchedAncestor = this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === normalizedId);
+    if (matchedAncestor) {
+      return this.formatAncestorName(matchedAncestor);
+    }
+
+    const persistedRelative = this.currentAncestorProfile?.father ?? this.currentAncestorProfile?.mother ?? this.currentAncestorProfile?.husband ?? this.currentAncestorProfile?.wife;
+    if (persistedRelative && Number(persistedRelative.ancestorProfileId) === normalizedId) {
+      return [persistedRelative.firstName, persistedRelative.middleName, persistedRelative.lastName].filter(Boolean).join(' ');
+    }
+
+    return '';
   }
 
 /**
@@ -565,6 +683,14 @@ export class AncestorProfileEditComponent implements OnInit {
     return this.getEligibleAncestors().filter((ancestor) => ancestor.gender === 'Female' || ancestor.gender === 'Male');
   }
 
+  getDisplayedSpouseAncestors(): AncestorProfile[] {
+    return this.withSelectedAncestorsInOptions(
+      this.getEligibleSpouseAncestors(),
+      this.ancestorProfileForm.get('wifeAncestorProfileId')?.value,
+      this.ancestorProfileForm.get('husbandAncestorProfileId')?.value
+    );
+  }
+
 /**
  *  Retrieves a list of eligible ancestor profiles that can be selected as husbands.
  * @returns A list of eligible ancestor profiles that can be selected as husbands.
@@ -597,6 +723,13 @@ export class AncestorProfileEditComponent implements OnInit {
     return this.getEligibleAncestors().filter((ancestor) => ancestor.gender === 'Male');
   }
 
+  getDisplayedFatherAncestors(): AncestorProfile[] {
+    return this.withSelectedAncestorsInOptions(
+      this.getEligibleFatherAncestors(),
+      this.getPersistedRelativeId('father')
+    );
+  }
+
   /**
    *  Retrieves a list of eligible ancestor profiles that can be selected as mothers.
    * @returns 
@@ -606,27 +739,41 @@ export class AncestorProfileEditComponent implements OnInit {
     return this.getEligibleAncestors().filter((ancestor) => ancestor.gender === 'Female');
   }
 
-
-/**
- *  Retrieves the appropriate spouse selection field based on the current ancestor's gender.
- * @returns 'wifeAncestorProfileId' if the current ancestor is male, 'husbandAncestorProfileId' if the current ancestor is female.
- */
-  getSpouseSelectionField(): 'wifeAncestorProfileId' | 'husbandAncestorProfileId' {
-    return this.ancestorProfileForm.get('gender')?.value === 'Female' ? 'husbandAncestorProfileId' : 'wifeAncestorProfileId';
+  getDisplayedMotherAncestors(): AncestorProfile[] {
+    return this.withSelectedAncestorsInOptions(
+      this.getEligibleMotherAncestors(),
+      this.getPersistedRelativeId('mother')
+    );
   }
 
-  hasSelectedSpouse(): boolean {
-    const spouseField = this.getSpouseSelectionField();
-    return !!this.ancestorProfileForm.get(spouseField)?.value;
+  private withSelectedAncestorsInOptions(baseOptions: AncestorProfile[], ...selectedIds: Array<number | string | null | undefined>): AncestorProfile[] {
+    const selectedIdSet = new Set(
+      selectedIds
+        .map((id) => Number(id))
+        .filter((id) => !Number.isNaN(id) && id > 0)
+    );
+
+    if (!selectedIdSet.size) {
+      return baseOptions;
+    }
+
+    const mergedOptions = [...baseOptions];
+    const existingOptionIds = new Set(baseOptions.map((ancestor) => ancestor.ancestorProfileId));
+
+    for (const selectedId of selectedIdSet) {
+      if (existingOptionIds.has(selectedId)) {
+        continue;
+      }
+
+      const selectedAncestor = this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === selectedId);
+      if (selectedAncestor) {
+        mergedOptions.push(selectedAncestor);
+      }
+    }
+
+    return mergedOptions;
   }
 
-  hasSelectedFather(): boolean {
-    return !!this.ancestorProfileForm.get('fatherAncestorProfileId')?.value;
-  }
-
-  hasSelectedMother(): boolean {
-    return !!this.ancestorProfileForm.get('motherAncestorProfileId')?.value;
-  }
 
   /**
    *  Retrieves a list of eligible ancestor profiles that can be selected as siblings.
@@ -726,103 +873,11 @@ export class AncestorProfileEditComponent implements OnInit {
   }
 
 /**
- *  Handles the change event for sibling selection in the form. It updates the selectedSiblingIds 
- * array based on the selected options in the sibling selection dropdown.
- * @param event 
- * @returns   
- *    VOID
- */
-  onSiblingSelectionChange(event?: Event): void {
-    const selectedOptions = (event?.target as HTMLSelectElement | null)?.selectedOptions;
-
-    if (!selectedOptions) {
-      this.selectedSiblingIds = [];
-      return;
-    }
-
-    this.selectedSiblingIds = Array.from(selectedOptions)
-      .map((option) => this.getOptionNumericId(option as HTMLOptionElement))
-      .filter((id) => !Number.isNaN(id));
-  }
-
-  /***
-   * Retrieves the numeric ID from a given HTMLOptionElement. It first attempts to parse the 
-   * value directly as a number. If that fails, it uses a regex fallback to extract a numeric
-   *  ID from framework-generated option values (e.g., "number:123").
-   */
-  private getOptionNumericId(option: HTMLOptionElement): number {
-    const directValue = Number(option.value);
-    if (!Number.isNaN(directValue)) {
-      return directValue;
-    }
-
-    // Fallback for framework-generated option values like "number:123".
-    const fallbackMatch = option.value.match(/(\d+)$/);
-    return fallbackMatch ? Number(fallbackMatch[1]) : Number.NaN;
-  }
-
-
-/**
- *  Handles the blur event for sibling selection. It checks if the user is moving focus
- *  to a remove button, and if not, it clears the selected sibling IDs and deselects all
- *  options in the sibling selection dropdown.
- * @param event   
- * @returns void
- */
-  onSiblingSelectionBlur(event?: FocusEvent): void {
-    if (this.isSiblingRemovalClickInProgress) {
-      return;
-    }
-
-// Check if the user is moving focus to a remove button. If so, do not clear the selection.
-    const nextTarget = event?.relatedTarget as HTMLElement | null;
-    const activeTarget = document.activeElement as HTMLElement | null;
-    const siblingSelect = event?.target as HTMLSelectElement | null;
-
-/**
- * Checks if the user is moving focus to a remove button. If so, do not clear the selection.
- * 
- */
-    const isMovingToRemoveButton = !!(
-      (nextTarget && nextTarget.closest('.remove-sibling-button')) ||
-      (activeTarget && activeTarget.closest('.remove-sibling-button'))
-    );
-
-    if (isMovingToRemoveButton) {
-      return;
-    }
-
-    this.selectedSiblingIds = [];
-
-/**
- * Deselects all options in the sibling selection dropdown.
- */
-    if (siblingSelect) {
-      Array.from(siblingSelect.options).forEach((option) => {
-        option.selected = false;
-      });
-    }
-  }
-
-/**
- * Handles the click event for the sibling removal button. It sets a flag to indicate that a 
- * sibling removal click is in progress, and resets the flag after a short delay to allow 
- * for proper handling of focus events.
- */
-  beginSiblingRemovalClick(): void {
-    this.isSiblingRemovalClickInProgress = true;
-
-    setTimeout(() => {
-      this.isSiblingRemovalClickInProgress = false;
-    });
-  }
-
-/**
  * Clears the selected sibling IDs and updates the form accordingly.
  * @returns void
  */
-  clearSelectedSiblings(): void {
-    const idsToRemove = this.getNormalizedIdList(this.selectedSiblingIds);
+  clearSelectedSiblings(selectedIds?: number[]): void {
+    const idsToRemove = this.getNormalizedIdList(selectedIds ?? this.selectedSiblingIds);
 
     if (!idsToRemove.length) {
       this.toastr.warning('No siblings selected to remove.');
@@ -830,7 +885,6 @@ export class AncestorProfileEditComponent implements OnInit {
     }
 
     if (!this.confirmSiblingRelationshipRemoval(idsToRemove)) {
-      this.isSiblingRemovalClickInProgress = false;
       return;
     }
 
@@ -838,7 +892,6 @@ export class AncestorProfileEditComponent implements OnInit {
     const remainingSiblingIds = this.reconcileSiblingRelationshipIds(idsToRemove);
 
 // Update the form with the remaining sibling IDs and save the changes.
-    this.isSiblingRemovalClickInProgress = false;
     this.selectedSiblingIds = [];
     this.ancestorProfileForm.patchValue({ siblingAncestorProfileIds: remainingSiblingIds });
     this.saveCurrentAncestorProfile(remainingSiblingIds);
@@ -988,52 +1041,6 @@ export class AncestorProfileEditComponent implements OnInit {
       motherId,
       filteredSiblingIds
     );
-  }
-
-
-/**
- *  Determines whether the "Create Father" button should be highlighted based on the current input
- *  in the newFatherName field. 
- *  
- * @returns   A boolean indicating whether the "Create Father" button should be highlighted.
- */
-  getFatherCreateButtonHighlighted(): boolean {
-    const candidateName = this.newFatherName.trim();
-    if (!candidateName || candidateName.length < 2) {
-      return false;
-    }
-
-// Check if any existing eligible father ancestor's name includes the candidate name (case-insensitive).
-    const matchingAncestor = this.getEligibleFatherAncestors().find((ancestor) => {
-      const fullName = this.formatAncestorName(ancestor).toLowerCase();
-      return fullName.includes(candidateName.toLowerCase());
-    });
-
-    return !matchingAncestor;
-  }
-
-/** 
- * Determines whether the "Create Mother" button should be highlighted based on the current input
- *  in the newMotherName field. 
- *  
- * @returns   A boolean indicating whether the "Create Mother" button should be highlighted.
- */
-  getMotherCreateButtonHighlighted(): boolean {
-    const candidateName = this.newMotherName.trim();
-    if (!candidateName || candidateName.length < 2) {
-      return false;
-    }
-
-/**
- * Check if any existing eligible mother ancestor's name includes the candidate name (case-insensitive).
- *  If a matching ancestor is found, the button will not be highlighted; otherwise, it will be. 
- */
-    const matchingAncestor = this.getEligibleMotherAncestors().find((ancestor) => {
-      const fullName = this.formatAncestorName(ancestor).toLowerCase();
-      return fullName.includes(candidateName.toLowerCase());
-    });
-
-    return !matchingAncestor;
   }
 
 
@@ -1241,6 +1248,7 @@ export class AncestorProfileEditComponent implements OnInit {
         this.ancestorProfileForm.patchValue({
           fatherAncestorProfileId: createdAncestor.ancestorProfileId
         });
+        this.saveCurrentAncestorProfile();
 
 // Reset the new father name field and display a success message.
         this.newFatherName = '';
@@ -1286,6 +1294,7 @@ export class AncestorProfileEditComponent implements OnInit {
         this.ancestorProfileForm.patchValue({
           motherAncestorProfileId: createdAncestor.ancestorProfileId
         });
+        this.saveCurrentAncestorProfile();
 
 // Reset the new mother name field and display a success message.
         this.newMotherName = '';
@@ -1515,6 +1524,30 @@ export class AncestorProfileEditComponent implements OnInit {
     this.allAncestors = [...this.allAncestors, ancestorProfile];
   }
 
+  private upsertAncestorOptionFromRelativeSummary(relative?: { ancestorProfileId?: number | string; firstName?: string; middleName?: string; lastName?: string; gender?: string }): void {
+    const normalizedId = this.normalizeRelationshipId(relative?.ancestorProfileId);
+    if (!relative || normalizedId == null) {
+      return;
+    }
+
+    const existingAncestor = this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === normalizedId);
+    if (existingAncestor) {
+      return;
+    }
+
+    this.allAncestors = [...this.allAncestors, {
+      ancestorProfileId: normalizedId,
+      firstName: relative.firstName ?? 'Unknown',
+      middleName: relative.middleName,
+      lastName: relative.lastName ?? '',
+      gender: relative.gender,
+      siblingAncestorProfileIds: [],
+      childrenAncestorProfileIds: [],
+      siblings: [],
+      children: []
+    } as unknown as AncestorProfile];
+  }
+
 /**
  *  Opens the ancestor profile in a new browser tab based on the provided ancestorProfileId.
  * @param ancestorProfileId The ID of the ancestor profile to open.
@@ -1538,6 +1571,7 @@ export class AncestorProfileEditComponent implements OnInit {
       }
 
       this.toastr.info(`Ancestor profile saved.`);
+      this.isNavigatingAfterSave = true;
       this.router.navigate([`/genealogy/ancestors/${createdAncestorProfile.ancestorProfileId}`]);
     });
   }

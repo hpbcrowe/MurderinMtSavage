@@ -455,6 +455,7 @@ yarn-error.log
 testem.log
 /typings
 CroweQuest-UI/.angular
+/CroweQuestWebAPI-logs/
 
 # System files
 .DS_Store

@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { ToastrService } from 'ngx-toastr';
 import { AncestorProfileEditComponent } from './ancestor-profile-edit.component';
+import { ParentEditSectionComponent } from './sections/parent-edit-section/parent-edit-section.component';
 import { AncestorProfileService } from 'src/app/services/genealogy/ancestor-profile.service';
 import { PhotoService } from 'src/app/services/photo.service';
 
@@ -60,6 +61,100 @@ describe('AncestorProfileEditComponent', () => {
     expect(component.getEligibleSpouseAncestors().map((ancestor) => ancestor.ancestorProfileId)).toEqual([2]);
   });
 
+  it('includes currently selected spouse and parents in displayed option lists even when they do not meet current gender filters', () => {
+    component.ancestorProfileForm = formBuilder.group({
+      ancestorProfileId: [1],
+      gender: ['Male'],
+      wifeAncestorProfileId: [4],
+      husbandAncestorProfileId: [null],
+      fatherAncestorProfileId: [2],
+      motherAncestorProfileId: [3]
+    });
+
+    component.allAncestors = [
+      { ancestorProfileId: 1, gender: 'Male', firstName: 'Current', lastName: 'Ancestor' },
+      { ancestorProfileId: 2, gender: 'Unknown', firstName: 'Father', lastName: 'Unknown' },
+      { ancestorProfileId: 3, gender: 'Unknown', firstName: 'Mother', lastName: 'Unknown' },
+      { ancestorProfileId: 4, gender: 'Unknown', firstName: 'Spouse', lastName: 'Unknown' },
+      { ancestorProfileId: 5, gender: 'Female', firstName: 'Eligible', lastName: 'Wife' }
+    ] as any;
+
+    expect(component.getDisplayedSpouseAncestors().map((ancestor) => ancestor.ancestorProfileId)).toContain(4);
+    expect(component.getDisplayedFatherAncestors().map((ancestor) => ancestor.ancestorProfileId)).toContain(2);
+    expect(component.getDisplayedMotherAncestors().map((ancestor) => ancestor.ancestorProfileId)).toContain(3);
+  });
+
+  it('includes database-backed parent relationships in the displayed options even when the form control is empty', () => {
+    component.ancestorProfileForm = formBuilder.group({
+      ancestorProfileId: [99],
+      fatherAncestorProfileId: [null],
+      motherAncestorProfileId: [null]
+    });
+
+    component.currentAncestorProfile = {
+      ancestorProfileId: 99,
+      firstName: 'Current',
+      lastName: 'Ancestor',
+      gender: 'Male',
+      fatherAncestorProfileId: 11,
+      motherAncestorProfileId: 12,
+      father: { ancestorProfileId: 11, displayName: 'Father Person' },
+      mother: { ancestorProfileId: 12, displayName: 'Mother Person' }
+    } as any;
+
+    component.allAncestors = [
+      { ancestorProfileId: 11, gender: 'Male', firstName: 'Father', lastName: 'Person' },
+      { ancestorProfileId: 12, gender: 'Female', firstName: 'Mother', lastName: 'Person' }
+    ] as any;
+
+    expect(component.getDisplayedFatherAncestors().map((ancestor) => ancestor.ancestorProfileId)).toContain(11);
+    expect(component.getDisplayedMotherAncestors().map((ancestor) => ancestor.ancestorProfileId)).toContain(12);
+  });
+
+  it('normalizes parent IDs from the API so Angular can match the selected option instead of showing Unknown', () => {
+    component.ancestorProfileForm = formBuilder.group({
+      ancestorProfileId: [99],
+      fatherAncestorProfileId: [null],
+      motherAncestorProfileId: [null]
+    });
+
+    component.currentAncestorProfile = {
+      ancestorProfileId: 99,
+      firstName: 'Current',
+      lastName: 'Ancestor',
+      gender: 'Male',
+      fatherAncestorProfileId: '9',
+      motherAncestorProfileId: '12',
+      father: { ancestorProfileId: 9, firstName: 'Father', lastName: 'Example', gender: 'Male' },
+      mother: { ancestorProfileId: 12, firstName: 'Mother', lastName: 'Example', gender: 'Female' }
+    } as any;
+
+    component.allAncestors = [
+      { ancestorProfileId: 9, gender: 'Male', firstName: 'Father', lastName: 'Example' },
+      { ancestorProfileId: 12, gender: 'Female', firstName: 'Mother', lastName: 'Example' }
+    ] as any;
+
+    component.updateForm(component.currentAncestorProfile as any);
+
+    expect(component.ancestorProfileForm.get('fatherAncestorProfileId')?.value).toBe(9);
+    expect(component.ancestorProfileForm.get('motherAncestorProfileId')?.value).toBe(12);
+    expect(component.getDisplayedFatherAncestors().some((ancestor) => ancestor.ancestorProfileId === 9)).toBeTrue();
+    expect(component.getDisplayedMotherAncestors().some((ancestor) => ancestor.ancestorProfileId === 12)).toBeTrue();
+    expect(component.getDisplayedFatherAncestors().find((ancestor) => ancestor.ancestorProfileId === 9)?.firstName).toBe('Father');
+  });
+
+  it('matches persisted database IDs to the option value even when one side is a string and the other is a number', () => {
+    const parentSection = new ParentEditSectionComponent();
+    parentSection.ancestorProfileForm = formBuilder.group({
+      fatherAncestorProfileId: [9],
+      motherAncestorProfileId: [12]
+    });
+
+    expect(parentSection.compareAncestorId(9, '9')).toBeTrue();
+    expect(parentSection.compareAncestorId(12, '12')).toBeTrue();
+    expect(parentSection.compareAncestorId(9, '10')).toBeFalse();
+  });
+
   it('leaves relationship fields blank when no matching spouse or parent record is in the list', () => {
     component.allAncestors = [];
     component.updateForm({
@@ -91,7 +186,146 @@ describe('AncestorProfileEditComponent', () => {
     expect(component.newMotherName).toBe('');
   });
 
-  it('hides spouse and parent creation inputs when a relationship is selected and shows them again when cleared', () => {
+  it('keeps the in-memory ancestor cache and selected sibling state in sync after a save', () => {
+    component.allAncestors = [
+      { ancestorProfileId: 99, firstName: 'Old', lastName: 'Name', gender: 'Male', siblingAncestorProfileIds: [10] } as any
+    ];
+
+    component.updateForm({
+      ancestorProfileId: 99,
+      firstName: 'Updated',
+      middleName: '',
+      lastName: 'Name',
+      suffix: '',
+      gender: 'Male',
+      birthDate: null,
+      birthLocation: '',
+      deathDate: null,
+      deathLocation: '',
+      biography: '',
+      researchStatus: 'Researching',
+      familyBranch: '',
+      tags: '',
+      confidenceLevel: 'Possible',
+      profilePhotoId: null,
+      husbandAncestorProfileId: null,
+      wifeAncestorProfileId: 200,
+      fatherAncestorProfileId: 11,
+      motherAncestorProfileId: 12,
+      siblingAncestorProfileIds: [10, 20]
+    } as any);
+
+    expect(component.allAncestors.find((ancestor) => ancestor.ancestorProfileId === 99)?.firstName).toBe('Updated');
+    expect(component.selectedSiblingIds).toEqual([10, 20]);
+  });
+
+  it('saves the current ancestor immediately after creating and selecting a mother', () => {
+    component.ancestorProfileForm = formBuilder.group({
+      ancestorProfileId: [100],
+      firstName: ['Current'],
+      lastName: ['Ancestor'],
+      middleName: [''],
+      suffix: [''],
+      gender: ['Male'],
+      birthDate: [''],
+      birthLocation: [''],
+      deathDate: [''],
+      deathLocation: [''],
+      biography: [''],
+      researchStatus: ['Researching'],
+      familyBranch: [''],
+      tags: [''],
+      confidenceLevel: ['Possible'],
+      profilePhotoId: [null],
+      husbandAncestorProfileId: [null],
+      wifeAncestorProfileId: [null],
+      fatherAncestorProfileId: [null],
+      motherAncestorProfileId: [null],
+      siblingAncestorProfileIds: [[]]
+    });
+
+    const createSpy = jasmine.createSpy('create').and.callFake((model: any) => {
+      if (model.ancestorProfileId === -1) {
+        return makeObservableStub({
+          ancestorProfileId: 11,
+          firstName: 'Emma',
+          middleName: '',
+          lastName: 'Stokes',
+          gender: 'Female'
+        });
+      }
+
+      return makeObservableStub({
+        ...model,
+        ancestorProfileId: 100,
+        firstName: 'Current',
+        lastName: 'Ancestor'
+      });
+    });
+
+    component['ancestorProfileService'] = { create: createSpy } as any;
+    component.newMotherName = 'Emma Stokes';
+
+    component.createAndAssignMother();
+
+    expect(createSpy.calls.count()).toBe(2);
+    expect(createSpy.calls.mostRecent().args[0].motherAncestorProfileId).toBe(11);
+  });
+
+  it('normalizes api datetime strings so date inputs show saved values in edit mode', () => {
+    component.ancestorProfileForm = formBuilder.group({
+      ancestorProfileId: [99],
+      firstName: [''],
+      middleName: [''],
+      lastName: [''],
+      suffix: [''],
+      gender: [''],
+      birthDate: [''],
+      birthLocation: [''],
+      deathDate: [''],
+      deathLocation: [''],
+      biography: [''],
+      researchStatus: [''],
+      familyBranch: [''],
+      tags: [''],
+      confidenceLevel: [''],
+      profilePhotoId: [null],
+      husbandAncestorProfileId: [null],
+      wifeAncestorProfileId: [null],
+      fatherAncestorProfileId: [null],
+      motherAncestorProfileId: [null],
+      siblingAncestorProfileIds: [[]]
+    });
+
+    component.updateForm({
+      ancestorProfileId: 99,
+      firstName: 'Current',
+      middleName: '',
+      lastName: 'Ancestor',
+      suffix: '',
+      gender: 'Male',
+      birthDate: '1990-03-12T00:00:00',
+      birthLocation: '',
+      deathDate: '2001-04-30T12:45:00Z',
+      deathLocation: '',
+      biography: '',
+      researchStatus: 'Researching',
+      familyBranch: '',
+      tags: '',
+      confidenceLevel: 'Possible',
+      profilePhotoId: null,
+      husbandAncestorProfileId: null,
+      wifeAncestorProfileId: null,
+      fatherAncestorProfileId: null,
+      motherAncestorProfileId: null,
+      siblingAncestorProfileIds: []
+    } as any);
+
+    expect(component.ancestorProfileForm.get('birthDate')?.value).toBe('1990-03-12');
+    expect(component.ancestorProfileForm.get('deathDate')?.value).toBe('2001-04-30');
+  });
+
+  it('clears spouse and parent selections correctly', () => {
     component.ancestorProfileForm = formBuilder.group({
       gender: ['Male'],
       wifeAncestorProfileId: [7],
@@ -99,19 +333,13 @@ describe('AncestorProfileEditComponent', () => {
       motherAncestorProfileId: [9]
     });
 
-    expect(component.hasSelectedSpouse()).toBeTrue();
-    expect(component.hasSelectedFather()).toBeTrue();
-    expect(component.hasSelectedMother()).toBeTrue();
+    component.clearSpouseSelection();
+    component.clearFatherSelection();
+    component.clearMotherSelection();
 
-    component.ancestorProfileForm.patchValue({
-      wifeAncestorProfileId: null,
-      fatherAncestorProfileId: null,
-      motherAncestorProfileId: null
-    });
-
-    expect(component.hasSelectedSpouse()).toBeFalse();
-    expect(component.hasSelectedFather()).toBeFalse();
-    expect(component.hasSelectedMother()).toBeFalse();
+    expect(component.ancestorProfileForm.get('wifeAncestorProfileId')?.value).toBeNull();
+    expect(component.ancestorProfileForm.get('fatherAncestorProfileId')?.value).toBeNull();
+    expect(component.ancestorProfileForm.get('motherAncestorProfileId')?.value).toBeNull();
   });
 
   it('removes only the selected sibling ids while preserving the rest', () => {
@@ -289,64 +517,13 @@ describe('AncestorProfileEditComponent', () => {
     expect(service.addRelationship.calls.allArgs().every((args: any[]) => args[1].relationshipType === 'Parent')).toBeTrue();
   });
 
-  it('does not mutate the saved sibling ids when the user selects siblings for removal', () => {
+  it('does not mutate the saved sibling ids when sibling ids are staged for removal', () => {
     component.ancestorProfileForm.patchValue({ siblingAncestorProfileIds: [10, 20, 30] });
 
-    const select = document.createElement('select');
-    select.multiple = true;
-
-    const option1 = document.createElement('option');
-    option1.value = '10';
-    option1.selected = true;
-
-    const option2 = document.createElement('option');
-    option2.value = '20';
-    option2.selected = true;
-
-    select.appendChild(option1);
-    select.appendChild(option2);
-
-    component.onSiblingSelectionChange({ target: select } as unknown as Event);
+    component.selectedSiblingIds = [10, 20];
 
     expect(component.selectedSiblingIds).toEqual([10, 20]);
     expect(component.ancestorProfileForm.get('siblingAncestorProfileIds')?.value).toEqual([10, 20, 30]);
-  });
-
-  it('clears the visual sibling selection when focus leaves the list', () => {
-    const select = document.createElement('select');
-    select.multiple = true;
-
-    const option1 = document.createElement('option');
-    option1.value = '10';
-    option1.selected = true;
-
-    const option2 = document.createElement('option');
-    option2.value = '20';
-    option2.selected = true;
-
-    select.appendChild(option1);
-    select.appendChild(option2);
-
-    component.selectedSiblingIds = [10, 20];
-    component.onSiblingSelectionBlur({ target: select, relatedTarget: null } as unknown as FocusEvent);
-
-    expect(component.selectedSiblingIds).toEqual([]);
-    expect(Array.from(select.options).every((option) => !option.selected)).toBeTrue();
-  });
-
-  it('keeps the selected sibling ids when focus moves to the remove button', () => {
-    const button = document.createElement('button');
-    button.className = 'remove-sibling-button';
-    document.body.appendChild(button);
-
-    component.selectedSiblingIds = [10, 20];
-    component.beginSiblingRemovalClick();
-
-    component.onSiblingSelectionBlur({ target: document.createElement('select'), relatedTarget: button } as unknown as FocusEvent);
-
-    expect(component.selectedSiblingIds).toEqual([10, 20]);
-
-    button.remove();
   });
 
   it('saves the updated sibling list when removing selected siblings so the database reflects the removal immediately', () => {

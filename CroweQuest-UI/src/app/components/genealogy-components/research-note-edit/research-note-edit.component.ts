@@ -8,14 +8,16 @@ import { ResearchNote } from 'src/app/models/genealogy/research-note.model';
 import { ResearchNoteCreate } from 'src/app/models/genealogy/research-note-create.model';
 import { AncestorProfileService } from 'src/app/services/genealogy/ancestor-profile.service';
 import { ResearchNoteService } from 'src/app/services/genealogy/research-note.service';
+import { CanComponentDeactivate } from 'src/app/guards/pending-changes.guard';
 
 @Component({
   selector: 'app-research-note-edit',
   templateUrl: './research-note-edit.component.html'
 })
-export class ResearchNoteEditComponent implements OnInit {
+export class ResearchNoteEditComponent implements OnInit, CanComponentDeactivate {
   researchNoteForm!: FormGroup;
   ancestorProfiles: AncestorProfile[] = [];
+  private isNavigatingAfterSave = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -69,6 +71,25 @@ export class ResearchNoteEditComponent implements OnInit {
       confidenceLevel: researchNote.confidenceLevel,
       tags: researchNote.tags
     });
+
+    this.markSavedState();
+  }
+
+  canDeactivate(): boolean {
+    if (this.isNavigatingAfterSave) {
+      return true;
+    }
+
+    if (!this.researchNoteForm?.dirty) {
+      return true;
+    }
+
+    return window.confirm('You have unsaved changes. Leave this page without saving?');
+  }
+
+  private markSavedState(): void {
+    this.researchNoteForm.markAsPristine();
+    this.researchNoteForm.markAsUntouched();
   }
 
   onSubmit() {
@@ -85,6 +106,7 @@ export class ResearchNoteEditComponent implements OnInit {
     this.researchNoteService.create(researchNoteCreate).subscribe((createdResearchNote) => {
       this.updateForm(createdResearchNote);
       this.toastr.info('Research note saved.');
+      this.isNavigatingAfterSave = true;
       this.router.navigate(['/genealogy/research-notes']);
     });
   }

@@ -223,10 +223,20 @@ namespace CroweQuest.Repository
                 .Select(MapToRelativeSummary)
                 .FirstOrDefault();
 
+            if (ancestorProfile.Father == null && ancestorProfile.FatherAncestorProfileId.HasValue)
+            {
+                ancestorProfile.Father = await GetAncestorSummaryByIdAsync(connection, ancestorProfile.FatherAncestorProfileId.Value, "Father");
+            }
+
             ancestorProfile.Mother = relationshipRows
                 .Where(i => i.RelationshipGroup == "Mother")
                 .Select(MapToRelativeSummary)
                 .FirstOrDefault();
+
+            if (ancestorProfile.Mother == null && ancestorProfile.MotherAncestorProfileId.HasValue)
+            {
+                ancestorProfile.Mother = await GetAncestorSummaryByIdAsync(connection, ancestorProfile.MotherAncestorProfileId.Value, "Mother");
+            }
 
             ancestorProfile.Husband = relationshipRows
                 .Where(i => i.RelationshipGroup == "Spouse" && i.Gender == "Male")
@@ -264,6 +274,21 @@ namespace CroweQuest.Repository
                 .Select(i => i.AncestorProfileId)
                 .Distinct()
                 .ToList();
+        }
+
+        private async Task<AncestorRelativeSummary> GetAncestorSummaryByIdAsync(SqlConnection connection, int ancestorProfileId, string relationshipLabel)
+        {
+            return await connection.QueryFirstOrDefaultAsync<AncestorRelativeSummary>(
+                @"SELECT
+                    ap.AncestorProfileId,
+                    ap.FirstName,
+                    ap.MiddleName,
+                    ap.LastName,
+                    ap.Gender,
+                    @RelationshipLabel AS RelationshipLabel
+                  FROM dbo.AncestorProfiles ap
+                  WHERE ap.AncestorProfileId = @AncestorProfileId;",
+                new { AncestorProfileId = ancestorProfileId, RelationshipLabel = relationshipLabel });
         }
 
         private static AncestorRelativeSummary MapToRelativeSummary(AncestorRelationshipRow relationshipRow)

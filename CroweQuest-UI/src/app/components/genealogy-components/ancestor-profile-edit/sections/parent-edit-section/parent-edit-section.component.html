@@ -1,0 +1,106 @@
+<div class="form-group" [formGroup]="ancestorProfileForm">
+  <label>Father</label>
+  <div class="d-flex align-items-center">
+    <div *ngIf="hasSelectedFather(); else fatherSelector" class="form-control">
+      {{ selectedFatherName }}
+    </div>
+    <ng-template #fatherSelector>
+      <select
+        class="form-control"
+        formControlName="fatherAncestorProfileId"
+        [compareWith]="compareAncestorId"
+      >
+        <option [ngValue]="null">Unknown</option>
+        <option *ngFor="let ancestor of eligibleFatherAncestors" [ngValue]="ancestor.ancestorProfileId">
+          {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
+        </option>
+      </select>
+    </ng-template>
+    <button
+      type="button"
+      class="btn btn-outline-danger ml-2"
+      [disabled]="!hasSelectedFather()"
+      (click)="clearFatherSelection.emit()"
+    >
+      Remove
+    </button>
+  </div>
+  <small class="form-text text-muted mb-2">Father must be a male ancestor.</small>
+
+  <div class="input-group mt-2" *ngIf="!hasSelectedFather()">
+    <input
+      class="form-control"
+      [ngModel]="newFatherName"
+      (ngModelChange)="newFatherNameChange.emit($event)"
+      [ngModelOptions]="{ standalone: true }"
+      placeholder="Enter father full name"
+    />
+    <div class="input-group-append">
+      <button
+        type="button"
+        class="btn"
+        [ngClass]="getFatherCreateButtonHighlighted() ? 'btn-warning text-dark' : 'btn-outline-primary'"
+        [disabled]="isCreatingFather"
+        (click)="createAndAssignFather.emit()"
+      >
+        {{ isCreatingFather ? 'Creating...' : 'Create father ancestor' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedFather as father">
+    Father ancestor created with partial details: <strong>{{ father.firstName }} {{ father.middleName }} {{ father.lastName }}</strong>.
+    <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile.emit(father.ancestorProfileId)">Open profile in new tab</button>
+  </div>
+</div>
+
+<div class="form-group" [formGroup]="ancestorProfileForm">
+  <label>Mother</label>
+  <div class="d-flex align-items-center">
+    <select
+      class="form-control"
+      formControlName="motherAncestorProfileId"
+      [compareWith]="compareAncestorId"
+    >
+      <option *ngIf="!hasSelectedMother()" [ngValue]="null">Unknown</option>
+      <option *ngFor="let ancestor of eligibleMotherAncestors" [ngValue]="ancestor.ancestorProfileId">
+        {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
+      </option>
+    </select>
+    <button
+      type="button"
+      class="btn btn-outline-danger ml-2"
+      [disabled]="!ancestorProfileForm.get('motherAncestorProfileId')?.value"
+      (click)="clearMotherSelection.emit()"
+    >
+      Remove
+    </button>
+  </div>
+  <small class="form-text text-muted  mb-2">Mother must be a female ancestor.</small>
+
+  <div class="input-group mt-2" *ngIf="!hasSelectedMother()">
+    <input
+      class="form-control"
+      [ngModel]="newMotherName"
+      (ngModelChange)="newMotherNameChange.emit($event)"
+      [ngModelOptions]="{ standalone: true }"
+      placeholder="Enter mother full name"
+    />
+    <div class="input-group-append">
+      <button
+        type="button"
+        class="btn"
+        [ngClass]="getMotherCreateButtonHighlighted() ? 'btn-warning text-dark' : 'btn-outline-primary'"
+        [disabled]="isCreatingMother"
+        (click)="createAndAssignMother.emit()"
+      >
+        {{ isCreatingMother ? 'Creating...' : 'Create mother ancestor' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedMother as mother">
+    Mother ancestor created with partial details: <strong>{{ mother.firstName }} {{ mother.middleName }} {{ mother.lastName }}</strong>.
+    <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile.emit(mother.ancestorProfileId)">Open profile in new tab</button>
+  </div>
+</div>

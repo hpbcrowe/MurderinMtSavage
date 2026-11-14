@@ -1,0 +1,85 @@
+<div class="form-group">
+  <label>Siblings</label>
+  <div class="d-flex align-items-start">
+    <select
+      class="form-control"
+      multiple
+      size="8"
+      (change)="onSiblingSelectionChange($event)"
+      (blur)="onSiblingSelectionBlur($event)"
+    >
+      <option *ngFor="let ancestor of currentSiblingAncestors" [value]="ancestor.ancestorProfileId">
+        {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
+        {{ ancestor.gender ? ' (' + (ancestor.gender === 'Male' ? 'Brother' : ancestor.gender === 'Female' ? 'Sister' : 'Sibling') + ')' : '' }}
+      </option>
+    </select>
+    <button
+      type="button"
+      class="btn ml-2 align-self-start remove-sibling-button"
+      [ngClass]="selectedSiblingIds.length ? 'btn-danger text-white' : 'btn-outline-danger'"
+      (mousedown)="beginSiblingRemovalClick()"
+      (click)="requestClearSelectedSiblings()"
+    >
+      Remove selected
+    </button>
+  </div>
+  <small class="form-text text-muted">
+    Hold Ctrl (or Cmd) to select multiple siblings. Saving will sync sibling links in both directions.
+  </small>
+
+  <div class="mt-2">
+    <label class="small text-muted">Add existing sibling</label>
+    <div class="input-group">
+      <select
+        class="form-control"
+        style="flex: 1 1 0; min-width: 0"
+        [ngModel]="selectedExistingSiblingId"
+        (ngModelChange)="selectedExistingSiblingIdChange.emit($event)"
+        [ngModelOptions]="{ standalone: true }"
+        aria-label="Select an existing sibling"
+      >
+        <option [ngValue]="null">Select an existing ancestor as a sibling</option>
+        <option *ngFor="let ancestor of siblingCandidateOptions" [ngValue]="ancestor.ancestorProfileId">
+          {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
+          {{ ancestor.gender ? ' (' + (ancestor.gender === 'Male' ? 'Brother' : ancestor.gender === 'Female' ? 'Sister' : 'Sibling') + ')' : '' }}
+        </option>
+      </select>
+      <div class="input-group-append">
+        <button type="button" class="btn btn-outline-primary" [disabled]="!selectedExistingSiblingId" (click)="addExistingSibling.emit()">
+          Add existing sibling
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-group mt-6">
+    <input
+      class="form-control"
+      [ngModel]="newSiblingName"
+      (ngModelChange)="newSiblingNameChange.emit($event)"
+      [ngModelOptions]="{ standalone: true }"
+      placeholder="Or enter sibling full name"
+    />
+    <select
+      class="form-control ml-1 w-auto"
+      style="flex: 0 0 120px"
+      [ngModel]="newSiblingGender"
+      (ngModelChange)="newSiblingGenderChange.emit($event)"
+      [ngModelOptions]="{ standalone: true }"
+      aria-label="Sibling gender"
+    >
+      <option value="Male">Brother</option>
+      <option value="Female">Sister</option>
+    </select>
+    <div class="input-group-append">
+      <button type="button" class="btn btn-outline-primary" [disabled]="isCreatingSibling" (click)="createAndAddSibling.emit()">
+        {{ isCreatingSibling ? 'Creating...' : 'Create sibling ancestor' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedSibling as sibling">
+    {{ sibling.gender === 'Male' ? 'Brother' : sibling.gender === 'Female' ? 'Sister' : 'Sibling' }} ancestor created with partial details: <strong>{{ sibling.firstName }} {{ sibling.middleName }} {{ sibling.lastName }}</strong>.
+    <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile.emit(sibling.ancestorProfileId)">Open profile in new tab</button>
+  </div>
+</div>
