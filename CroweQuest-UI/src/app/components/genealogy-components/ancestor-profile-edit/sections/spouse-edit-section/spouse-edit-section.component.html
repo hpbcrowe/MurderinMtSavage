@@ -1,0 +1,90 @@
+<div class="form-group" [formGroup]="ancestorProfileForm">
+  <label>{{ getSpouseLabel() }}</label>
+  <div class="d-flex align-items-center">
+    <select
+      class="form-control"
+      [formControlName]="getSpouseSelectionField()"
+    >
+      <option [ngValue]="null">Unknown</option>
+      <option *ngFor="let ancestor of eligibleSpouseAncestors" [ngValue]="ancestor.ancestorProfileId">
+        {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
+      </option>
+    </select>
+    <button
+      type="button"
+      class="btn btn-outline-danger ml-2"
+      [disabled]="!(ancestorProfileForm.get(ancestorProfileForm.get('gender')?.value === 'Female' ? 'husbandAncestorProfileId' : 'wifeAncestorProfileId')?.value)"
+      (click)="clearSpouseSelection.emit()"
+    >
+      Remove
+    </button>
+  </div>
+  <small class="form-text text-muted">Spouse must be the opposite gender of the current ancestor.</small>
+
+  <div class="input-group mt-2" *ngIf="!hasSelectedSpouse()">
+    <input
+      *ngIf="ancestorProfileForm.get('gender')?.value === 'Male'"
+      class="form-control"
+      [ngModel]="newWifeName"
+      (ngModelChange)="newWifeNameChange.emit($event)"
+      [ngModelOptions]="{ standalone: true }"
+      placeholder="Enter wife full name"
+    />
+    <input
+      *ngIf="ancestorProfileForm.get('gender')?.value === 'Female'"
+      class="form-control"
+      [ngModel]="newHusbandName"
+      (ngModelChange)="newHusbandNameChange.emit($event)"
+      [ngModelOptions]="{ standalone: true }"
+      placeholder="Enter husband full name"
+    />
+    <input
+      *ngIf="ancestorProfileForm.get('gender')?.value !== 'Male' && ancestorProfileForm.get('gender')?.value !== 'Female'"
+      class="form-control"
+      [ngModel]="''"
+      [ngModelOptions]="{ standalone: true }"
+      placeholder="Select gender to create spouse"
+      readonly
+    />
+    <div class="input-group-append">
+      <button
+        *ngIf="ancestorProfileForm.get('gender')?.value === 'Male'"
+        type="button"
+        class="btn"
+        [ngClass]="getWifeCreateButtonHighlighted() ? 'btn-warning text-dark' : 'btn-outline-primary'"
+        [disabled]="isCreatingWife"
+        (click)="createAndAssignWife.emit()"
+      >
+        {{ isCreatingWife ? 'Creating...' : 'Create wife ancestor' }}
+      </button>
+      <button
+        *ngIf="ancestorProfileForm.get('gender')?.value === 'Female'"
+        type="button"
+        class="btn"
+        [ngClass]="getHusbandCreateButtonHighlighted() ? 'btn-warning text-dark' : 'btn-outline-primary'"
+        [disabled]="isCreatingHusband"
+        (click)="createAndAssignHusband.emit()"
+      >
+        {{ isCreatingHusband ? 'Creating...' : 'Create husband ancestor' }}
+      </button>
+      <button
+        *ngIf="ancestorProfileForm.get('gender')?.value !== 'Male' && ancestorProfileForm.get('gender')?.value !== 'Female'"
+        type="button"
+        class="btn btn-outline-secondary"
+        disabled
+      >
+        Set Gender First
+      </button>
+    </div>
+  </div>
+
+  <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedWife as wife">
+    Wife ancestor created with partial details: <strong>{{ wife.firstName }} {{ wife.middleName }} {{ wife.lastName }}</strong>.
+    <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile.emit(wife.ancestorProfileId)">Open profile in new tab</button>
+  </div>
+
+  <div class="alert alert-info mt-2 mb-0" *ngIf="recentlyCreatedHusband as husband">
+    Husband ancestor created with partial details: <strong>{{ husband.firstName }} {{ husband.middleName }} {{ husband.lastName }}</strong>.
+    <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="openAncestorProfile.emit(husband.ancestorProfileId)">Open profile in new tab</button>
+  </div>
+</div>

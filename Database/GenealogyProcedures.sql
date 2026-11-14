@@ -224,7 +224,7 @@ BEGIN
                 PublishDate,
                 UpdateDate
             )
-            VALUES               (@Title, @Content, @PhotoId, @AncestorProfileId, @SourceId, @AncestorName, @RecordType, @Location, @FamilyBranch, @Tags, @ConfidenceLevel, @ResearchStatus, @ApplicationUserId, GETDATE(), GETDATE());
+            VALUES                (@Title, @Content, @PhotoId, @AncestorProfileId, @SourceId, @AncestorName, @RecordType, @Location, @FamilyBranch, @Tags, @ConfidenceLevel, @ResearchStatus, @ApplicationUserId, GETDATE(), GETDATE());
             SET @BlogId = CONVERT (INT, SCOPE_IDENTITY());
         END
     SELECT @BlogId;
@@ -282,22 +282,22 @@ BEGIN
                    AND (r.AncestorProfileId = a.AncestorProfileId
                         OR r.RelatedAncestorProfileId = a.AncestorProfileId)
                    AND s.Gender = N'Female') AS WifeAncestorProfileId,
-           (SELECT TOP 1 p.AncestorProfileId
-            FROM   dbo.AncestorRelationships AS r
-                   INNER JOIN
-                   dbo.AncestorProfiles AS p
-                   ON p.AncestorProfileId = r.AncestorProfileId
-            WHERE  r.RelationshipType = N'Parent'
-                   AND r.RelatedAncestorProfileId = a.AncestorProfileId
-                   AND p.Gender = N'Male') AS FatherAncestorProfileId,
-           (SELECT TOP 1 p.AncestorProfileId
-            FROM   dbo.AncestorRelationships AS r
-                   INNER JOIN
-                   dbo.AncestorProfiles AS p
-                   ON p.AncestorProfileId = r.AncestorProfileId
-            WHERE  r.RelationshipType = N'Parent'
-                   AND r.RelatedAncestorProfileId = a.AncestorProfileId
-                   AND p.Gender = N'Female') AS MotherAncestorProfileId,
+           COALESCE ((SELECT TOP 1 p.AncestorProfileId
+                      FROM   dbo.AncestorRelationships AS r
+                             INNER JOIN
+                             dbo.AncestorProfiles AS p
+                             ON p.AncestorProfileId = r.AncestorProfileId
+                      WHERE  r.RelationshipType = N'Parent'
+                             AND r.RelatedAncestorProfileId = a.AncestorProfileId
+                             AND p.Gender = N'Male'), a.FatherAncestorProfileId) AS FatherAncestorProfileId,
+           COALESCE ((SELECT TOP 1 p.AncestorProfileId
+                      FROM   dbo.AncestorRelationships AS r
+                             INNER JOIN
+                             dbo.AncestorProfiles AS p
+                             ON p.AncestorProfileId = r.AncestorProfileId
+                      WHERE  r.RelationshipType = N'Parent'
+                             AND r.RelatedAncestorProfileId = a.AncestorProfileId
+                             AND p.Gender = N'Female'), a.MotherAncestorProfileId) AS MotherAncestorProfileId,
            a.ApplicationUserId,
            u.UserName AS Username,
            a.PublishDate,
@@ -349,22 +349,22 @@ BEGIN
                      AND (r.AncestorProfileId = a.AncestorProfileId
                           OR r.RelatedAncestorProfileId = a.AncestorProfileId)
                      AND s.Gender = N'Female') AS WifeAncestorProfileId,
-             (SELECT TOP 1 p.AncestorProfileId
-              FROM   dbo.AncestorRelationships AS r
-                     INNER JOIN
-                     dbo.AncestorProfiles AS p
-                     ON p.AncestorProfileId = r.AncestorProfileId
-              WHERE  r.RelationshipType = N'Parent'
-                     AND r.RelatedAncestorProfileId = a.AncestorProfileId
-                     AND p.Gender = N'Male') AS FatherAncestorProfileId,
-             (SELECT TOP 1 p.AncestorProfileId
-              FROM   dbo.AncestorRelationships AS r
-                     INNER JOIN
-                     dbo.AncestorProfiles AS p
-                     ON p.AncestorProfileId = r.AncestorProfileId
-              WHERE  r.RelationshipType = N'Parent'
-                     AND r.RelatedAncestorProfileId = a.AncestorProfileId
-                     AND p.Gender = N'Female') AS MotherAncestorProfileId,
+             COALESCE ((SELECT TOP 1 p.AncestorProfileId
+                        FROM   dbo.AncestorRelationships AS r
+                               INNER JOIN
+                               dbo.AncestorProfiles AS p
+                               ON p.AncestorProfileId = r.AncestorProfileId
+                        WHERE  r.RelationshipType = N'Parent'
+                               AND r.RelatedAncestorProfileId = a.AncestorProfileId
+                               AND p.Gender = N'Male'), a.FatherAncestorProfileId) AS FatherAncestorProfileId,
+             COALESCE ((SELECT TOP 1 p.AncestorProfileId
+                        FROM   dbo.AncestorRelationships AS r
+                               INNER JOIN
+                               dbo.AncestorProfiles AS p
+                               ON p.AncestorProfileId = r.AncestorProfileId
+                        WHERE  r.RelationshipType = N'Parent'
+                               AND r.RelatedAncestorProfileId = a.AncestorProfileId
+                               AND p.Gender = N'Female'), a.MotherAncestorProfileId) AS MotherAncestorProfileId,
              a.ApplicationUserId,
              u.UserName AS Username,
              a.PublishDate,
@@ -418,22 +418,22 @@ BEGIN
                      AND (r.AncestorProfileId = a.AncestorProfileId
                           OR r.RelatedAncestorProfileId = a.AncestorProfileId)
                      AND s.Gender = N'Female') AS WifeAncestorProfileId,
-             (SELECT TOP 1 p.AncestorProfileId
-              FROM   dbo.AncestorRelationships AS r
-                     INNER JOIN
-                     dbo.AncestorProfiles AS p
-                     ON p.AncestorProfileId = r.AncestorProfileId
-              WHERE  r.RelationshipType = N'Parent'
-                     AND r.RelatedAncestorProfileId = a.AncestorProfileId
-                     AND p.Gender = N'Male') AS FatherAncestorProfileId,
-             (SELECT TOP 1 p.AncestorProfileId
-              FROM   dbo.AncestorRelationships AS r
-                     INNER JOIN
-                     dbo.AncestorProfiles AS p
-                     ON p.AncestorProfileId = r.AncestorProfileId
-              WHERE  r.RelationshipType = N'Parent'
-                     AND r.RelatedAncestorProfileId = a.AncestorProfileId
-                     AND p.Gender = N'Female') AS MotherAncestorProfileId,
+             COALESCE ((SELECT TOP 1 p.AncestorProfileId
+                        FROM   dbo.AncestorRelationships AS r
+                               INNER JOIN
+                               dbo.AncestorProfiles AS p
+                               ON p.AncestorProfileId = r.AncestorProfileId
+                        WHERE  r.RelationshipType = N'Parent'
+                               AND r.RelatedAncestorProfileId = a.AncestorProfileId
+                               AND p.Gender = N'Male'), a.FatherAncestorProfileId) AS FatherAncestorProfileId,
+             COALESCE ((SELECT TOP 1 p.AncestorProfileId
+                        FROM   dbo.AncestorRelationships AS r
+                               INNER JOIN
+                               dbo.AncestorProfiles AS p
+                               ON p.AncestorProfileId = r.AncestorProfileId
+                        WHERE  r.RelationshipType = N'Parent'
+                               AND r.RelatedAncestorProfileId = a.AncestorProfileId
+                               AND p.Gender = N'Female'), a.MotherAncestorProfileId) AS MotherAncestorProfileId,
              a.ApplicationUserId,
              u.UserName AS Username,
              a.PublishDate,
@@ -530,23 +530,25 @@ BEGIN
                    WHERE  AncestorProfileId = @AncestorProfileId)
         BEGIN
             UPDATE dbo.AncestorProfiles
-            SET    FirstName         = @FirstName,
-                   MiddleName        = @MiddleName,
-                   LastName          = @LastName,
-                   Suffix            = @Suffix,
-                   Gender            = @Gender,
-                   BirthDate         = @BirthDate,
-                   BirthLocation     = @BirthLocation,
-                   DeathDate         = @DeathDate,
-                   DeathLocation     = @DeathLocation,
-                   Biography         = @Biography,
-                   ResearchStatus    = @ResearchStatus,
-                   FamilyBranch      = @FamilyBranch,
-                   Tags              = @Tags,
-                   ConfidenceLevel   = @ConfidenceLevel,
-                   ProfilePhotoId    = @ProfilePhotoId,
-                   ApplicationUserId = @ApplicationUserId,
-                   UpdateDate        = GETDATE()
+            SET    FirstName               = @FirstName,
+                   MiddleName              = @MiddleName,
+                   LastName                = @LastName,
+                   Suffix                  = @Suffix,
+                   Gender                  = @Gender,
+                   BirthDate               = @BirthDate,
+                   BirthLocation           = @BirthLocation,
+                   DeathDate               = @DeathDate,
+                   DeathLocation           = @DeathLocation,
+                   Biography               = @Biography,
+                   ResearchStatus          = @ResearchStatus,
+                   FamilyBranch            = @FamilyBranch,
+                   Tags                    = @Tags,
+                   ConfidenceLevel         = @ConfidenceLevel,
+                   ProfilePhotoId          = @ProfilePhotoId,
+                   FatherAncestorProfileId = @FatherAncestorProfileId,
+                   MotherAncestorProfileId = @MotherAncestorProfileId,
+                   ApplicationUserId       = @ApplicationUserId,
+                   UpdateDate              = GETDATE()
             WHERE  AncestorProfileId = @AncestorProfileId;
         END
     ELSE
@@ -567,11 +569,13 @@ BEGIN
                 Tags,
                 ConfidenceLevel,
                 ProfilePhotoId,
+                FatherAncestorProfileId,
+                MotherAncestorProfileId,
                 ApplicationUserId,
                 PublishDate,
                 UpdateDate
             )
-            VALUES                           (@FirstName, @MiddleName, @LastName, @Suffix, @Gender, @BirthDate, @BirthLocation, @DeathDate, @DeathLocation, @Biography, @ResearchStatus, @FamilyBranch, @Tags, @ConfidenceLevel, @ProfilePhotoId, @ApplicationUserId, GETDATE(), GETDATE());
+            VALUES                            (@FirstName, @MiddleName, @LastName, @Suffix, @Gender, @BirthDate, @BirthLocation, @DeathDate, @DeathLocation, @Biography, @ResearchStatus, @FamilyBranch, @Tags, @ConfidenceLevel, @ProfilePhotoId, @FatherAncestorProfileId, @MotherAncestorProfileId, @ApplicationUserId, GETDATE(), GETDATE());
             SET @AncestorProfileId = CONVERT (INT, SCOPE_IDENTITY());
         END
     DECLARE @DesiredSiblings TABLE (
@@ -652,7 +656,7 @@ BEGIN
     INSERT  INTO @AllSiblingGroup (
         AncestorProfileId
     )
-    VALUES                       (@AncestorProfileId);
+    VALUES                        (@AncestorProfileId);
     INSERT INTO @AllSiblingGroup (
         AncestorProfileId
     )
@@ -671,7 +675,8 @@ BEGIN
            sg2.AncestorProfileId,
            N'Sibling',
            GETDATE()
-    FROM   @AllSiblingGroup AS sg1 CROSS JOIN @AllSiblingGroup AS sg2
+    FROM   @AllSiblingGroup AS sg1
+           CROSS JOIN @AllSiblingGroup AS sg2
     WHERE  sg1.AncestorProfileId <> sg2.AncestorProfileId
            AND NOT EXISTS (SELECT 1
                            FROM   dbo.AncestorRelationships AS ar
@@ -696,7 +701,7 @@ BEGIN
                 RelationshipType,
                 CreatedDate
             )
-            VALUES                                (@FatherAncestorProfileId, @AncestorProfileId, N'Parent', GETDATE());
+            VALUES                                 (@FatherAncestorProfileId, @AncestorProfileId, N'Parent', GETDATE());
         END
     IF @MotherAncestorProfileId IS NOT NULL
        AND NOT EXISTS (SELECT 1
@@ -711,7 +716,7 @@ BEGIN
                 RelationshipType,
                 CreatedDate
             )
-            VALUES                                (@MotherAncestorProfileId, @AncestorProfileId, N'Parent', GETDATE());
+            VALUES                                 (@MotherAncestorProfileId, @AncestorProfileId, N'Parent', GETDATE());
         END
     DELETE ar
     FROM   dbo.AncestorRelationships AS ar
@@ -733,7 +738,7 @@ BEGIN
                 RelationshipType,
                 CreatedDate
             )
-            VALUES                                (CASE WHEN @AncestorProfileId < @SpouseAncestorProfileId THEN @AncestorProfileId ELSE @SpouseAncestorProfileId END, CASE WHEN @AncestorProfileId < @SpouseAncestorProfileId THEN @SpouseAncestorProfileId ELSE @AncestorProfileId END, N'Spouse', GETDATE());
+            VALUES                                 (CASE WHEN @AncestorProfileId < @SpouseAncestorProfileId THEN @AncestorProfileId ELSE @SpouseAncestorProfileId END, CASE WHEN @AncestorProfileId < @SpouseAncestorProfileId THEN @SpouseAncestorProfileId ELSE @AncestorProfileId END, N'Spouse', GETDATE());
         END
     SELECT @AncestorProfileId;
 END
@@ -760,6 +765,25 @@ BEGIN
            AND r.RelatedAncestorProfileId = @AncestorProfileId
            AND p.Gender = N'Male'
     UNION ALL
+    SELECT N'Father' AS RelationshipGroup,
+           p.AncestorProfileId,
+           p.FirstName,
+           p.MiddleName,
+           p.LastName,
+           p.Gender,
+           N'Father' AS RelationshipLabel
+    FROM   dbo.AncestorProfiles AS p
+           INNER JOIN
+           dbo.AncestorProfiles AS a
+           ON a.AncestorProfileId = @AncestorProfileId
+    WHERE  p.AncestorProfileId = a.FatherAncestorProfileId
+           AND p.Gender = N'Male'
+           AND NOT EXISTS (SELECT 1
+                           FROM   dbo.AncestorRelationships AS r
+                           WHERE  r.RelationshipType = N'Parent'
+                                  AND r.RelatedAncestorProfileId = @AncestorProfileId
+                                  AND r.AncestorProfileId = p.AncestorProfileId)
+    UNION ALL
     SELECT N'Mother' AS RelationshipGroup,
            p.AncestorProfileId,
            p.FirstName,
@@ -774,6 +798,25 @@ BEGIN
     WHERE  r.RelationshipType = N'Parent'
            AND r.RelatedAncestorProfileId = @AncestorProfileId
            AND p.Gender = N'Female'
+    UNION ALL
+    SELECT N'Mother' AS RelationshipGroup,
+           p.AncestorProfileId,
+           p.FirstName,
+           p.MiddleName,
+           p.LastName,
+           p.Gender,
+           N'Mother' AS RelationshipLabel
+    FROM   dbo.AncestorProfiles AS p
+           INNER JOIN
+           dbo.AncestorProfiles AS a
+           ON a.AncestorProfileId = @AncestorProfileId
+    WHERE  p.AncestorProfileId = a.MotherAncestorProfileId
+           AND p.Gender = N'Female'
+           AND NOT EXISTS (SELECT 1
+                           FROM   dbo.AncestorRelationships AS r
+                           WHERE  r.RelationshipType = N'Parent'
+                                  AND r.RelatedAncestorProfileId = @AncestorProfileId
+                                  AND r.AncestorProfileId = p.AncestorProfileId)
     UNION ALL
     SELECT N'Spouse' AS RelationshipGroup,
            s.AncestorProfileId,
@@ -837,7 +880,7 @@ BEGIN
                 ApplicationUserId,
                 CreatedDate
             )
-            VALUES                            (@AncestorProfileId, @ApplicationUserId, GETDATE());
+            VALUES                             (@AncestorProfileId, @ApplicationUserId, GETDATE());
         END
     SELECT @@ROWCOUNT;
 END
@@ -898,7 +941,7 @@ BEGIN
                 RelationshipType,
                 CreatedDate
             )
-            VALUES                                (@AncestorProfileId, @RelatedAncestorProfileId, @RelationshipType, ISNULL(@CreatedDate, GETDATE()));
+            VALUES                                 (@AncestorProfileId, @RelatedAncestorProfileId, @RelationshipType, ISNULL(@CreatedDate, GETDATE()));
         END
     SELECT @@ROWCOUNT;
 END
@@ -950,7 +993,7 @@ BEGIN
                 PhotoId,
                 CreatedDate
             )
-            VALUES                                (@AncestorProfileId, @PhotoId, GETDATE());
+            VALUES                                 (@AncestorProfileId, @PhotoId, GETDATE());
         END
     SELECT @@ROWCOUNT;
 END
@@ -1128,7 +1171,7 @@ BEGIN
                 PublishDate,
                 UpdateDate
             )
-            VALUES                  (@Title, @SourceType, @Citation, @Description, @DocumentDate, @Location, @Repository, @AttachedFileUrl, @FileId, @ApplicationUserId, GETDATE(), GETDATE());
+            VALUES                   (@Title, @SourceType, @Citation, @Description, @DocumentDate, @Location, @Repository, @AttachedFileUrl, @FileId, @ApplicationUserId, GETDATE(), GETDATE());
             SET @SourceId = CONVERT (INT, SCOPE_IDENTITY());
         END
     SELECT @SourceId;
@@ -1257,7 +1300,7 @@ BEGIN
                 PublishDate,
                 UpdateDate
             )
-            VALUES                        (@AncestorProfileId, @Title, @Content, @Status, @ConfidenceLevel, @Tags, @ApplicationUserId, GETDATE(), GETDATE());
+            VALUES                         (@AncestorProfileId, @Title, @Content, @Status, @ConfidenceLevel, @Tags, @ApplicationUserId, GETDATE(), GETDATE());
             SET @ResearchNoteId = CONVERT (INT, SCOPE_IDENTITY());
         END
     SELECT @ResearchNoteId;

@@ -18,6 +18,7 @@ import { ResearchNotesComponent } from './components/genealogy-components/resear
 import { ResearchNoteEditComponent } from './components/genealogy-components/research-note-edit/research-note-edit.component';
 import { NotificationsComponent } from './components/genealogy-components/notifications/notifications.component';
 import { AuthGuard } from './guards/auth.guard';
+import { PendingChangesGuard } from './guards/pending-changes.guard';
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
@@ -27,14 +28,14 @@ const routes: Routes = [
   {path: 'blogs/:id', component: BlogComponent},
   {path: 'photo-album', component: PhotoAlbumComponent, canActivate: [AuthGuard]},
   {path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard]},
-  {path: 'dashboard/:id', component: BlogEditComponent, canActivate: [AuthGuard]},
+  {path: 'dashboard/:id', component: BlogEditComponent, canActivate: [AuthGuard], canDeactivate: [PendingChangesGuard]},
   {path: 'genealogy/ancestors', component: AncestorProfilesComponent},
   {path: 'genealogy/ancestors/:id', component: AncestorProfileComponent},
-  {path: 'genealogy/ancestors/edit/:id', component: AncestorProfileEditComponent, canActivate: [AuthGuard]},
+  {path: 'genealogy/ancestors/edit/:id', component: AncestorProfileEditComponent, canActivate: [AuthGuard], canDeactivate: [PendingChangesGuard]},
   {path: 'genealogy/sources', component: SourcesComponent},
-  {path: 'genealogy/sources/edit/:id', component: SourceEditComponent, canActivate: [AuthGuard]},
+  {path: 'genealogy/sources/edit/:id', component: SourceEditComponent, canActivate: [AuthGuard], canDeactivate: [PendingChangesGuard]},
   {path: 'genealogy/research-notes', component: ResearchNotesComponent},
-  {path: 'genealogy/research-notes/edit/:id', component: ResearchNoteEditComponent, canActivate: [AuthGuard]},
+  {path: 'genealogy/research-notes/edit/:id', component: ResearchNoteEditComponent, canActivate: [AuthGuard], canDeactivate: [PendingChangesGuard]},
   {path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard]},
   {path: 'not-found', component: NotFoundComponent},
   {path: '**', redirectTo: 'not-found'}
