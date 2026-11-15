@@ -582,6 +582,9 @@ BEGIN
         AncestorProfileId INT PRIMARY KEY);
     DECLARE @AllSiblingGroup TABLE (
         AncestorProfileId INT PRIMARY KEY);
+    -- Only newly linked siblings expand the group, so an explicitly removed pair stays removed.
+    DECLARE @NewSiblings TABLE (
+        AncestorProfileId INT PRIMARY KEY);
     IF @SiblingAncestorProfileIds IS NOT NULL
         BEGIN
             INSERT INTO @DesiredSiblings (
@@ -597,6 +600,16 @@ BEGIN
                    AND (TRY_CAST (value AS INT) <> @MotherAncestorProfileId
                         OR @MotherAncestorProfileId IS NULL);
         END
+    INSERT INTO @NewSiblings (AncestorProfileId)
+    SELECT ds.AncestorProfileId
+    FROM   @DesiredSiblings AS ds
+    WHERE  NOT EXISTS (SELECT 1
+                       FROM   dbo.AncestorRelationships AS ar
+                       WHERE  ar.RelationshipType = N'Sibling'
+                              AND ((ar.AncestorProfileId = @AncestorProfileId
+                                    AND ar.RelatedAncestorProfileId = ds.AncestorProfileId)
+                                   OR (ar.RelatedAncestorProfileId = @AncestorProfileId
+                                       AND ar.AncestorProfileId = ds.AncestorProfileId)));
     DELETE ar
     FROM   dbo.AncestorRelationships AS ar
     WHERE  ar.AncestorProfileId = @AncestorProfileId
@@ -678,6 +691,8 @@ BEGIN
     FROM   @AllSiblingGroup AS sg1
            CROSS JOIN @AllSiblingGroup AS sg2
     WHERE  sg1.AncestorProfileId <> sg2.AncestorProfileId
+           AND (EXISTS (SELECT 1 FROM @NewSiblings AS ns WHERE ns.AncestorProfileId = sg1.AncestorProfileId)
+                OR EXISTS (SELECT 1 FROM @NewSiblings AS ns WHERE ns.AncestorProfileId = sg2.AncestorProfileId))
            AND NOT EXISTS (SELECT 1
                            FROM   dbo.AncestorRelationships AS ar
                            WHERE  ar.AncestorProfileId = sg1.AncestorProfileId
@@ -895,6 +910,19 @@ BEGIN
     DELETE dbo.AncestorFollowers
     WHERE  AncestorProfileId = @AncestorProfileId
            AND ApplicationUserId = @ApplicationUserId;
+END
+
+
+GO
+CREATE OR ALTER PROCEDURE dbo.AncestorRelationship_DeleteSibling
+@AncestorProfileId INT, @SiblingId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DELETE FROM dbo.AncestorRelationships
+    WHERE RelationshipType = N'Sibling'
+      AND ((AncestorProfileId = @AncestorProfileId AND RelatedAncestorProfileId = @SiblingId)
+        OR (AncestorProfileId = @SiblingId AND RelatedAncestorProfileId = @AncestorProfileId));
 END
 
 

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CroweQuest.Repository
@@ -42,6 +43,18 @@ namespace CroweQuest.Repository
                 "AncestorRelationship_Upsert",
                 ancestorRelationship,
                 commandType: CommandType.StoredProcedure);
+        }
+
+        public async Task RemoveSiblingRelationshipAsync(int ancestorProfileId, int siblingId, CancellationToken cancellationToken)
+        {
+            using var connection = CreateConnection();
+            await connection.OpenAsync(cancellationToken);
+
+            await connection.ExecuteAsync(new CommandDefinition(
+                "AncestorRelationship_DeleteSibling",
+                new { AncestorProfileId = ancestorProfileId, SiblingId = siblingId },
+                commandType: CommandType.StoredProcedure,
+                cancellationToken: cancellationToken));
         }
 
         public async Task<int> AddPhotoAsync(int ancestorProfileId, int photoId, int applicationUserId)

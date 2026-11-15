@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-
+import { RouterTestingModule } from '@angular/router/testing';
+import { AncestorProfile } from 'src/app/models/genealogy/ancestor-profile.model';
 import { SiblingEditSectionComponent } from './sibling-edit-section.component';
 
 describe('SiblingEditSectionComponent', () => {
@@ -10,83 +11,46 @@ describe('SiblingEditSectionComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [SiblingEditSectionComponent],
-      imports: [FormsModule]
+      imports: [FormsModule, RouterTestingModule]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SiblingEditSectionComponent);
     component = fixture.componentInstance;
   });
 
-  it('parses selected sibling IDs from multiple select options', () => {
-    const emittedValues: number[][] = [];
-    component.selectedSiblingIdsChange.subscribe((value) => emittedValues.push(value));
+  it('displays sibling details, links, and a remove button for each row', () => {
+    component.currentSiblingAncestors = [
+      new AncestorProfile(10, 'Mary', 'Ann', 'Crowe', undefined, 'Female', '1901-02-03', undefined, '1980-04-05'),
+      new AncestorProfile(20, 'John', undefined, 'Crowe', undefined, 'Male')
+    ];
+    spyOn(component.removeSibling, 'emit');
+    fixture.detectChanges();
 
-    const optionOne = document.createElement('option');
-    optionOne.value = '10';
-    optionOne.selected = true;
-
-    const optionTwo = document.createElement('option');
-    optionTwo.value = 'number:20';
-    optionTwo.selected = true;
-
-    const select = document.createElement('select');
-    select.multiple = true;
-    select.append(optionOne, optionTwo);
-    Object.defineProperty(select, 'selectedOptions', {
-      configurable: true,
-      value: [optionOne, optionTwo]
-    });
-
-    component.onSiblingSelectionChange({ target: select } as unknown as Event);
-
-    expect(component.selectedSiblingIds).toEqual([10, 20]);
-    expect(emittedValues.pop()).toEqual([10, 20]);
+    const rows: HTMLTableRowElement[] = Array.from(fixture.nativeElement.querySelectorAll('tbody tr'));
+    expect(rows.length).toBe(2);
+    expect(rows[0].textContent).toContain('Mary');
+    expect(rows[0].textContent).toContain('Ann');
+    expect(rows[0].textContent).toContain('Crowe');
+    expect(rows[0].textContent).toContain('Sister');
+    expect(rows[0].textContent).toContain('Feb 3, 1901');
+    expect(rows[0].textContent).toContain('Apr 5, 1980');
+    expect(rows[1].textContent).toContain('Brother');
+    const links = rows[0].querySelectorAll('a');
+    expect(links[0].getAttribute('href')).toBe('/genealogy/ancestors/10');
+    expect(links[1].getAttribute('href')).toBe('/genealogy/ancestors/10');
+    expect(links[2].getAttribute('href')).toBe('/genealogy/ancestors/10');
+    expect(links[3].getAttribute('href')).toBe('/genealogy/ancestors/edit/10');
+    rows[0].querySelector('button')!.click();
+    expect(component.removeSibling.emit).toHaveBeenCalledOnceWith(10);
   });
 
-  it('clears sibling selection on blur when not moving to remove button', () => {
-    const emittedValues: number[][] = [];
-    component.selectedSiblingIdsChange.subscribe((value) => emittedValues.push(value));
+  it('shows an empty state and disables removal while a request is pending', () => {
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('No siblings are linked.');
 
-    const optionOne = document.createElement('option');
-    optionOne.selected = true;
-    const optionTwo = document.createElement('option');
-    optionTwo.selected = true;
-    const select = document.createElement('select');
-    select.append(optionOne, optionTwo);
-
-    component.selectedSiblingIds = [10, 20];
-    component.onSiblingSelectionBlur({ target: select, relatedTarget: null } as unknown as FocusEvent);
-
-    expect(component.selectedSiblingIds).toEqual([]);
-    expect(emittedValues.pop()).toEqual([]);
-    expect(optionOne.selected).toBeFalse();
-    expect(optionTwo.selected).toBeFalse();
-  });
-
-  it('keeps sibling selection when blur moves focus to remove button', () => {
-    jasmine.clock().install();
-
-    const button = document.createElement('button');
-    button.classList.add('remove-sibling-button');
-
-    component.selectedSiblingIds = [10, 20];
-    component.beginSiblingRemovalClick();
-
-    component.onSiblingSelectionBlur({ target: document.createElement('select'), relatedTarget: button } as unknown as FocusEvent);
-
-    expect(component.selectedSiblingIds).toEqual([10, 20]);
-
-    jasmine.clock().tick(0);
-    jasmine.clock().uninstall();
-  });
-
-  it('emits selected IDs when remove is requested', () => {
-    const emittedValues: number[][] = [];
-    component.clearSelectedSiblings.subscribe((value) => emittedValues.push(value));
-
-    component.selectedSiblingIds = [10, 20];
-    component.requestClearSelectedSiblings();
-
-    expect(emittedValues).toEqual([[10, 20]]);
+    component.currentSiblingAncestors = [new AncestorProfile(10, 'Mary')];
+    component.isRemovingSibling = true;
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('tbody button').disabled).toBeTrue();
   });
 });

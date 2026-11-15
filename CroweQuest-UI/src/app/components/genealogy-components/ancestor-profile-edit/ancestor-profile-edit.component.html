@@ -12,6 +12,7 @@
           <div>
             <button type="button" class="btn btn-outline-danger mb-2" (click)="clearProfilePhotoSelection()">Clear profile picture</button>
           </div>
+        </div>
           
         <app-parent-edit-section
           [ancestorProfileForm]="ancestorProfileForm"
@@ -37,14 +38,13 @@
         <app-sibling-edit-section
           [currentSiblingAncestors]="getCurrentSiblingAncestors()"
           [siblingCandidateOptions]="getSiblingCandidateOptions()"
-          [selectedSiblingIds]="selectedSiblingIds"
+          [isRemovingSibling]="isRemovingSibling"
           [selectedExistingSiblingId]="selectedExistingSiblingId"
           [newSiblingName]="newSiblingName"
           [newSiblingGender]="newSiblingGender"
           [isCreatingSibling]="isCreatingSibling"
           [recentlyCreatedSibling]="recentlyCreatedSibling"
-          (selectedSiblingIdsChange)="selectedSiblingIds = $event"
-          (clearSelectedSiblings)="clearSelectedSiblings($event)"
+          (removeSibling)="removeSibling($event)"
           (selectedExistingSiblingIdChange)="selectedExistingSiblingId = $event"
           (addExistingSibling)="addExistingSibling()"
           (newSiblingNameChange)="newSiblingName = $event"
@@ -53,7 +53,6 @@
           (openAncestorProfile)="openAncestorProfile($event)"
         ></app-sibling-edit-section>
 
-        </div>
       </div>
 
       <div class="col-12 col-md-6 order-2 order-md-1">
@@ -234,4 +233,3 @@
     <button class="btn btn-outline-primary" [routerLink]="'/genealogy/ancestors'" routerLinkActive="active">Main Ancestors Page</button>
   </form>
 </div>
-

@@ -10,6 +10,7 @@ import { Photo } from 'src/app/models/photo/photo.model';
 import { AncestorProfileService } from 'src/app/services/genealogy/ancestor-profile.service';
 import { PhotoService } from 'src/app/services/photo.service';
 import { CanComponentDeactivate } from 'src/app/guards/pending-changes.guard';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-ancestor-profile-edit',
@@ -36,6 +37,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
   isCreatingFather: boolean = false;
   isCreatingMother: boolean = false;
   isCreatingSibling: boolean = false;
+  isRemovingSibling = false;
   userPhotos: Photo[] = [];
   ancestorPhotos: Photo[] = [];
   selectedUserPhotoId: number | null = null;
@@ -100,9 +102,12 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
  * Load all ancestors and user photos for selection in the form. If an ancestorProfileId is provided,
  *  fetch the ancestor profile data and update the form accordingly.
  */
-    this.ancestorProfileService.getAll().subscribe((ancestors) => {
-      this.allAncestors = ancestors;
-      this.refreshRelationshipDisplayNames();
+    this.ancestorProfileService.getAll().subscribe({
+      next: (ancestors) => {
+        this.allAncestors = ancestors;
+        this.refreshRelationshipDisplayNames();
+      },
+      error: () => this.toastr.error('Unable to load ancestor details.')
     });
 
 /**
@@ -439,6 +444,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
     this.upsertAncestorOption(ancestorProfile);
     this.upsertAncestorOptionFromRelativeSummary(ancestorProfile.father);
     this.upsertAncestorOptionFromRelativeSummary(ancestorProfile.mother);
+    (ancestorProfile.siblings || []).forEach((sibling) => this.upsertAncestorOptionFromRelativeSummary(sibling));
     this.selectedSiblingIds = siblingIds;
 
     const fatherId = this.normalizeRelationshipId(ancestorProfile.fatherAncestorProfileId ?? this.getPersistedRelativeId('father'));
@@ -513,6 +519,11 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
   }
 
   canDeactivate(): boolean {
+    if (this.isRemovingSibling) {
+      this.toastr.info('Please wait for the sibling relationship to be removed.');
+      return false;
+    }
+
     if (this.isNavigatingAfterSave) {
       return true;
     }
@@ -801,6 +812,43 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
   getCurrentSiblingAncestors(): AncestorProfile[] {
     const currentSiblingIds = new Set(this.getNormalizedIdList(this.ancestorProfileForm.get('siblingAncestorProfileIds')?.value ?? []));
     return this.allAncestors.filter((ancestor) => currentSiblingIds.has(ancestor.ancestorProfileId));
+  }
+
+  removeSibling(siblingId: number): void {
+    if (this.isRemovingSibling || this.isCreatingSibling || !this.confirmSiblingRelationshipRemoval([siblingId])) {
+      return;
+    }
+
+    const ancestorId = this.getCurrentAncestorProfileId();
+    if (ancestorId <= 0) {
+      this.ancestorProfileForm.patchValue({ siblingAncestorProfileIds: this.reconcileSiblingRelationshipIds([siblingId]) });
+      this.ancestorProfileForm.markAsDirty();
+      return;
+    }
+
+    this.isRemovingSibling = true;
+    this.ancestorProfileService.removeSibling(ancestorId, siblingId)
+      .pipe(finalize(() => this.isRemovingSibling = false))
+      .subscribe({
+        next: () => {
+          this.ancestorProfileForm.patchValue({ siblingAncestorProfileIds: this.reconcileSiblingRelationshipIds([siblingId]) });
+          this.selectedSiblingIds = this.selectedSiblingIds.filter((id) => id !== siblingId);
+          const profiles = [...this.allAncestors, this.currentAncestorProfile];
+          profiles.forEach((profile) => {
+            if (!profile) {
+              return;
+            }
+            const removedId = profile.ancestorProfileId === ancestorId ? siblingId
+              : profile.ancestorProfileId === siblingId ? ancestorId : null;
+            if (removedId !== null) {
+              profile.siblingAncestorProfileIds = (profile.siblingAncestorProfileIds || []).filter((id) => Number(id) !== removedId);
+              profile.siblings = (profile.siblings || []).filter((sibling) => Number(sibling.ancestorProfileId) !== removedId);
+            }
+          });
+          this.toastr.success('Sibling relationship removed.');
+        },
+        error: () => this.toastr.error('Unable to remove the sibling relationship.')
+      });
   }
 
 /**
@@ -1389,6 +1437,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
         this.toastr.success(`${siblingGender === 'Male' ? 'Brother' : 'Sister'} ancestor created and added.`);
       },
       error: () => {
+        this.isCreatingSibling = false;
         this.toastr.error('Unable to create sibling ancestor.');
       },
       complete: () => {
@@ -1558,6 +1607,10 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
   }
 
   onSubmit() {
+    if (this.isRemovingSibling) {
+      this.toastr.info('Please wait for the sibling relationship to be removed.');
+      return;
+    }
     const ancestorProfileCreate = this.buildAncestorProfileCreateFromForm();
 
     this.ancestorProfileService.create(ancestorProfileCreate).subscribe((createdAncestorProfile) => {

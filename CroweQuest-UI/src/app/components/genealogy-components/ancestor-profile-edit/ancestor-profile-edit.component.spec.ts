@@ -6,6 +6,8 @@ import { AncestorProfileEditComponent } from './ancestor-profile-edit.component'
 import { ParentEditSectionComponent } from './sections/parent-edit-section/parent-edit-section.component';
 import { AncestorProfileService } from 'src/app/services/genealogy/ancestor-profile.service';
 import { PhotoService } from 'src/app/services/photo.service';
+import { Subject, throwError } from 'rxjs';
+import { AncestorProfile } from 'src/app/models/genealogy/ancestor-profile.model';
 
 describe('AncestorProfileEditComponent', () => {
   let component: AncestorProfileEditComponent;
@@ -40,6 +42,57 @@ describe('AncestorProfileEditComponent', () => {
     });
   });
 
+    it('removes only the requested sibling after the API succeeds without saving other edits', () => {
+      spyOn(window, 'confirm').and.returnValue(true);
+      const response = new Subject<void>();
+      const service = component['ancestorProfileService'];
+      service.removeSibling = jasmine.createSpy('removeSibling').and.returnValue(response);
+      component.ancestorProfileForm = formBuilder.group({
+        ancestorProfileId: [1], firstName: ['Unsaved name'], siblingAncestorProfileIds: [[10, 20]]
+      });
+      component.ancestorProfileForm.get('firstName')!.markAsDirty();
+      component.currentAncestorProfile = new AncestorProfile(1, 'Saved', undefined, undefined, undefined, undefined,
+        undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+        undefined, undefined, undefined, [], undefined, undefined, [10, 20]);
+
+      component.removeSibling(10);
+      expect(service.removeSibling).toHaveBeenCalledWith(1, 10);
+      expect(component.isRemovingSibling).toBeTrue();
+      expect(component.ancestorProfileForm.get('siblingAncestorProfileIds')!.value).toEqual([10, 20]);
+      response.next();
+      response.complete();
+      expect(component.ancestorProfileForm.get('siblingAncestorProfileIds')!.value).toEqual([20]);
+      expect(component.currentAncestorProfile.siblingAncestorProfileIds).toEqual([20]);
+      expect(component.ancestorProfileForm.get('firstName')!.value).toBe('Unsaved name');
+      expect(component.ancestorProfileForm.dirty).toBeTrue();
+      expect(component.isRemovingSibling).toBeFalse();
+    });
+
+    it('keeps the sibling visible and reports an error if removal fails', () => {
+      spyOn(window, 'confirm').and.returnValue(true);
+      component['ancestorProfileService'].removeSibling = jasmine.createSpy('removeSibling').and.returnValue(throwError(() => new Error('failed')));
+      component.ancestorProfileForm = formBuilder.group({ ancestorProfileId: [1], siblingAncestorProfileIds: [[10, 20]] });
+      component.removeSibling(10);
+      expect(component.ancestorProfileForm.get('siblingAncestorProfileIds')!.value).toEqual([10, 20]);
+      expect(component['toastr'].error).toHaveBeenCalledWith('Unable to remove the sibling relationship.');
+      expect(component.isRemovingSibling).toBeFalse();
+    });
+
+    it('does not call the API when removal is cancelled', () => {
+      spyOn(window, 'confirm').and.returnValue(false);
+      component['ancestorProfileService'].removeSibling = jasmine.createSpy('removeSibling');
+      component.ancestorProfileForm = formBuilder.group({ ancestorProfileId: [1], siblingAncestorProfileIds: [[10]] });
+      component.removeSibling(10);
+      expect(component['ancestorProfileService'].removeSibling).not.toHaveBeenCalled();
+    });
+
+  it('re-enables sibling removal if creating a sibling fails', () => {
+    component['ancestorProfileService'].create = jasmine.createSpy('create').and.returnValue(throwError(() => new Error('failed')));
+    component.newSiblingName = 'New sibling';
+    component.createAndAddSibling();
+    expect(component.isCreatingSibling).toBeFalse();
+    expect(component['toastr'].error).toHaveBeenCalledWith('Unable to create sibling ancestor.');
+  });
   it('limits spouse options to the opposite gender of the current ancestor', () => {
     component.ancestorProfileForm = formBuilder.group({
       ancestorProfileId: [1],
