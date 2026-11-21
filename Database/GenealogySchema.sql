@@ -128,6 +128,7 @@ IF OBJECT_ID('dbo.AncestorProfiles', 'U') IS NULL
             Gender                  NVARCHAR (20)  NULL,
             BirthDate               DATETIME       NULL,
             BirthLocation           NVARCHAR (100) NULL,
+            MarriageDate            DATETIME       NULL,
             DeathDate               DATETIME       NULL,
             DeathLocation           NVARCHAR (100) NULL,
             Biography               NVARCHAR (MAX) NULL,
@@ -249,6 +250,14 @@ IF OBJECT_ID('dbo.Notifications', 'U') IS NULL
             CreatedDate       DATETIME        CONSTRAINT DF_Notifications_CreatedDate DEFAULT GETDATE() NOT NULL,
             CONSTRAINT FK_Notifications_AspNetUsers FOREIGN KEY (ApplicationUserId) REFERENCES dbo.ApplicationUser (ApplicationUserId) ON DELETE CASCADE
         );
+    END
+
+
+GO
+IF COL_LENGTH('dbo.AncestorProfiles', 'MarriageDate') IS NULL
+    BEGIN
+        ALTER TABLE dbo.AncestorProfiles
+            ADD MarriageDate DATETIME NULL;
     END
 
 

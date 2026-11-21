@@ -1,31 +1,35 @@
 <div class="form-group">
   <label>Siblings</label>
-  <div class="d-flex align-items-start">
-    <select
-      class="form-control"
-      multiple
-      size="8"
-      (change)="onSiblingSelectionChange($event)"
-      (blur)="onSiblingSelectionBlur($event)"
-    >
-      <option *ngFor="let ancestor of currentSiblingAncestors" [value]="ancestor.ancestorProfileId">
-        {{ ancestor.firstName }} {{ ancestor.middleName }} {{ ancestor.lastName }}
-        {{ ancestor.gender ? ' (' + (ancestor.gender === 'Male' ? 'Brother' : ancestor.gender === 'Female' ? 'Sister' : 'Sibling') + ')' : '' }}
-      </option>
-    </select>
-    <button
-      type="button"
-      class="btn ml-2 align-self-start remove-sibling-button"
-      [ngClass]="selectedSiblingIds.length ? 'btn-danger text-white' : 'btn-outline-danger'"
-      (mousedown)="beginSiblingRemovalClick()"
-      (click)="requestClearSelectedSiblings()"
-    >
-      Remove selected
-    </button>
+  <div class="table-responsive" *ngIf="currentSiblingAncestors.length; else noSiblings">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th scope="col">First name</th>
+          <th scope="col">Middle name</th>
+          <th scope="col">Last name</th>
+          <th scope="col">Relationship</th>
+          <th scope="col">Birth date</th>
+          <th scope="col">Death date</th>
+          <th scope="col">Remove</th>
+          <th scope="col">Edit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let sibling of currentSiblingAncestors">
+          <td><a [routerLink]="['/genealogy/ancestors', sibling.ancestorProfileId]" target="_blank" rel="noopener">{{ sibling.firstName }}</a></td>
+          <td><a *ngIf="sibling.middleName; else noMiddleName" [routerLink]="['/genealogy/ancestors', sibling.ancestorProfileId]" target="_blank" rel="noopener">{{ sibling.middleName }}</a><ng-template #noMiddleName>—</ng-template></td>
+          <td><a *ngIf="sibling.lastName; else noLastName" [routerLink]="['/genealogy/ancestors', sibling.ancestorProfileId]" target="_blank" rel="noopener">{{ sibling.lastName }}</a><ng-template #noLastName>—</ng-template></td>
+          <td>{{ sibling.gender === 'Male' ? 'Brother' : sibling.gender === 'Female' ? 'Sister' : 'Sibling' }}</td>
+          <td>{{ sibling.birthDate ? (sibling.birthDate | date:'mediumDate':'UTC') : '—' }}</td>
+          <td>{{ sibling.deathDate ? (sibling.deathDate | date:'mediumDate':'UTC') : '—' }}</td>
+          <td><button type="button" class="btn btn-sm btn-outline-danger" [disabled]="isRemovingSibling || isCreatingSibling" (click)="removeSibling.emit(sibling.ancestorProfileId)" [attr.aria-label]="'Remove sibling ' + sibling.firstName + ' ' + (sibling.lastName || '')">Remove</button></td>
+          <td><a class="btn btn-sm btn-outline-primary" [routerLink]="['/genealogy/ancestors/edit', sibling.ancestorProfileId]" target="_blank" rel="noopener" [attr.aria-label]="'Edit sibling ' + sibling.firstName + ' ' + (sibling.lastName || '')">Edit</a></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-  <small class="form-text text-muted">
-    Hold Ctrl (or Cmd) to select multiple siblings. Saving will sync sibling links in both directions.
-  </small>
+  <ng-template #noSiblings><p class="text-muted">No siblings are linked.</p></ng-template>
+  <small class="form-text text-muted">Profile and edit links open in a new tab. Removing a sibling saves the relationship immediately.</small>
 
   <div class="mt-2">
     <label class="small text-muted">Add existing sibling</label>
@@ -45,7 +49,7 @@
         </option>
       </select>
       <div class="input-group-append">
-        <button type="button" class="btn btn-outline-primary" [disabled]="!selectedExistingSiblingId" (click)="addExistingSibling.emit()">
+        <button type="button" class="btn btn-outline-primary" [disabled]="!selectedExistingSiblingId || isRemovingSibling" (click)="addExistingSibling.emit()">
           Add existing sibling
         </button>
       </div>
@@ -72,7 +76,7 @@
       <option value="Female">Sister</option>
     </select>
     <div class="input-group-append">
-      <button type="button" class="btn btn-outline-primary" [disabled]="isCreatingSibling" (click)="createAndAddSibling.emit()">
+      <button type="button" class="btn btn-outline-primary" [disabled]="isCreatingSibling || isRemovingSibling" (click)="createAndAddSibling.emit()">
         {{ isCreatingSibling ? 'Creating...' : 'Create sibling ancestor' }}
       </button>
     </div>

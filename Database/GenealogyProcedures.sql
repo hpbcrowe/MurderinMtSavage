@@ -256,6 +256,7 @@ BEGIN
            a.Gender,
            a.BirthDate,
            a.BirthLocation,
+           a.MarriageDate,
            a.DeathDate,
            a.DeathLocation,
            a.Biography,
@@ -323,6 +324,7 @@ BEGIN
              a.Gender,
              a.BirthDate,
              a.BirthLocation,
+             a.MarriageDate,
              a.DeathDate,
              a.DeathLocation,
              a.Biography,
@@ -392,6 +394,7 @@ BEGIN
              a.Gender,
              a.BirthDate,
              a.BirthLocation,
+             a.MarriageDate,
              a.DeathDate,
              a.DeathLocation,
              a.Biography,
@@ -458,7 +461,7 @@ END
 
 GO
 CREATE OR ALTER PROCEDURE dbo.AncestorProfile_Upsert
-@AncestorProfileId INT, @FirstName NVARCHAR (50), @MiddleName NVARCHAR (50), @LastName NVARCHAR (50), @Suffix NVARCHAR (20), @Gender NVARCHAR (20), @BirthDate DATETIME, @BirthLocation NVARCHAR (100), @DeathDate DATETIME, @DeathLocation NVARCHAR (100), @Biography NVARCHAR (MAX), @ResearchStatus NVARCHAR (50), @FamilyBranch NVARCHAR (100), @Tags NVARCHAR (200), @ConfidenceLevel NVARCHAR (50), @ProfilePhotoId INT, @HusbandAncestorProfileId INT=NULL, @WifeAncestorProfileId INT=NULL, @FatherAncestorProfileId INT=NULL, @MotherAncestorProfileId INT=NULL, @SiblingAncestorProfileIds NVARCHAR (MAX)=NULL, @ApplicationUserId INT
+@AncestorProfileId INT, @FirstName NVARCHAR (50), @MiddleName NVARCHAR (50), @LastName NVARCHAR (50), @Suffix NVARCHAR (20), @Gender NVARCHAR (20), @BirthDate DATETIME, @BirthLocation NVARCHAR (100), @DeathDate DATETIME, @DeathLocation NVARCHAR (100), @Biography NVARCHAR (MAX), @ResearchStatus NVARCHAR (50), @FamilyBranch NVARCHAR (100), @Tags NVARCHAR (200), @ConfidenceLevel NVARCHAR (50), @ProfilePhotoId INT, @HusbandAncestorProfileId INT=NULL, @WifeAncestorProfileId INT=NULL, @FatherAncestorProfileId INT=NULL, @MotherAncestorProfileId INT=NULL, @SiblingAncestorProfileIds NVARCHAR (MAX)=NULL, @ApplicationUserId INT, @MarriageDate DATETIME=NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -537,6 +540,7 @@ BEGIN
                    Gender                  = @Gender,
                    BirthDate               = @BirthDate,
                    BirthLocation           = @BirthLocation,
+                   MarriageDate            = @MarriageDate,
                    DeathDate               = @DeathDate,
                    DeathLocation           = @DeathLocation,
                    Biography               = @Biography,
@@ -561,6 +565,7 @@ BEGIN
                 Gender,
                 BirthDate,
                 BirthLocation,
+                MarriageDate,
                 DeathDate,
                 DeathLocation,
                 Biography,
@@ -575,12 +580,15 @@ BEGIN
                 PublishDate,
                 UpdateDate
             )
-            VALUES                            (@FirstName, @MiddleName, @LastName, @Suffix, @Gender, @BirthDate, @BirthLocation, @DeathDate, @DeathLocation, @Biography, @ResearchStatus, @FamilyBranch, @Tags, @ConfidenceLevel, @ProfilePhotoId, @FatherAncestorProfileId, @MotherAncestorProfileId, @ApplicationUserId, GETDATE(), GETDATE());
+            VALUES                            (@FirstName, @MiddleName, @LastName, @Suffix, @Gender, @BirthDate, @BirthLocation, @MarriageDate, @DeathDate, @DeathLocation, @Biography, @ResearchStatus, @FamilyBranch, @Tags, @ConfidenceLevel, @ProfilePhotoId, @FatherAncestorProfileId, @MotherAncestorProfileId, @ApplicationUserId, GETDATE(), GETDATE());
             SET @AncestorProfileId = CONVERT (INT, SCOPE_IDENTITY());
         END
     DECLARE @DesiredSiblings TABLE (
         AncestorProfileId INT PRIMARY KEY);
     DECLARE @AllSiblingGroup TABLE (
+        AncestorProfileId INT PRIMARY KEY);
+    -- Only newly linked siblings expand the group, so an explicitly removed pair stays removed.
+    DECLARE @NewSiblings TABLE (
         AncestorProfileId INT PRIMARY KEY);
     IF @SiblingAncestorProfileIds IS NOT NULL
         BEGIN
@@ -597,6 +605,16 @@ BEGIN
                    AND (TRY_CAST (value AS INT) <> @MotherAncestorProfileId
                         OR @MotherAncestorProfileId IS NULL);
         END
+    INSERT INTO @NewSiblings (AncestorProfileId)
+    SELECT ds.AncestorProfileId
+    FROM   @DesiredSiblings AS ds
+    WHERE  NOT EXISTS (SELECT 1
+                       FROM   dbo.AncestorRelationships AS ar
+                       WHERE  ar.RelationshipType = N'Sibling'
+                              AND ((ar.AncestorProfileId = @AncestorProfileId
+                                    AND ar.RelatedAncestorProfileId = ds.AncestorProfileId)
+                                   OR (ar.RelatedAncestorProfileId = @AncestorProfileId
+                                       AND ar.AncestorProfileId = ds.AncestorProfileId)));
     DELETE ar
     FROM   dbo.AncestorRelationships AS ar
     WHERE  ar.AncestorProfileId = @AncestorProfileId
@@ -678,6 +696,8 @@ BEGIN
     FROM   @AllSiblingGroup AS sg1
            CROSS JOIN @AllSiblingGroup AS sg2
     WHERE  sg1.AncestorProfileId <> sg2.AncestorProfileId
+           AND (EXISTS (SELECT 1 FROM @NewSiblings AS ns WHERE ns.AncestorProfileId = sg1.AncestorProfileId)
+                OR EXISTS (SELECT 1 FROM @NewSiblings AS ns WHERE ns.AncestorProfileId = sg2.AncestorProfileId))
            AND NOT EXISTS (SELECT 1
                            FROM   dbo.AncestorRelationships AS ar
                            WHERE  ar.AncestorProfileId = sg1.AncestorProfileId
@@ -718,13 +738,6 @@ BEGIN
             )
             VALUES                                 (@MotherAncestorProfileId, @AncestorProfileId, N'Parent', GETDATE());
         END
-    DELETE ar
-    FROM   dbo.AncestorRelationships AS ar
-    WHERE  ar.RelationshipType = N'Spouse'
-           AND (ar.AncestorProfileId = @AncestorProfileId
-                OR ar.RelatedAncestorProfileId = @AncestorProfileId)
-           AND (@SpouseAncestorProfileId IS NULL
-                OR (CASE WHEN ar.AncestorProfileId = @AncestorProfileId THEN ar.RelatedAncestorProfileId ELSE ar.AncestorProfileId END) <> @SpouseAncestorProfileId);
     IF @SpouseAncestorProfileId IS NOT NULL
        AND NOT EXISTS (SELECT 1
                        FROM   dbo.AncestorRelationships AS ar
@@ -895,6 +908,33 @@ BEGIN
     DELETE dbo.AncestorFollowers
     WHERE  AncestorProfileId = @AncestorProfileId
            AND ApplicationUserId = @ApplicationUserId;
+END
+
+
+GO
+CREATE OR ALTER PROCEDURE dbo.AncestorRelationship_DeleteSibling
+@AncestorProfileId INT, @SiblingId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DELETE FROM dbo.AncestorRelationships
+    WHERE RelationshipType = N'Sibling'
+      AND ((AncestorProfileId = @AncestorProfileId AND RelatedAncestorProfileId = @SiblingId)
+        OR (AncestorProfileId = @SiblingId AND RelatedAncestorProfileId = @AncestorProfileId));
+END
+
+
+GO
+CREATE OR ALTER PROCEDURE dbo.AncestorRelationship_DeleteSpouse
+@AncestorProfileId INT, @SpouseId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DELETE FROM dbo.AncestorRelationships
+    WHERE RelationshipType = N'Spouse'
+      AND ((AncestorProfileId = @AncestorProfileId AND RelatedAncestorProfileId = @SpouseId)
+        OR (AncestorProfileId = @SpouseId AND RelatedAncestorProfileId = @AncestorProfileId));
+    SELECT @@ROWCOUNT;
 END
 
 

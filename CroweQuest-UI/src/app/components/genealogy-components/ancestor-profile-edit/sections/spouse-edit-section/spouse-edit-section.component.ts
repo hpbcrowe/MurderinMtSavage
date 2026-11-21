@@ -15,6 +15,7 @@ export class SpouseEditSectionComponent {
 
   @Input() isCreatingWife = false;
   @Input() isCreatingHusband = false;
+  @Input() isRemovingSpouse = false;
 
   @Input() recentlyCreatedWife: AncestorProfile | null = null;
   @Input() recentlyCreatedHusband: AncestorProfile | null = null;

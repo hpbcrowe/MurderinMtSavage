@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CroweQuest.Web.Controllers
@@ -75,6 +76,32 @@ namespace CroweQuest.Web.Controllers
         {
             ancestorRelationship.AncestorProfileId = ancestorProfileId;
             return Ok(await _ancestorProfileRepository.AddRelationshipAsync(ancestorRelationship));
+        }
+
+        [Authorize]
+        [HttpDelete("{ancestorProfileId}/siblings/{siblingId}")]
+        public async Task<IActionResult> RemoveSibling(int ancestorProfileId, int siblingId, CancellationToken cancellationToken)
+        {
+            if (ancestorProfileId <= 0 || siblingId <= 0 || ancestorProfileId == siblingId)
+            {
+                return BadRequest("Two different valid ancestor IDs are required.");
+            }
+
+            await _ancestorProfileRepository.RemoveSiblingRelationshipAsync(ancestorProfileId, siblingId, cancellationToken);
+            return NoContent();
+        }
+
+        [Authorize]
+        [HttpDelete("{ancestorProfileId}/spouses/{spouseId}")]
+        public async Task<IActionResult> RemoveSpouse(int ancestorProfileId, int spouseId, CancellationToken cancellationToken)
+        {
+            if (ancestorProfileId <= 0 || spouseId <= 0 || ancestorProfileId == spouseId)
+            {
+                return BadRequest("Two different valid ancestor IDs are required.");
+            }
+
+            var removed = await _ancestorProfileRepository.RemoveSpouseRelationshipAsync(ancestorProfileId, spouseId, cancellationToken);
+            return Ok(removed);
         }
 
         [HttpGet("{ancestorProfileId}/photos")]

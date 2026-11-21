@@ -4,6 +4,7 @@
     <select
       class="form-control"
       [formControlName]="getSpouseSelectionField()"
+      [attr.disabled]="isRemovingSpouse ? true : null"
     >
       <option [ngValue]="null">Unknown</option>
       <option *ngFor="let ancestor of eligibleSpouseAncestors" [ngValue]="ancestor.ancestorProfileId">
@@ -13,13 +14,14 @@
     <button
       type="button"
       class="btn btn-outline-danger ml-2"
-      [disabled]="!(ancestorProfileForm.get(ancestorProfileForm.get('gender')?.value === 'Female' ? 'husbandAncestorProfileId' : 'wifeAncestorProfileId')?.value)"
+      [disabled]="isRemovingSpouse || !ancestorProfileForm.get(getSpouseSelectionField())?.value"
       (click)="clearSpouseSelection.emit()"
     >
       Remove
     </button>
   </div>
   <small class="form-text text-muted">Spouse must be the opposite gender of the current ancestor.</small>
+  <small class="form-text text-muted">Selecting a different spouse adds a relationship when saved; existing spouses are kept. Remove deletes only the selected relationship immediately. Only one spouse is displayed at a time.</small>
 
   <div class="input-group mt-2" *ngIf="!hasSelectedSpouse()">
     <input

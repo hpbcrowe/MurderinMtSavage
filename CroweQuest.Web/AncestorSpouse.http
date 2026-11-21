@@ -1,0 +1,10 @@
+@baseUrl = http://localhost:5000
+@token = replace-with-a-valid-token
+
+### Remove one spouse relationship without deleting either person or their children
+DELETE {{baseUrl}}/api/AncestorProfile/1/spouses/2
+Authorization: Bearer {{token}}
+
+### Invalid: an ancestor cannot be their own spouse
+DELETE {{baseUrl}}/api/AncestorProfile/1/spouses/1
+Authorization: Bearer {{token}}

@@ -186,6 +186,90 @@ When a male ancestor creates a wife record:
 
 Opening either profile now reads from one shared spouse relationship fact. There is no separate husband/wife column to drift out of sync.
 
+## Multiple Spouses and Shared Children
+
+An ancestor can have multiple spouse relationships, for example after a spouse
+dies or a marriage ends in divorce. Each spouse relationship must be retained
+independently rather than replacing the previous spouse.
+
+```text
+John
+├── Mary — married 1890, ended by death 1900
+│   ├── Alice
+│   └── James
+└── Sarah — married 1903, divorced 1915
+    └── Thomas
+```
+
+In this example, Alice and James each have parent links to John and Mary;
+Thomas has parent links to John and Sarah. The same parent links are visible
+from either parent's profile.
+
+### Relationship Data
+
+Keep the existing directional `Parent -> Child` links as the source of truth
+for parentage. A child is shown as shared by two people when both have a parent
+link to that child. Do not infer parentage from marriage dates, the currently
+selected spouse, or a child's existing link to only one parent.
+
+Store marriage details on the spouse relationship, not on an individual
+ancestor profile, because each spouse relationship can have different details:
+
+- `MarriageDate` (optional)
+- `EndDate` (optional)
+- `EndReason` (optional, such as death, divorce, separation, or unknown)
+
+Dates may be unknown, and an unknown end reason must not be interpreted as
+an ongoing marriage. This pair-based model assumes at most one recorded
+marriage between the same two people; repeated marriages to the same person
+would require a separate marriage-event or union record.
+
+The existing profile-level `MarriageDate` needs a migration plan. Move it to
+the corresponding spouse relationship only where the match is unambiguous and
+the date does not conflict with the other person's date. Preserve ambiguous or
+conflicting values for review; do not silently discard or overwrite them.
+
+### Profile and Editing Experience
+
+- Show all spouses on the ancestor profile, with known marriage and end details.
+- Selecting a spouse displays only children linked to both that spouse and the
+  ancestor.
+- Allow the user to attach an existing child or create a child for a selected
+  spouse, explicitly confirming the parent links being added.
+- Show children with an unknown or unrecorded other parent separately; do not
+  infer that they belong to the selected spouse.
+- Removing a spouse relationship must not delete either person or their
+  parent-child links.
+
+### Required Changes to Existing Behavior
+
+**First safety step implemented locally:** profile saves retain existing spouse
+links and add the selected spouse; removing the displayed spouse deletes only
+that pair. Selecting or creating a spouse no longer assigns existing children
+to them automatically. The editor still displays only one spouse at a time,
+and shared-child selection and spouse-specific marriage dates remain future work.
+
+1. Change `AncestorProfile_Upsert` so saving an ancestor does not delete other
+   spouse links. Profile saves currently add the selected spouse for legacy
+   compatibility, while removal uses an explicit relationship operation.
+2. Replace the single husband/wife selection and API properties with a spouse
+   collection, while retaining compatibility for existing consumers during
+   migration.
+3. Remove the automatic behavior that links every existing child to a newly
+   selected spouse. Require explicit child selection instead.
+4. Return shared children by intersecting the two parents' child links. Include
+   legacy parent-column data until the parent-edge backfill is complete.
+5. Add spouse-level marriage metadata and migrate existing profile-level dates
+   only when safe, with unresolved cases available for review.
+6. Test multiple spouses, shared and unknown-parent children, adding and
+   removing links, spouse removal, profile saves, date migration, and existing
+   relationship compatibility.
+
+This design records parentage independently of marriage. If the application
+later needs to distinguish repeated unions between the same couple, or record
+which union a child belongs to independently of parentage, introduce an
+explicit union entity and associate children with the relevant union.
+
 ## Rollout Safety
 
 1. Deploy additive schema changes first (constraints, indexes, helper procedures).

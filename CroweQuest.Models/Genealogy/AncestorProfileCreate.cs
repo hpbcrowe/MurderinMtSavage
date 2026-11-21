@@ -30,6 +30,8 @@ namespace CroweQuest.Models.Genealogy
         [MaxLength(100, ErrorMessage = "Must be 100 characters or less")]
         public string BirthLocation { get; set; }
 
+        public DateTime? MarriageDate { get; set; }
+
         public DateTime? DeathDate { get; set; }
 
         [MaxLength(100, ErrorMessage = "Must be 100 characters or less")]

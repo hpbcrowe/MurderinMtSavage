@@ -1,0 +1,143 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.49.2.45890",
+      "templateHash": "17625469015611003970"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Location of the existing App Service resources."
+      }
+    },
+    "frontendPlanName": {
+      "type": "string",
+      "defaultValue": "ASP-CroweQuestGroup-87a7",
+      "metadata": {
+        "description": "Existing Linux frontend plan name."
+      }
+    },
+    "apiPlanName": {
+      "type": "string",
+      "defaultValue": "ASP-CroweQuestGroup-bda5",
+      "metadata": {
+        "description": "Existing Windows API plan name."
+      }
+    },
+    "frontendName": {
+      "type": "string",
+      "defaultValue": "CroweQuest",
+      "metadata": {
+        "description": "Existing frontend App Service name."
+      }
+    },
+    "apiName": {
+      "type": "string",
+      "defaultValue": "CroweQuestWebAPI",
+      "metadata": {
+        "description": "Existing API App Service name."
+      }
+    },
+    "frontendTags": {
+      "type": "secureObject",
+      "metadata": {
+        "description": "Complete existing frontend tags, including monitoring links."
+      }
+    },
+    "apiTags": {
+      "type": "secureObject",
+      "metadata": {
+        "description": "Complete existing API tags, including monitoring links."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2024-11-01",
+      "name": "[parameters('frontendPlanName')]",
+      "location": "[parameters('location')]",
+      "kind": "linux",
+      "sku": {
+        "name": "F1",
+        "tier": "Free",
+        "capacity": 1
+      },
+      "properties": {
+        "reserved": true,
+        "perSiteScaling": false,
+        "zoneRedundant": false
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2024-11-01",
+      "name": "[parameters('apiPlanName')]",
+      "location": "[parameters('location')]",
+      "kind": "app",
+      "sku": {
+        "name": "F1",
+        "tier": "Free",
+        "capacity": 0
+      },
+      "properties": {
+        "reserved": false,
+        "perSiteScaling": false,
+        "zoneRedundant": false
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2024-11-01",
+      "name": "[parameters('frontendName')]",
+      "location": "[parameters('location')]",
+      "kind": "app,linux",
+      "tags": "[parameters('frontendTags')]",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('frontendPlanName'))]",
+        "httpsOnly": true,
+        "clientAffinityEnabled": false,
+        "clientCertEnabled": false,
+        "publicNetworkAccess": "Enabled",
+        "siteConfig": {
+          "localMySqlEnabled": false,
+          "netFrameworkVersion": "v4.0"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('frontendPlanName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2024-11-01",
+      "name": "[parameters('apiName')]",
+      "location": "[parameters('location')]",
+      "kind": "app",
+      "tags": "[parameters('apiTags')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('apiPlanName'))]",
+        "httpsOnly": true,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "publicNetworkAccess": "Enabled",
+        "siteConfig": {
+          "localMySqlEnabled": false,
+          "netFrameworkVersion": "v2.0"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('apiPlanName'))]"
+      ]
+    }
+  ]
+}
