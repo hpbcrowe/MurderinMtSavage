@@ -26,6 +26,8 @@ namespace CroweQuest.Repository
 
         Task RemoveSiblingRelationshipAsync(int ancestorProfileId, int siblingId, CancellationToken cancellationToken);
 
+        Task<bool> RemoveSpouseRelationshipAsync(int ancestorProfileId, int spouseId, CancellationToken cancellationToken);
+
         Task<List<Photo>> GetPhotosAsync(int ancestorProfileId);
 
         Task<int> AddPhotoAsync(int ancestorProfileId, int photoId, int applicationUserId);

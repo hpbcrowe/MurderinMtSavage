@@ -8,6 +8,7 @@ export class AncestorProfileCreate {
     public gender?: string,
     public birthDate?: string,
     public birthLocation?: string,
+    public marriageDate?: string,
     public deathDate?: string,
     public deathLocation?: string,
     public biography?: string,

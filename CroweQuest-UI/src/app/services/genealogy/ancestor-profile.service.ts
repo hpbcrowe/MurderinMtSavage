@@ -44,6 +44,10 @@ export class AncestorProfileService {
     return this.http.delete<void>(`${environment.webApi}/AncestorProfile/${ancestorProfileId}/siblings/${siblingId}`);
   }
 
+  removeSpouse(ancestorProfileId: number, spouseId: number): Observable<boolean> {
+    return this.http.delete<boolean>(`${environment.webApi}/AncestorProfile/${ancestorProfileId}/spouses/${spouseId}`);
+  }
+
   getPhotos(ancestorProfileId: number): Observable<Photo[]> {
     return this.http.get<Photo[]>(`${environment.webApi}/AncestorProfile/${ancestorProfileId}/photos`);
   }

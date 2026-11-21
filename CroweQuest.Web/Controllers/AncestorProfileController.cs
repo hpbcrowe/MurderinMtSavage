@@ -91,6 +91,19 @@ namespace CroweQuest.Web.Controllers
             return NoContent();
         }
 
+        [Authorize]
+        [HttpDelete("{ancestorProfileId}/spouses/{spouseId}")]
+        public async Task<IActionResult> RemoveSpouse(int ancestorProfileId, int spouseId, CancellationToken cancellationToken)
+        {
+            if (ancestorProfileId <= 0 || spouseId <= 0 || ancestorProfileId == spouseId)
+            {
+                return BadRequest("Two different valid ancestor IDs are required.");
+            }
+
+            var removed = await _ancestorProfileRepository.RemoveSpouseRelationshipAsync(ancestorProfileId, spouseId, cancellationToken);
+            return Ok(removed);
+        }
+
         [HttpGet("{ancestorProfileId}/photos")]
         public async Task<ActionResult<List<Photo>>> GetPhotos(int ancestorProfileId)
         {

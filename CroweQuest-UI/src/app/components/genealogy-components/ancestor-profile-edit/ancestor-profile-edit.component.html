@@ -4,6 +4,7 @@
   </div>
 
   <form [formGroup]="ancestorProfileForm" (ngSubmit)="onSubmit()">
+    <fieldset [disabled]="isRemovingSpouse">
     <div class="row align-items-start">
       <div class="col-12 col-md-6 order-1 order-md-2">
         <div class="mb-4 mb-md-0" *ngIf="getSelectedPhoto() as selectedPhoto">
@@ -94,6 +95,13 @@
             <label>Birth Location</label>
             <input class="form-control" formControlName="birthLocation" />
           </div>
+
+          <div class="form-row">
+          <div class="form-group col-md-6">
+            <label>Marriage Date</label>
+            <input class="form-control" formControlName="marriageDate" type="date" />
+          </div>
+          </div>
         </div>
 
         <div class="form-row">
@@ -110,6 +118,7 @@
         <app-spouse-edit-section
           [ancestorProfileForm]="ancestorProfileForm"
           [eligibleSpouseAncestors]="getDisplayedSpouseAncestors()"
+          [isRemovingSpouse]="isRemovingSpouse"
           [newWifeName]="newWifeName"
           [newHusbandName]="newHusbandName"
           [isCreatingWife]="isCreatingWife"
@@ -231,5 +240,6 @@
 
     <button class="btn bg-primary text-light" [disabled]="!ancestorProfileForm.valid && ancestorProfileForm.pristine">Save</button>
     <button class="btn btn-outline-primary" [routerLink]="'/genealogy/ancestors'" routerLinkActive="active">Main Ancestors Page</button>
+    </fieldset>
   </form>
 </div>

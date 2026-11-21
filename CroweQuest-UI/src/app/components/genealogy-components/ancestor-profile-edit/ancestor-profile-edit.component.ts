@@ -5,7 +5,6 @@ import { Meta, Title } from '@angular/platform-browser';
 import { ToastrService } from 'ngx-toastr';
 import { AncestorProfileCreate } from 'src/app/models/genealogy/ancestor-profile-create.model';
 import { AncestorProfile } from 'src/app/models/genealogy/ancestor-profile.model';
-import { AncestorRelationship } from 'src/app/models/genealogy/ancestor-relationship.model';
 import { Photo } from 'src/app/models/photo/photo.model';
 import { AncestorProfileService } from 'src/app/services/genealogy/ancestor-profile.service';
 import { PhotoService } from 'src/app/services/photo.service';
@@ -38,6 +37,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
   isCreatingMother: boolean = false;
   isCreatingSibling: boolean = false;
   isRemovingSibling = false;
+  isRemovingSpouse = false;
   userPhotos: Photo[] = [];
   ancestorPhotos: Photo[] = [];
   selectedUserPhotoId: number | null = null;
@@ -47,7 +47,12 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
   isPhotoDragActive: boolean = false;
   isPhotoUploading: boolean = false;
   readonly maxPhotoBytes: number = 10 * 1024 * 1024;
+  // Navigation and save state tracking for handling unsaved changes and redirects
+  //   after saving
   private isNavigatingAfterSave: boolean = false;
+  // Tracks the number of pending profile save operations to prevent navigation with
+  //  unsaved changes.
+  private pendingProfileSaves = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -82,6 +87,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
       gender: [''],
       birthDate: [''],
       birthLocation: [''],
+      marriageDate: [''],
       deathDate: [''],
       deathLocation: [''],
       biography: ['', [Validators.maxLength(5000)]],
@@ -459,6 +465,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
       gender: ancestorProfile.gender,
       birthDate: this.normalizeDateForDateInput(ancestorProfile.birthDate),
       birthLocation: ancestorProfile.birthLocation,
+      marriageDate: this.normalizeDateForDateInput(ancestorProfile.marriageDate),
       deathDate: this.normalizeDateForDateInput(ancestorProfile.deathDate),
       deathLocation: ancestorProfile.deathLocation,
       biography: ancestorProfile.biography,
@@ -519,6 +526,10 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
   }
 
   canDeactivate(): boolean {
+    if (this.isRemovingSpouse) {
+      this.toastr.info('Please wait for the spouse relationship to be removed.');
+      return false;
+    }
     if (this.isRemovingSibling) {
       this.toastr.info('Please wait for the sibling relationship to be removed.');
       return false;
@@ -887,20 +898,52 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
  *  
  */
   clearSpouseSelection(): void {
-    const currentGender = this.ancestorProfileForm.get('gender')?.value;
-
-    if (currentGender === 'Male') {
-      this.clearWifeSelection();
+    if (this.isRemovingSpouse) {
+      return;
+    }
+    if (this.pendingProfileSaves || this.isCreatingHusband || this.isCreatingWife ||
+        this.isCreatingFather || this.isCreatingMother || this.isCreatingSibling || this.isRemovingSibling) {
+      this.toastr.info('Please wait for the current relationship change to finish.');
       return;
     }
 
-    if (currentGender === 'Female') {
-      this.clearHusbandSelection();
+    const husbandId = this.normalizeRelationshipId(this.ancestorProfileForm.get('husbandAncestorProfileId')?.value);
+    const wifeId = this.normalizeRelationshipId(this.ancestorProfileForm.get('wifeAncestorProfileId')?.value);
+    const field = wifeId && !husbandId ? 'wifeAncestorProfileId'
+      : husbandId && !wifeId ? 'husbandAncestorProfileId'
+      : this.ancestorProfileForm.get('gender')?.value === 'Female' ? 'husbandAncestorProfileId' : 'wifeAncestorProfileId';
+    const spouseId = field === 'husbandAncestorProfileId' ? husbandId : wifeId;
+    if (!spouseId) {
       return;
     }
 
-    this.clearHusbandSelection();
-    this.clearWifeSelection();
+    const ancestorId = this.getCurrentAncestorProfileId();
+    if (ancestorId <= 0) {
+      this.ancestorProfileForm.patchValue({ [field]: null });
+      this.ancestorProfileForm.markAsDirty();
+      return;
+    }
+    if (!window.confirm('Remove this spouse relationship? The people and parent-child links will be kept.')) {
+      return;
+    }
+
+    this.isRemovingSpouse = true;
+    this.ancestorProfileService.removeSpouse(ancestorId, spouseId)
+      .pipe(finalize(() => this.isRemovingSpouse = false))
+      .subscribe({
+        next: (removed) => {
+          this.ancestorProfileForm.patchValue({ [field]: null });
+          if (this.currentAncestorProfile && this.currentAncestorProfile[field] === spouseId) {
+            this.currentAncestorProfile[field] = undefined;
+          }
+          if (removed) {
+            this.toastr.success('Spouse relationship removed.');
+          } else {
+            this.toastr.info('Spouse selection cleared; no saved relationship was found.');
+          }
+        },
+        error: () => this.toastr.error('Unable to remove the spouse relationship.')
+      });
   }
 /**
  * Clears the selected father ancestor profile in the form and resets the new father name.
@@ -1044,9 +1087,16 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
     const ancestorProfileCreate = this.buildAncestorProfileCreateFromForm(siblingAncestorProfileIds);
 
 // Call the ancestorProfileService to save the changes, and handle the response.
+    this.pendingProfileSaves++;
     this.ancestorProfileService.create(ancestorProfileCreate).subscribe({
-      next: (savedAncestorProfile) => this.updateForm(savedAncestorProfile),
-      error: () => this.toastr.error('Unable to save sibling relationship changes.')
+      next: (savedAncestorProfile) => {
+        this.pendingProfileSaves--;
+        this.updateForm(savedAncestorProfile);
+      },
+      error: () => {
+        this.pendingProfileSaves--;
+        this.toastr.error('Unable to save sibling relationship changes.');
+      }
     });
   }
 
@@ -1074,6 +1124,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
       this.ancestorProfileForm.get('gender')?.value,
       this.ancestorProfileForm.get('birthDate')?.value,
       this.ancestorProfileForm.get('birthLocation')?.value,
+      this.ancestorProfileForm.get('marriageDate')?.value || undefined,
       this.ancestorProfileForm.get('deathDate')?.value,
       this.ancestorProfileForm.get('deathLocation')?.value,
       this.ancestorProfileForm.get('biography')?.value,
@@ -1121,6 +1172,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
       },
 // Handle any errors that occur during the creation process and display an error message.
       error: () => {
+        this.isCreatingHusband = false;
         this.toastr.error('Unable to create husband ancestor.');
       },
 // Reset the flag to indicate that the husband creation process has completed.
@@ -1166,6 +1218,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
 
 // Handle any errors that occur during the creation process and display an error message.
       error: () => {
+        this.isCreatingWife = false;
         this.toastr.error('Unable to create wife ancestor.');
       },
 
@@ -1188,10 +1241,11 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
       ? this.buildAncestorProfileCreateFromAncestor(createdSpouse, currentAncestorId, createdSpouse.wifeAncestorProfileId)
       : this.buildAncestorProfileCreateFromAncestor(createdSpouse, createdSpouse.husbandAncestorProfileId, currentAncestorId);
 
+    this.pendingProfileSaves++;
     this.ancestorProfileService.create(spouseUpdateModel).subscribe({
       next: (updatedSpouse) => {
+        this.pendingProfileSaves--;
         this.upsertAncestorOption(updatedSpouse);
-        this.linkCurrentAncestorChildrenToSpouse(updatedSpouse.ancestorProfileId);
 
         if (spouseType === 'wife') {
           this.recentlyCreatedWife = updatedSpouse;
@@ -1200,72 +1254,9 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
         }
       },
       error: () => {
+        this.pendingProfileSaves--;
         this.toastr.warning('Spouse ancestor was created, but the reciprocal spouse link could not be saved.');
       }
-    });
-  }
-
-  private getCurrentAncestorChildIds(): number[] {
-    const currentAncestorId = this.getCurrentAncestorProfileId();
-    if (currentAncestorId <= 0) {
-      return [];
-    }
-
-    const directChildren = this.allAncestors
-      .filter((ancestor) => ancestor.ancestorProfileId !== currentAncestorId &&
-        (ancestor.fatherAncestorProfileId === currentAncestorId || ancestor.motherAncestorProfileId === currentAncestorId))
-      .map((ancestor) => Number(ancestor.ancestorProfileId))
-      .filter((id) => !Number.isNaN(id) && id > 0);
-
-    const currentAncestor = this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === currentAncestorId);
-    const childrenFromLoadedProfile = (currentAncestor?.children ?? [])
-      .map((child) => Number(child.ancestorProfileId))
-      .filter((id) => !Number.isNaN(id) && id > 0);
-
-    return Array.from(new Set([...directChildren, ...childrenFromLoadedProfile]));
-  }
-
-  private getAncestorChildIds(ancestorProfileId: number): number[] {
-    const matchedAncestor = this.allAncestors.find((ancestor) => ancestor.ancestorProfileId === ancestorProfileId);
-
-    const childIds = (matchedAncestor?.children ?? [])
-      .map((child) => Number(child.ancestorProfileId))
-      .filter((id) => !Number.isNaN(id) && id > 0);
-
-    const inferredChildren = this.allAncestors
-      .filter((ancestor) => ancestor.ancestorProfileId !== ancestorProfileId &&
-        (ancestor.fatherAncestorProfileId === ancestorProfileId || ancestor.motherAncestorProfileId === ancestorProfileId))
-      .map((ancestor) => Number(ancestor.ancestorProfileId))
-      .filter((id) => !Number.isNaN(id) && id > 0);
-
-    return Array.from(new Set([...childIds, ...inferredChildren]));
-  }
-
-  private linkCurrentAncestorChildrenToSpouse(spouseAncestorProfileId: number | null | undefined): void {
-    if (!spouseAncestorProfileId || spouseAncestorProfileId <= 0) {
-      return;
-    }
-
-    const currentAncestorId = this.getCurrentAncestorProfileId();
-    if (currentAncestorId <= 0) {
-      return;
-    }
-
-    const currentChildIds = this.getCurrentAncestorChildIds();
-    if (!currentChildIds.length) {
-      return;
-    }
-
-    const spouseChildIds = new Set(this.getAncestorChildIds(spouseAncestorProfileId));
-    const childIdsToAttach = currentChildIds.filter((childId) => !spouseChildIds.has(childId));
-
-    childIdsToAttach.forEach((childId) => {
-      const relationship = new AncestorRelationship(0, spouseAncestorProfileId, childId, 'Parent');
-      this.ancestorProfileService.addRelationship(spouseAncestorProfileId, relationship).subscribe({
-        error: () => {
-          this.toastr.warning('The spouse was linked, but one of the child relationships could not be saved.');
-        }
-      });
     });
   }
 
@@ -1305,6 +1296,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
 
 // Handle any errors that occur during the creation process and display an error message.
       error: () => {
+        this.isCreatingFather = false;
         this.toastr.error('Unable to create father ancestor.');
       },
 
@@ -1351,6 +1343,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
 
 // Handle any errors that occur during the creation process and display an error message.
       error: () => {
+        this.isCreatingMother = false;
         this.toastr.error('Unable to create mother ancestor.');
       },
 
@@ -1474,7 +1467,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
       undefined,
       undefined,
       undefined,
-     
+      undefined,
       undefined,
       undefined,
      
@@ -1495,6 +1488,7 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
       ancestor.gender,
       ancestor.birthDate,
       ancestor.birthLocation,
+      ancestor.marriageDate,
       ancestor.deathDate,
       ancestor.deathLocation,
       ancestor.biography,
@@ -1607,25 +1601,29 @@ export class AncestorProfileEditComponent implements OnInit, CanComponentDeactiv
   }
 
   onSubmit() {
+    if (this.isRemovingSpouse) {
+      this.toastr.info('Please wait for the spouse relationship to be removed.');
+      return;
+    }
     if (this.isRemovingSibling) {
       this.toastr.info('Please wait for the sibling relationship to be removed.');
       return;
     }
     const ancestorProfileCreate = this.buildAncestorProfileCreateFromForm();
 
-    this.ancestorProfileService.create(ancestorProfileCreate).subscribe((createdAncestorProfile) => {
-      this.updateForm(createdAncestorProfile);
-      const spouseId = this.ancestorProfileForm.get('gender')?.value === 'Male'
-        ? createdAncestorProfile.wifeAncestorProfileId
-        : createdAncestorProfile.husbandAncestorProfileId;
-
-      if (spouseId) {
-        this.linkCurrentAncestorChildrenToSpouse(spouseId);
+    this.pendingProfileSaves++;
+    this.ancestorProfileService.create(ancestorProfileCreate).subscribe({
+      next: (createdAncestorProfile) => {
+        this.pendingProfileSaves--;
+        this.updateForm(createdAncestorProfile);
+        this.toastr.info(`Ancestor profile saved.`);
+        this.isNavigatingAfterSave = true;
+        this.router.navigate([`/genealogy/ancestors/${createdAncestorProfile.ancestorProfileId}`]);
+      },
+      error: () => {
+        this.pendingProfileSaves--;
+        this.toastr.error('Unable to save the ancestor profile.');
       }
-
-      this.toastr.info(`Ancestor profile saved.`);
-      this.isNavigatingAfterSave = true;
-      this.router.navigate([`/genealogy/ancestors/${createdAncestorProfile.ancestorProfileId}`]);
     });
   }
 }

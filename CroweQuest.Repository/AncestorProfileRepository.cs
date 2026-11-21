@@ -57,6 +57,18 @@ namespace CroweQuest.Repository
                 cancellationToken: cancellationToken));
         }
 
+        public async Task<bool> RemoveSpouseRelationshipAsync(int ancestorProfileId, int spouseId, CancellationToken cancellationToken)
+        {
+            using var connection = CreateConnection();
+            await connection.OpenAsync(cancellationToken);
+
+            return await connection.ExecuteScalarAsync<int>(new CommandDefinition(
+                "AncestorRelationship_DeleteSpouse",
+                new { AncestorProfileId = ancestorProfileId, SpouseId = spouseId },
+                commandType: CommandType.StoredProcedure,
+                cancellationToken: cancellationToken)) > 0;
+        }
+
         public async Task<int> AddPhotoAsync(int ancestorProfileId, int photoId, int applicationUserId)
         {
             using var connection = CreateConnection();
@@ -173,6 +185,7 @@ namespace CroweQuest.Repository
                     ancestorProfileCreate.Gender,
                     ancestorProfileCreate.BirthDate,
                     ancestorProfileCreate.BirthLocation,
+                    ancestorProfileCreate.MarriageDate,
                     ancestorProfileCreate.DeathDate,
                     ancestorProfileCreate.DeathLocation,
                     ancestorProfileCreate.Biography,

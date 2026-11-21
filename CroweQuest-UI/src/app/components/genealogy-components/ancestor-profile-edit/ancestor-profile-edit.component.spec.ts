@@ -53,7 +53,7 @@ describe('AncestorProfileEditComponent', () => {
       component.ancestorProfileForm.get('firstName')!.markAsDirty();
       component.currentAncestorProfile = new AncestorProfile(1, 'Saved', undefined, undefined, undefined, undefined,
         undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-        undefined, undefined, undefined, [], undefined, undefined, [10, 20]);
+        undefined, undefined, undefined, undefined, [], undefined, undefined, [10, 20]);
 
       component.removeSibling(10);
       expect(service.removeSibling).toHaveBeenCalledWith(1, 10);
@@ -92,6 +92,19 @@ describe('AncestorProfileEditComponent', () => {
     component.createAndAddSibling();
     expect(component.isCreatingSibling).toBeFalse();
     expect(component['toastr'].error).toHaveBeenCalledWith('Unable to create sibling ancestor.');
+  });
+
+  it('re-enables spouse removal if creating another relative fails', () => {
+    component['ancestorProfileService'].create = jasmine.createSpy('create').and.returnValue(throwError(() => new Error('failed')));
+    component.newHusbandName = 'Husband Name';
+    component.newWifeName = 'Wife Name';
+    component.newFatherName = 'Father Name';
+    component.newMotherName = 'Mother Name';
+    component.createAndAssignHusband();
+    component.createAndAssignWife();
+    component.createAndAssignFather();
+    component.createAndAssignMother();
+    expect(component.isCreatingHusband || component.isCreatingWife || component.isCreatingFather || component.isCreatingMother).toBeFalse();
   });
   it('limits spouse options to the opposite gender of the current ancestor', () => {
     component.ancestorProfileForm = formBuilder.group({
@@ -282,6 +295,7 @@ describe('AncestorProfileEditComponent', () => {
       gender: ['Male'],
       birthDate: [''],
       birthLocation: [''],
+      marriageDate: [''],
       deathDate: [''],
       deathLocation: [''],
       biography: [''],
@@ -335,6 +349,7 @@ describe('AncestorProfileEditComponent', () => {
       gender: [''],
       birthDate: [''],
       birthLocation: [''],
+      marriageDate: [''],
       deathDate: [''],
       deathLocation: [''],
       biography: [''],
@@ -359,6 +374,7 @@ describe('AncestorProfileEditComponent', () => {
       gender: 'Male',
       birthDate: '1990-03-12T00:00:00',
       birthLocation: '',
+      marriageDate: '1998-06-15T00:00:00',
       deathDate: '2001-04-30T12:45:00Z',
       deathLocation: '',
       biography: '',
@@ -375,11 +391,47 @@ describe('AncestorProfileEditComponent', () => {
     } as any);
 
     expect(component.ancestorProfileForm.get('birthDate')?.value).toBe('1990-03-12');
+    expect(component.ancestorProfileForm.get('marriageDate')?.value).toBe('1998-06-15');
     expect(component.ancestorProfileForm.get('deathDate')?.value).toBe('2001-04-30');
   });
 
-  it('clears spouse and parent selections correctly', () => {
+  it('sends the marriage date when saving and omits it when cleared', () => {
     component.ancestorProfileForm = formBuilder.group({
+      ancestorProfileId: [99],
+      firstName: ['Current'],
+      marriageDate: ['1998-06-15'],
+      siblingAncestorProfileIds: [[]]
+    });
+    const create = jasmine.createSpy('create').and.returnValue(
+      makeObservableStub({ ancestorProfileId: 99, firstName: 'Current', siblingAncestorProfileIds: [] })
+    );
+    component['ancestorProfileService'].create = create;
+    spyOn(component, 'updateForm');
+
+    component.onSubmit();
+    expect(create.calls.mostRecent().args[0].marriageDate).toBe('1998-06-15');
+
+    component.ancestorProfileForm.patchValue({ marriageDate: '' });
+    component.onSubmit();
+    expect(create.calls.mostRecent().args[0].marriageDate).toBeUndefined();
+  });
+
+  it('reports an error when saving the ancestor profile fails', () => {
+    component.ancestorProfileForm = formBuilder.group({
+      ancestorProfileId: [99], firstName: ['Current'], siblingAncestorProfileIds: [[]]
+    });
+    component['ancestorProfileService'].create = jasmine.createSpy('create')
+      .and.returnValue(throwError(() => new Error('failed')));
+
+    component.onSubmit();
+
+    expect(component['toastr'].error).toHaveBeenCalledWith('Unable to save the ancestor profile.');
+    expect(component['router'].navigate).not.toHaveBeenCalled();
+  });
+
+  it('clears a new profile spouse and parent selections correctly', () => {
+    component.ancestorProfileForm = formBuilder.group({
+      ancestorProfileId: [-1],
       gender: ['Male'],
       wifeAncestorProfileId: [7],
       fatherAncestorProfileId: [8],
@@ -393,6 +445,87 @@ describe('AncestorProfileEditComponent', () => {
     expect(component.ancestorProfileForm.get('wifeAncestorProfileId')?.value).toBeNull();
     expect(component.ancestorProfileForm.get('fatherAncestorProfileId')?.value).toBeNull();
     expect(component.ancestorProfileForm.get('motherAncestorProfileId')?.value).toBeNull();
+  });
+
+  it('removes only the displayed spouse after success and keeps unsaved edits', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    const response = new Subject<boolean>();
+    component['ancestorProfileService'].removeSpouse = jasmine.createSpy('removeSpouse').and.returnValue(response);
+    component.ancestorProfileForm = formBuilder.group({
+      ancestorProfileId: [1], gender: ['Male'], wifeAncestorProfileId: [7],
+      husbandAncestorProfileId: [null], firstName: ['Unsaved']
+    });
+    component.ancestorProfileForm.get('firstName')!.markAsDirty();
+    component.clearSpouseSelection();
+    expect(component['ancestorProfileService'].removeSpouse).toHaveBeenCalledWith(1, 7);
+    expect(component.isRemovingSpouse).toBeTrue();
+    expect(component.ancestorProfileForm.get('wifeAncestorProfileId')!.value).toBe(7);
+    response.next(true);
+    response.complete();
+    expect(component.ancestorProfileForm.get('wifeAncestorProfileId')!.value).toBeNull();
+    expect(component.ancestorProfileForm.get('firstName')!.value).toBe('Unsaved');
+    expect(component.ancestorProfileForm.dirty).toBeTrue();
+    expect(component.isRemovingSpouse).toBeFalse();
+  });
+
+  it('preserves the spouse selection if removal fails', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    component['ancestorProfileService'].removeSpouse = jasmine.createSpy('removeSpouse').and.returnValue(throwError(() => new Error('failed')));
+    component.ancestorProfileForm = formBuilder.group({ ancestorProfileId: [1], gender: ['Female'], husbandAncestorProfileId: [7] });
+    component.clearSpouseSelection();
+    expect(component.ancestorProfileForm.get('husbandAncestorProfileId')!.value).toBe(7);
+    expect(component['toastr'].error).toHaveBeenCalledWith('Unable to remove the spouse relationship.');
+    expect(component.isRemovingSpouse).toBeFalse();
+  });
+
+  it('does not remove a spouse when confirmation is cancelled', () => {
+    spyOn(window, 'confirm').and.returnValue(false);
+    component['ancestorProfileService'].removeSpouse = jasmine.createSpy('removeSpouse');
+    component.ancestorProfileForm = formBuilder.group({ ancestorProfileId: [1], gender: ['Male'], wifeAncestorProfileId: [7] });
+    component.clearSpouseSelection();
+    expect(component['ancestorProfileService'].removeSpouse).not.toHaveBeenCalled();
+    expect(component.ancestorProfileForm.get('wifeAncestorProfileId')!.value).toBe(7);
+  });
+
+  it('clears an unsaved spouse selection without claiming a relationship was removed', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    const response = new Subject<boolean>();
+    component['ancestorProfileService'].removeSpouse = jasmine.createSpy('removeSpouse').and.returnValue(response);
+    component.ancestorProfileForm = formBuilder.group({ ancestorProfileId: [1], gender: ['Male'], wifeAncestorProfileId: [7] });
+    component.clearSpouseSelection();
+    response.next(false);
+    response.complete();
+    expect(component.ancestorProfileForm.get('wifeAncestorProfileId')!.value).toBeNull();
+    expect(component['toastr'].info).toHaveBeenCalledWith('Spouse selection cleared; no saved relationship was found.');
+  });
+
+  it('does not remove a spouse while a profile save is pending', () => {
+    const response = new Subject<AncestorProfile>();
+    component['ancestorProfileService'].create = jasmine.createSpy('create').and.returnValue(response);
+    component['ancestorProfileService'].removeSpouse = jasmine.createSpy('removeSpouse');
+    component.ancestorProfileForm = formBuilder.group({
+      ancestorProfileId: [1], firstName: ['Test'], gender: ['Male'], wifeAncestorProfileId: [7],
+      siblingAncestorProfileIds: [[]]
+    });
+    component.onSubmit();
+    component.clearSpouseSelection();
+    expect(component['ancestorProfileService'].removeSpouse).not.toHaveBeenCalled();
+    expect(component['toastr'].info).toHaveBeenCalledWith('Please wait for the current relationship change to finish.');
+    response.error(new Error('failed'));
+  });
+
+  it('does not link children when saving a selected spouse', () => {
+    const service = component['ancestorProfileService'];
+    service.create = jasmine.createSpy('create').and.returnValue(makeObservableStub({ ancestorProfileId: 1, wifeAncestorProfileId: 7 }));
+    service.addRelationship = jasmine.createSpy('addRelationship');
+    spyOn(component, 'updateForm');
+    component.ancestorProfileForm = formBuilder.group({
+      ancestorProfileId: [1], firstName: ['Test'], gender: ['Male'], wifeAncestorProfileId: [7],
+      siblingAncestorProfileIds: [[]]
+    });
+    component.onSubmit();
+    expect(service.create).toHaveBeenCalled();
+    expect(service.addRelationship).not.toHaveBeenCalled();
   });
 
   it('removes only the selected sibling ids while preserving the rest', () => {
@@ -517,8 +650,9 @@ describe('AncestorProfileEditComponent', () => {
     expect(payload.ancestorProfileId).toBe(1);
   });
 
-  it('links a newly created spouse to the current ancestor\'s children', () => {
+  it('does not link a newly created spouse to the current ancestor\'s children', () => {
     const service = {
+      create: jasmine.createSpy('create').and.returnValue(makeObservableStub({ ancestorProfileId: 77 })),
       addRelationship: jasmine.createSpy('addRelationship').and.returnValue(makeObservableStub(1))
     } as any;
 
@@ -563,11 +697,9 @@ describe('AncestorProfileEditComponent', () => {
       { ancestorProfileId: 20, firstName: 'Child', lastName: 'Two', gender: 'Female' }
     ] as any;
 
-    (componentWithService as any).linkCurrentAncestorChildrenToSpouse(77);
-
-    expect(service.addRelationship).toHaveBeenCalledTimes(2);
-    expect(service.addRelationship.calls.allArgs().map((args: any[]) => args[1].relatedAncestorProfileId)).toEqual([10, 20]);
-    expect(service.addRelationship.calls.allArgs().every((args: any[]) => args[1].relationshipType === 'Parent')).toBeTrue();
+    componentWithService['linkCreatedSpouseToCurrentAncestor']({ ancestorProfileId: 77, firstName: 'Spouse' } as AncestorProfile, 'wife');
+    expect(service.create).toHaveBeenCalled();
+    expect(service.addRelationship).not.toHaveBeenCalled();
   });
 
   it('does not mutate the saved sibling ids when sibling ids are staged for removal', () => {
